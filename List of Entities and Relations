@@ -1,0 +1,48 @@
+Course
+
+    CourseID*
+    Section
+    Name
+    Professor
+    Session
+
+User
+
+    UserID*
+    Name
+    Courses
+    IsProfessor
+
+Professor (subclass of User)
+
+    Badge
+
+Resources
+
+    ResourceID*
+    Date
+    Author
+    Topic
+    Body
+    Keywords
+    Format (Note, Video, Website, pdf)
+
+Note (subclass of Resource)
+
+    IsVerified
+    Rating
+
+Rating
+
+    RatingID*
+    Poster
+    Score
+
+Relations
+
+    User takes a Course
+    User posts Rating
+    User creates a Resource
+    Professor verifies Note
+    Note has a Rating
+    Resource corresponds to a Course
