@@ -1,43 +1,43 @@
-Relations:
+Relationships:
 
-Todo: 
-- Add specific structural constraints?
-- Figure out details necessary for more definitive answers
-    - Does every Course need at least one User? Or can a Course not participate in takes relationship?
-        - Presumably we would populate all the courses before getting any users, so they wouldn't need any.
-    - Same question as above for User for the same relationship
-        - Presumably a User is able to not have any courses taken (in the current semester).
-        - Regardless, how is a User's courses that they are taking populated? Is it self-reported?
-        - Are Professors considered as taking the courses they are teaching?
-
-
+- Takes
 User takes a Course
     Many to Many relationship
-    Partial participation for both entities?
+    Participation of User in the relationship is partial
+    Participation of Course in the relationship is partial
 
+- Posts
 User posts Rating
     One to Many relationship between User and Rating
     Participation of User in the relationship is partial
     Participation of Rating in the relationship is total
 
+- Creates
 User creates a Resource
     One to Many relationship between User and Resource
-        But maybe we would want to allow collaborative resources?
-            If so, this would be Many to Many
-    Participation of User is partial
-    Participation of Resource is total
+    Participation of User in the relationship is partial
+    Participation of Resource in the relationship is total
 
-Professor verifies Note
-    One to Many relationship between Professor and Note
-    Participation of Professor is partial
-    Participation of Note is partial
+- Verifies
+Professor verifies Resource
+    One to Many relationship between Professor and Resource
+    Participation of Professor in the relationship is partial
+    Participation of Resource in the relationship is partial
 
-Note contains Rating
-    One to Many relationship between Note and Rating
-    Participation of Note is partial
-    Participation of Rating is total
+- Receives
+Resource received Rating
+    One to Many relationship between Resource and Rating
+    Participation of Resource in the relationship is partial
+    Participation of Rating in the relationship is total
 
+- Corresponds
 Resource corresponds to a Course
     Many to One relationship between Resource and Course
-    Participation of Resource is total
-    Participation of Course is partial
+    Participation of Resource in the relationship is total
+    Participation of Course in the relationship is partial
+
+- Keywords
+Resource has a Keyword
+    Many to Many relationship between Resource and Keyword
+    Participation of Resource in the relationship is partial
+    Participation of Keyword in the relationship is total
