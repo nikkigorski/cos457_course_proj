@@ -36,8 +36,8 @@ Resource corresponds to a Course
     Participation of Resource in the relationship is total
     Participation of Course in the relationship is partial
 
-- Keywords
-Resource has a Keyword
-    Many to Many relationship between Resource and Keyword
-    Participation of Resource in the relationship is partial
-    Participation of Keyword in the relationship is total
+- Contains
+Subject contains Course
+    One to Many relationship between Subject and Course
+    Participation of Subject in the relationship is partial
+    Participation of Course in the relationship is total
