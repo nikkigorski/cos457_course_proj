@@ -1,0 +1,97 @@
+create table User(
+	UserID int unsigned auto_increment,
+    Name varchar(50) not null unique,
+    Courses varchar(50) null,
+    IsProfessor boolean null,
+    primary key(UserID)
+);
+
+create table Course(
+	CourseID int unsigned auto_increment,
+    Section varchar(24) null check(REGEXP_LIKE(accno, '^[A-Za-z0-9]+$')),
+    Name varchar(50) not null,
+    Session varchar(6) not null check(Session in('Spring', 'Summer', 'Fall', 'Winter')),
+    Year numeric(4,0) not null check(Year>2000 AND Year<=year(curdate())),
+    Subject char(3) not null,
+    CatalogNumber numeric(3,0),
+    ProfessorID int,
+    primary key(CourseID),
+    foreign key(Subject) references Subject(Code) on update cascade
+);
+
+create table Resource(
+	ResourceID int unsigned auto_increment,
+    Date date not null,
+    DateFor date not null,
+    Author varchar(50) not null,
+    Topic varchar(25) not null,
+    Keywords varchar(25) null,
+    Rating numeric(2,1),
+    Format varchar(7) not null check(Format in('Note', 'Video', 'Website', 'Pdf', 'Image')),
+    isVerified boolean null,
+    primary key(ResourceID),
+    foreign key(Author) references User(Name) on update cascade
+);
+
+create table Note(
+	ResourceID int,
+    Body varchar(2048) not null,
+    primary key(ResourceID),
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+);
+
+create table pdf(
+	ResourceID int,
+    primary key(ResourceID),
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+);
+
+create table Image(
+	ResourceID int,
+    Dimensions int unsigned not null check(Dimensions > 0x0),
+    primary key(ResourceID),
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+);
+
+create table Video(
+	ResourceID int,
+    Duration int unsigned not null check(Duration > 0),
+    primary key(ResourceID),
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+);
+
+create table Website(
+	ResourceID int,
+    Link varchar(2048) not null,
+    primary key(ResourceID),
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+);
+
+create table Rating(
+	RatingID int unsigned auto_increment,
+    Poster varchar(50) not null,
+    Score numeric(2,1) not null check(Score >= 0.0 and Score <= 5.0),
+    Date date not null,
+    primary key(RatingID),
+    foreign key(Poster) references Student(Name) on update cascade
+);
+
+create table Professor(
+	UserID int,
+    Badge boolean null,
+    primary key(UserID),
+    foreign key(UserID) references User(UserID) on update cascade
+);
+
+create table Student(
+	UserID int,
+	primary key(UserID),
+    foreign key(UserID) references User(UserID) on update cascade
+);
+
+create table Subject(
+	Code char(3),
+    Name varchar(50) not null,
+    primary key(Code)
+);
+
