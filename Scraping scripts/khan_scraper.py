@@ -38,13 +38,14 @@ def extract_links(soup, base_url):
         h = a['href']
         if h.startswith('/'):
                 h = combine_url(base_url, h)
-        if '/e/' in h:
+        lower_h = h.lower()
+        # Treat any link containing '/e/' or the keywords quiz/test/activity as an exercise
+        if ('/e/' in lower_h) or any(k in lower_h for k in ('quiz', 'test', 'activity')):
             ex.append(h)
-        elif '/v/' in h:
+        elif '/v/' in lower_h:
             vids.append(h)
         else:
             others.append(h)
-    # remove duplicates while preserving order
     def _uniq(lst):
         return list(dict.fromkeys(lst))
 
@@ -52,7 +53,6 @@ def extract_links(soup, base_url):
     others = _uniq(others)
     vids = _uniq(vids)
 
-    # filter out any links that appear in the IGNORE_LINKS set
     if 'IGNORE_LINKS' in globals() and IGNORE_LINKS:
         ex = [u for u in ex if u not in IGNORE_LINKS]
         others = [u for u in others if u not in IGNORE_LINKS]
