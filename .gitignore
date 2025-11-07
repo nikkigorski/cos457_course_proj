@@ -1,5 +1,73 @@
-# Ignore all files
-*
+# Standard ignore rules for local/dev artifacts and sensitive files.
 
-# Do not ignore course project directory
-!cos457_course_proj/
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+venv*/
+*env/
+*_env/
+*-env/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Installer/log files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Test and coverage
+.pytest_cache/
+.coverage
+coverage.xml
+
+# IDE/editor directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Environment / secrets (do not commit credentials)
+.env
+.env.*
+credentials
+*.pem
+*.key
+*.crt
+
+# Databases and local data
+*.sqlite3
+*.db
+*.sqlite
+
+# Webdriver / downloaded binaries (user-local installs)
+chromedriver
+chromedriver*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# User-local caches
+.local/
+.cache/
+
+# Keep the repository files tracked by default; add explicit ignore rules above
