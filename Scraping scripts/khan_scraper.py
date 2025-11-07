@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+import argparse, json, time, os
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+def extract_meta_video(soup):
+    urls = []
+    for meta in soup.find_all('meta'):
+        prop = meta.get('property') or meta.get('name') or ''
+        if prop.lower() in ('og:video','og:video:url','og:video:secure_url') and meta.get('content'):
+            urls.append(meta['content'])
+    for v in soup.find_all('video'):
+        for s in v.find_all('source'):
+            if s.get('src'): urls.append(s['src'])
+        if v.get('src'): urls.append(v['src'])
+    return list(dict.fromkeys(urls))
+
+def combine_url(base, href):
+    from urllib.parse import urljoin
+    return urljoin(base, href)
+
+def extract_links(soup, base_url):
+    ex = []
+    others = []
+    vids = []
+    for a in soup.find_all('a', href=True):
+        h = a['href']
+        if h.startswith('/'):
+                h = combine_url(base_url, h)
+        if '/e/' in h:
+            ex.append(h)
+        elif '/v/' in h:
+            vids.append(h)
+        else:
+            others.append(h)
+    return {
+        'exercises': list(dict.fromkeys(ex)),
+        'links': list(dict.fromkeys(others)),
+        'videos_from_links': list(dict.fromkeys(vids)),
+    }
+
+def parse_page(url, html):
+    soup = BeautifulSoup(html,'html.parser')
+    out={'url':url}
+    out['title']=soup.title.string.strip() if soup.title and soup.title.string else None
+    md=soup.find('meta', attrs={'name':'description'})
+    out['description']=md['content'].strip() if md and md.get('content') else None
+    # JSON-LD extraction removed; no 'jsonld' field will be included in output
+    v = extract_meta_video(soup)
+    links_info = extract_links(soup, url)
+    vids = []
+    if v:
+        vids.extend(v)
+    vids.extend(links_info.get('videos_from_links', []))
+    if vids:
+        seen = set(); merged = []
+        for u in vids:
+            if u not in seen:
+                merged.append(u); seen.add(u)
+        out['videos'] = merged
+    out['exercises'] = links_info.get('exercises', [])
+    out['links'] = links_info.get('links', [])
+    return out
+
+def write_json(data, outpath):
+    with open(outpath,'w',encoding='utf-8') as f: json.dump(data,f,ensure_ascii=False,indent=2)
+
+
+def start_driver():
+    opts=Options(); opts.add_argument('--headless=new'); opts.add_argument('--no-sandbox'); opts.add_argument('--disable-dev-shm-usage')
+    return webdriver.Chrome(options=opts)
+
+def parse_args():
+    p=argparse.ArgumentParser(); p.add_argument('url'); p.add_argument('name', nargs='?'); return p.parse_args()
+
+def main():
+    args=parse_args(); url=args.url; outpath=args.name if args.name else 'output.json'
+    os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
+    d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
+    data = parse_page(url, html)
+    write_json(data, outpath)
+
+if __name__=='__main__': main()
