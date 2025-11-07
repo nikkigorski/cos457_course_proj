@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, json, time, os
+import argparse, json, time, os, subprocess
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -46,7 +46,6 @@ def parse_page(url, html):
     out['title']=soup.title.string.strip() if soup.title and soup.title.string else None
     md=soup.find('meta', attrs={'name':'description'})
     out['description']=md['content'].strip() if md and md.get('content') else None
-    # JSON-LD extraction removed; no 'jsonld' field will be included in output
     v = extract_meta_video(soup)
     links_info = extract_links(soup, url)
     vids = []
@@ -80,5 +79,37 @@ def main():
     d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
     data = parse_page(url, html)
     write_json(data, outpath)
+    
+    video_urls = data.get('videos', [])
+    if video_urls:
+        out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
+        os.makedirs(out_dir, exist_ok=True)
+        for vurl in video_urls:
+            driver = start_driver()
+            driver.get(vurl)
+            time.sleep(1)
+            page_html = driver.page_source
+            driver.quit()
+            soup = BeautifulSoup(page_html, 'html.parser')
+            embeds = [iframe.get('src') for iframe in soup.find_all('iframe', src=True)
+                      if 'youtube-nocookie.com/embed/' in iframe.get('src') or 'youtube.com/embed/' in iframe.get('src')]
+            seen_embeds = set()
+            unique_embeds = []
+            for src in embeds:
+                vid = src.split('/embed/')[-1].split('?')[0]
+                if vid not in seen_embeds:
+                    seen_embeds.add(vid)
+                    unique_embeds.append(src)
+            for embed_src in unique_embeds[:2]:##only 2 for testing
+                print(f"Found YouTube embed: {embed_src} on page {vurl}")
+                cmd = [
+                    'yt-dlp',
+                    '--no-overwrites',
+                    '-f', 'bestvideo+bestaudio/best',
+                    '--merge-output-format', 'mkv',
+                    embed_src,
+                    '-o', os.path.join(out_dir, '%(title)s.%(ext)s'),
+                ]
+                subprocess.run(cmd)
 
 if __name__=='__main__': main()
