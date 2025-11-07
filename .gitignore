@@ -1,4 +1,3 @@
-# Standard ignore rules for local/dev artifacts and sensitive files.
 
 # Byte-compiled / cache
 __pycache__/
