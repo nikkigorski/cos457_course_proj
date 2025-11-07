@@ -4,6 +4,16 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+# Load ignore links from JSON file (optional). If the file is missing or invalid,
+# IGNORE_LINKS will be empty and no links will be filtered.
+IGNORE_FILE = os.path.join(os.path.dirname(__file__), 'ignore_links.json')
+try:
+    with open(IGNORE_FILE, 'r', encoding='utf-8') as _f:
+        _ignore_data = json.load(_f)
+        IGNORE_LINKS = set(_ignore_data.get('links', []))
+except Exception:
+    IGNORE_LINKS = set()
+
 def extract_meta_video(soup):
     urls = []
     for meta in soup.find_all('meta'):
@@ -34,10 +44,24 @@ def extract_links(soup, base_url):
             vids.append(h)
         else:
             others.append(h)
+    # remove duplicates while preserving order
+    def _uniq(lst):
+        return list(dict.fromkeys(lst))
+
+    ex = _uniq(ex)
+    others = _uniq(others)
+    vids = _uniq(vids)
+
+    # filter out any links that appear in the IGNORE_LINKS set
+    if 'IGNORE_LINKS' in globals() and IGNORE_LINKS:
+        ex = [u for u in ex if u not in IGNORE_LINKS]
+        others = [u for u in others if u not in IGNORE_LINKS]
+        vids = [u for u in vids if u not in IGNORE_LINKS]
+
     return {
-        'exercises': list(dict.fromkeys(ex)),
-        'links': list(dict.fromkeys(others)),
-        'videos_from_links': list(dict.fromkeys(vids)),
+        'exercises': ex,
+        'links': others,
+        'videos_from_links': vids,
     }
 
 def parse_page(url, html):
@@ -98,7 +122,7 @@ def main():
             for src in embeds:
                 vid = src.split('/embed/')[-1].split('?')[0]
                 if vid not in seen_embeds:
-                    seen_embeds.add(vid)
+                    seen_embeds.add(vid)    
                     unique_embeds.append(src)
             for embed_src in unique_embeds[:2]:##only 2 for testing
                 print(f"Found YouTube embed: {embed_src} on page {vurl}")
