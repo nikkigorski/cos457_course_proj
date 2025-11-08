@@ -57,14 +57,14 @@ create table Image(
 create table Video(
 	ResourceID int,
     Duration int unsigned not null check(Duration > 0),
-    Link varchar(2048) not null,
+    Link varchar(2048) null check(Link is null or Link regexp '^https?://'),
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
 
 create table Website(
 	ResourceID int,
-    Link varchar(2048) not null,
+    Link varchar(2048) not null check(Link regexp '^https?://'),
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
