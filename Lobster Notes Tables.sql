@@ -42,13 +42,14 @@ create table Note(
 
 create table pdf(
 	ResourceID int,
+    Body varchar(2048) not null,
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
 
 create table Image(
 	ResourceID int,
-    Dimensions int unsigned not null check(Dimensions > 0x0),
+    Size int unsigned not null check(Size > 0),
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
@@ -56,6 +57,7 @@ create table Image(
 create table Video(
 	ResourceID int,
     Duration int unsigned not null check(Duration > 0),
+    Link varchar(2048) not null,
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
@@ -70,11 +72,47 @@ create table Website(
 create table Rating(
 	RatingID int unsigned auto_increment,
     Poster varchar(50) not null,
+    ResourceID int unsigned not null,
     Score numeric(2,1) not null check(Score >= 0.0 and Score <= 5.0),
     Date date not null,
     primary key(RatingID),
-    foreign key(Poster) references Student(Name) on update cascade
+    foreign key(Poster) references Student(Name) on update cascade,
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
+
+-- Average Rating attribute of Resource with Scores
+delimiter $$
+create procedure AverageRating(in resID int)
+begin
+	update Resource
+	set Rating = (
+		select round(avg(Score), 1)
+        from Rating
+        where ResourceID = resID
+	)
+    where ResourceID = resID;
+end $$
+delimiter ; 
+
+-- Update Rating attribute of Resource on insert
+delimiter $$
+create trigger InsertRating
+after insert on Rating
+for each row
+begin
+	call AverageRating(new.ResourceID);
+end $$
+delimiter ;
+
+-- Update Rating using trigger
+delimiter $$
+create trigger UpdateRating
+after update on Rating
+for each row
+begin
+	call AverageRating(new.ResourceID);
+end $$
+delimiter ;
 
 create table Professor(
 	UserID int,
@@ -94,4 +132,3 @@ create table Subject(
     Name varchar(50) not null,
     primary key(Code)
 );
-
