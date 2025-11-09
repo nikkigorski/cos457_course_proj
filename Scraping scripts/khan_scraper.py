@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import argparse, json, time, os, subprocess
+import urllib.request
+import urllib.parse
+import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -27,6 +30,36 @@ def extract_meta_video(soup):
 def combine_url(base, href):
     from urllib.parse import urljoin
     return urljoin(base, href)
+
+
+
+
+def download_pdf(url, target_dir, documents):
+    print(f"Attempting to download PDF from: {url}")
+    req = urllib.request.Request(url, method='HEAD')
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        final = resp.geturl()
+    base = os.path.basename(urllib.parse.urlparse(final).path)
+    base = urllib.parse.unquote(base) if base else base
+    name = base or 'document'
+    name = name.replace('%', ' ').replace('_', ' ').strip()
+    if not name:
+        name = 'document'
+    if not name.lower().endswith('.pdf'):
+        name = f"{name}.pdf"
+    target_path = os.path.join(target_dir, name)
+    urllib.request.urlretrieve(final, target_path)
+    with open(target_path, 'rb') as fh:
+        head = fh.read(1024)
+    try:
+        head_text = head.decode('utf-8', errors='ignore').lstrip().lower()
+    except Exception:
+        head_text = ''
+    if head_text.startswith('<!doctype html'):
+        os.remove(target_path)
+        return False
+    documents.append({'title': name, 'filepath': os.path.abspath(target_path), 'url': final})
+    return True
 
 def extract_links(soup, base_url):
     ex = []
@@ -102,12 +135,35 @@ def main():
     d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
     data = parse_page(url, html)
     write_json(data, outpath)
+    out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
+    pdf_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloadedPDFS')
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(pdf_dir, exist_ok=True)
+    documents = []
+    main_soup = BeautifulSoup(html, 'html.parser')
+    for a_tag in main_soup.find_all('a', href=True):
+        ahref = a_tag['href']
+        if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
+            if ahref.startswith('/'):
+                ahref = combine_url(url, ahref)
+            if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+                continue
+            download_pdf(ahref, pdf_dir, documents)
+
+    for link in data.get('links', []):
+        ahref = link
+        if ahref.startswith('/'):
+            ahref = combine_url(url, ahref)
+        if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+            continue
+        if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
+            download_pdf(ahref, pdf_dir, documents)
+    
     
     video_urls = data.get('videos', [])
     video_data_list = []
     if video_urls:
-        out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
-        os.makedirs(out_dir, exist_ok=True)
+        
         for vurl in video_urls:
             driver = start_driver()
             driver.get(vurl)
@@ -152,11 +208,24 @@ def main():
                     'title': title if title else (os.path.basename(out_path) if out_path else None),
                     'filepath': out_path,
                     'duration': int(duration) if isinstance(duration, (int, float)) else None,
+                    'link': embed_src,
                 }
                 video_data_list.append(video_entry)
 
+            for a_tag in soup.find_all('a', href=True):
+                ahref = a_tag['href']
+                if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
+                    if ahref.startswith('/'):
+                        ahref = combine_url(vurl, ahref)
+                    if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+                        continue
+                    download_pdf(ahref, pdf_dir, documents)
+
         if video_data_list:
             data['videoData'] = video_data_list
+            write_json(data, outpath)
+        if documents:
+            data['documents'] = data.get('documents', []) + documents
             write_json(data, outpath)
 
 if __name__=='__main__': main()
