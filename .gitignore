@@ -45,6 +45,16 @@ node_modules/
 # Logs
 *.log
 
+#scraped data files
+*.mkv
+*.mp4
+*.avi
+*.flv
+*.mov
+*.wmv
+*.webm
+*.pdf
+
 # Environment / secrets (do not commit credentials)
 .env
 .env.*
@@ -61,6 +71,8 @@ credentials
 # Webdriver / downloaded binaries (user-local installs)
 chromedriver
 chromedriver*
+ffmpeg
+ffmpeg*
 
 # Jupyter
 .ipynb_checkpoints/
