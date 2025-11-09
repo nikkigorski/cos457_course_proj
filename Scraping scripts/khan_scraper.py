@@ -96,6 +96,7 @@ def parse_args():
     p=argparse.ArgumentParser(); p.add_argument('url'); p.add_argument('name', nargs='?'); return p.parse_args()
 
 def main():
+    
     args=parse_args(); url=args.url; outpath=args.name if args.name else 'output.json'
     os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
     d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
@@ -103,6 +104,7 @@ def main():
     write_json(data, outpath)
     
     video_urls = data.get('videos', [])
+    video_data_list = []
     if video_urls:
         out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
         os.makedirs(out_dir, exist_ok=True)
@@ -120,11 +122,13 @@ def main():
             for src in embeds:
                 vid = src.split('/embed/')[-1].split('?')[0]
                 if vid not in seen_embeds:
-                    seen_embeds.add(vid)    
+                    seen_embeds.add(vid)
                     unique_embeds.append(src)
-            for embed_src in unique_embeds[:2]:##only 2 for testing
+
+            for embed_src in unique_embeds[:2]:
                 print(f"Found YouTube embed: {embed_src} on page {vurl}")
-                cmd = [
+
+                dl_cmd = [
                     'yt-dlp',
                     '--no-overwrites',
                     '-f', 'bestvideo+bestaudio/best',
@@ -132,6 +136,27 @@ def main():
                     embed_src,
                     '-o', os.path.join(out_dir, '%(title)s.%(ext)s'),
                 ]
-                subprocess.run(cmd)
+                subprocess.run(dl_cmd, check=True)
+
+                pf = subprocess.run(['yt-dlp', '--get-filename', '-o', '%(title)s.%(ext)s', embed_src], capture_output=True, text=True, check=True)
+                filename = pf.stdout.strip()
+                out_path = os.path.join(out_dir, filename)
+                
+
+                pj = subprocess.run(['yt-dlp', '--dump-json', embed_src], capture_output=True, text=True, check=True)
+                j = json.loads(pj.stdout)
+                title = j.get('title')
+                duration = j.get('duration')
+
+                video_entry = {
+                    'title': title if title else (os.path.basename(out_path) if out_path else None),
+                    'filepath': out_path,
+                    'duration': int(duration) if isinstance(duration, (int, float)) else None,
+                }
+                video_data_list.append(video_entry)
+
+        if video_data_list:
+            data['videoData'] = video_data_list
+            write_json(data, outpath)
 
 if __name__=='__main__': main()
