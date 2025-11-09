@@ -4,8 +4,6 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-# Load ignore links from JSON file (optional). If the file is missing or invalid,
-# IGNORE_LINKS will be empty and no links will be filtered.
 IGNORE_FILE = os.path.join(os.path.dirname(__file__), 'ignore_links.json')
 try:
     with open(IGNORE_FILE, 'r', encoding='utf-8') as _f:
