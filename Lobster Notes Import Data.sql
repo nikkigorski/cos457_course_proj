@@ -1,3 +1,8 @@
+/*
+Lobster Notes Import Data
+Gabrielle Akers
+November 11, 2025
+*/
 create table StageWebData(
 	DataID int unsigned auto_increment,
     WebData JSON not null,
