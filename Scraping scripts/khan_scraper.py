@@ -34,6 +34,22 @@ def combine_url(base, href):
     return urljoin(base, href)
 
 
+def _extract_youtube_id(url):
+    if not url:
+        return None
+    m = re.search(r'(?:embed/|v=|youtu\.be/)([A-Za-z0-9_-]{6,})', url)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _normalize_youtube_url(url):
+    vid = _extract_youtube_id(url)
+    if vid:
+        return f'https://www.youtube.com/watch?v={vid}'
+    return url
+
+
 
 
 def download_pdf(url, target_dir, documents):
@@ -177,7 +193,7 @@ def write_json(data, outpath):
         'Keywords': None,
         'Rating': 9.9,
         'Format': 'Website',
-        'isVerified': None,
+        'isVerified': False,
     })
     if page_url and re.match(r'^https?://', str(page_url)):
         websites.append({'ResourceID': page_id, 'Link': page_url})
@@ -251,7 +267,7 @@ def main():
     
     URL_MAX_LENGTH = 2048 #ensures URL fits into DB
 
-    args=parse_args(); url=args.url; outpath=args.name if args.name else 'output.json'
+    args=parse_args(); url=args.url; outpath=args.name if args.name else ('data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
     os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
     d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
     data = parse_page(url, html)
@@ -339,12 +355,14 @@ def main():
                 except json.JSONDecodeError:
                     print(f"JSON output failed to parse for {embed_src}")
                     continue
+                # normalize embed/watch/short URLs 
+                normalized = _normalize_youtube_url(embed_src)
                 #check to ensure URL will fit
-                if len(embed_src) > URL_MAX_LENGTH:
-                    print(f"Link too long, shortening: {embed_src[:50]}.")
-                    short_link = embed_src[:URL_MAX_LENGTH]
+                if len(normalized) > URL_MAX_LENGTH:
+                    print(f"Link too long, shortening: {normalized[:50]}.")
+                    short_link = normalized[:URL_MAX_LENGTH]
                 else:
-                    short_link = embed_src
+                    short_link = normalized
                 video_entry = {
                     'title': title if title else (os.path.basename(out_path) if out_path else None),
                     'filepath': out_path,
@@ -352,7 +370,7 @@ def main():
                     'duration': int(duration) if isinstance(duration, (int, float)) and duration > 0 else None,
                     'link': short_link,
                 }
-                # skip if title already seen (avoid duplicates across runs and this run)
+                # skip if title already seen 
                 entry_title = video_entry.get('title') if isinstance(video_entry, dict) else None
                 norm_title = entry_title.strip().lower() if entry_title else ''
                 if norm_title and norm_title in existing_titles:
