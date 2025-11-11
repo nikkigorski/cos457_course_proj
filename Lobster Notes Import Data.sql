@@ -15,7 +15,7 @@ create procedure ImportKhanData(in did int)
 begin
     -- Load JSON
     declare j JSON;
-    select WebData into j from ImportData where DataID = did and Imported = 0;
+    select WebData into j from ImportKhanData where DataID = did and Imported = 0;
 
     -- Insert main URL
     insert into Resource (Date, DateFor, Author, Topic, Keywords)
