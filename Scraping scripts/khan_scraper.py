@@ -17,6 +17,39 @@ try:
 except Exception:
     IGNORE_LINKS = set()
 
+# load optional ignore words (substring match) from the same file. Support keys 'words' or 'ignore_words'
+try:
+    _words = _ignore_data.get('words') if '_ignore_data' in globals() and isinstance(_ignore_data, dict) else None
+    if not _words:
+        _words = _ignore_data.get('ignore_words') if '_ignore_data' in globals() and isinstance(_ignore_data, dict) else None
+    IGNORE_WORDS = set(w.lower() for w in (_words or []))
+except Exception:
+    IGNORE_WORDS = set()
+
+
+def should_ignore_link(href, anchor_text=None):
+    if not href:
+        return True
+    try:
+        low = href.lower()
+    except Exception:
+        low = ''
+    if 'IGNORE_LINKS' in globals() and IGNORE_LINKS and href in IGNORE_LINKS:
+        return True
+    if 'IGNORE_WORDS' in globals() and IGNORE_WORDS:
+        for w in IGNORE_WORDS:
+            if w and w in low:
+                return True
+    if anchor_text:
+        try:
+            at = anchor_text.lower()
+            for w in IGNORE_WORDS:
+                if w and w in at:
+                    return True
+        except Exception:
+            pass
+    return False
+
 def extract_meta_video(soup):
     urls = []
     for meta in soup.find_all('meta'):
@@ -87,8 +120,11 @@ def extract_links(soup, base_url):
     vids = []
     for a in soup.find_all('a', href=True):
         h = a['href']
+        anchor_text = a.get_text() or a.get('title') or ''
         if h.startswith('/'):
-                h = combine_url(base_url, h)
+            h = combine_url(base_url, h)
+            if should_ignore_link(h, anchor_text):
+                continue
         lower_h = h.lower()
         # Treat any link containing '/e/' or the keywords quiz/test/activity as an exercise
         if ('/e/' in lower_h) or any(k in lower_h for k in ('quiz', 'test', 'activity')):
@@ -104,10 +140,9 @@ def extract_links(soup, base_url):
     others = _uniq(others)
     vids = _uniq(vids)
 
-    if 'IGNORE_LINKS' in globals() and IGNORE_LINKS:
-        ex = [u for u in ex if u not in IGNORE_LINKS]
-        others = [u for u in others if u not in IGNORE_LINKS]
-        vids = [u for u in vids if u not in IGNORE_LINKS]
+    ex = [u for u in ex if not should_ignore_link(u)]
+    others = [u for u in others if not should_ignore_link(u)]
+    vids = [u for u in vids if not should_ignore_link(u)]
 
     return {
         'exercises': ex,
@@ -135,6 +170,36 @@ def parse_page(url, html):
         out['videos'] = merged
     out['exercises'] = links_info.get('exercises', [])
     out['links'] = links_info.get('links', [])
+    imgs = []
+    for img in soup.find_all('img', src=True):
+        src = img['src']
+        if src.startswith('/'):
+            src = combine_url(url, src)
+        if should_ignore_link(src):
+            continue
+        alt = img.get('alt') or img.get('title')
+        imgs.append({'url': src, 'alt': alt})
+    for a in soup.find_all('a', href=True):
+        href = a['href']
+        if href.startswith('/'):
+            href = combine_url(url, href)
+        low = href.lower()
+        if re.search(r"\.(jpg|jpeg|png|gif|svg|webp)(?:$|[?#])", low):
+            if should_ignore_link(href):
+                continue
+            alt = a.get_text().strip() if a.get_text() else None
+            imgs.append({'url': href, 'alt': alt})
+   
+    seen_i = set(); uniq_imgs = []
+    for it in imgs:
+        u = it.get('url')
+        if not u:
+            continue
+        if u in seen_i:
+            continue
+        seen_i.add(u)
+        uniq_imgs.append(it)
+    out['images'] = uniq_imgs
     return out
 
 def _truncate_string(s, length):
@@ -241,6 +306,38 @@ def write_json(data, outpath):
         body = filepath or url or title or ''
         pdfs.append({'ResourceID': doc_id, 'Body': _truncate_string(body, 2048)})
 
+    # Images
+    for im in (data.get('images') if isinstance(data, dict) else []) or []:
+        img_id = gen_id()
+        img_url = im.get('url') if isinstance(im, dict) else None
+        alt = im.get('alt') if isinstance(im, dict) else None
+        topic = None
+        if alt:
+            topic = _truncate_string(alt, 25)
+        else:
+            try:
+                parsed = urllib.parse.urlparse(img_url) if img_url else None
+                bn = os.path.basename(parsed.path) if parsed and parsed.path else None
+                topic = _truncate_string(bn, 25) if bn else None
+            except Exception:
+                topic = None
+
+        resources.append({
+            'ResourceID': img_id,
+            'Date': today,
+            'DateFor': today,
+            'Author': 'khan accademy, lobster notes web scraper',
+            'Topic': topic,
+            'Keywords': None,
+            'Rating': 9.9,
+            'Format': 'Image',
+            'isVerified': False,
+        })
+        if img_url and re.match(r'^https?://', str(img_url)):
+            images.append({'ResourceID': img_id, 'Link': img_url})
+        if alt:
+            notes.append({'ResourceID': img_id, 'Body': _truncate_string(alt, 2048)})
+
     out = {
         'Resource': resources,
         'Note': notes,
@@ -274,12 +371,14 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     os.makedirs(pdf_dir, exist_ok=True)
     documents = []
+    images = []
+    seen_images = set()
     main_soup = BeautifulSoup(html, 'html.parser')
     for a_tag in main_soup.find_all('a', href=True):
         ahref = a_tag['href']
         if ahref.startswith('/'):
             ahref = combine_url(url, ahref)
-        if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+        if should_ignore_link(ahref):
             continue
         if '.pdf' in ahref.lower() or 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
             documents=record_pdf_link(ahref, url, documents)
@@ -288,7 +387,7 @@ def main():
         ahref = link
         if ahref.startswith('/'):
             ahref = combine_url(url, ahref)
-        if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+        if should_ignore_link(ahref):
             continue
         if '.pdf' in ahref.lower() or 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
             documents=record_pdf_link(ahref, url, documents)
@@ -381,15 +480,43 @@ def main():
             if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
                 if ahref.startswith('/'):
                     ahref = combine_url(vurl, ahref)
-                if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+                if should_ignore_link(ahref):
                     continue
                 documents = record_pdf_link(ahref, vurl, documents)
-    
+        for img in soup.find_all('img', src=True):
+            src = img['src']
+            if src.startswith('/'):
+                src = combine_url(vurl, src)
+            if should_ignore_link(src):
+                continue
+            if src not in seen_images:
+                seen_images.add(src)
+                images.append({'url': src, 'alt': img.get('alt') or img.get('title')})
+        for a in soup.find_all('a', href=True):
+            href = a['href']
+            if href.startswith('/'):
+                href = combine_url(vurl, href)
+            low = href.lower()
+            if re.search(r"\.(jpg|jpeg|png|gif|svg|webp)(?:$|[?#])", low):
+                
+                if should_ignore_link(href, a.get_text() or a.get('title')):
+                    continue
+                if href not in seen_images:
+                    seen_images.add(href)
+                    images.append({'url': href, 'alt': a.get_text().strip() if a.get_text() else None})
+
     if video_data_list:
         data['videoData'] = video_data_list
+        if images:
+            data['images'] = (data.get('images', []) or []) + images
         write_json(data, outpath)
     if documents:
         data['documents'] = data.get('documents', []) + documents
+        if images:
+            data['images'] = (data.get('images', []) or []) + images
+        write_json(data, outpath)
+    elif images:
+        data['images'] = (data.get('images', []) or []) + images
         write_json(data, outpath)
 
 if __name__=='__main__': main()
