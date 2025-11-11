@@ -204,5 +204,21 @@ create function FN_Rating_Avg(resource_id int)
 		from Resource
 		where Resource.ResourceID = resource_id;
 	return r_avg;
-end
+end//
+delimiter ;
 
+/*
+Takes UserID and checks if user is professor
+*/
+delimiter //Name
+create function FN_User_Isprofessor(user_id int)
+	returns boolean
+begin
+    declare is_prof boolean;
+		select IsProfessor into is_prof
+        from User
+        where User.UserID = user_id;
+	return is_prof;
+end//
+delimiter ;
+    
