@@ -50,38 +50,36 @@ def _normalize_youtube_url(url):
     return url
 
 
+def record_pdf_link(href, base_url, documents):
+    if not href:
+        return documents
+    is_bitly = 'bit.ly' in href.lower() or 'bitly.com' in href.lower()
+    if ('.pdf' not in href.lower()) and (not is_bitly):
+        return documents
+    if href.startswith('/'):
+        href = combine_url(base_url, href)
 
-
-def download_pdf(url, target_dir, documents):
-    print(f"Attempting to download PDF from: {url}")
-    try:                                                           #try to catch timeout or invalid URL
-        req = urllib.request.Request(url, method='HEAD')
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            final = resp.geturl()
-        base = os.path.basename(urllib.parse.urlparse(final).path)
-        base = urllib.parse.unquote(base) if base else base
-        name = base or 'document'
-        name = name.replace('%', ' ').replace('_', ' ').strip()
-        if not name:
-            name = 'document'
-        if not name.lower().endswith('.pdf'):
-            name = f"{name}.pdf"
-        target_path = os.path.join(target_dir, name)
-        urllib.request.urlretrieve(final, target_path)
-        with open(target_path, 'rb') as fh:
-            head = fh.read(1024)
+    final = href
+    if is_bitly:
         try:
-            head_text = head.decode('utf-8', errors='ignore').lstrip().lower()
+            req = urllib.request.Request(href, method='HEAD')
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                final = resp.geturl()
         except Exception:
-            head_text = ''
-        if head_text.startswith('<!doctype html'):
-            os.remove(target_path)
-            return False
-        documents.append({'title': name, 'filepath': os.path.abspath(target_path), 'url': final})
-        return True
-    except (urllib.error.URLError, TimeoutError, Exception) as e: #except condition for timeout or URL 
-            print(f"Error: Download failed from {url}, {e}") 
-            return False
+            final = href
+    parsed = urllib.parse.urlparse(final)
+    if '.pdf' not in final.lower():
+        return documents
+
+    name = os.path.basename(parsed.path)
+    name = urllib.parse.unquote(name) if name else None
+    name = name.replace('%', ' ').replace('_', ' ').strip() if name else None
+    if not name:
+        name = 'document.pdf'
+    if not name.lower().endswith('.pdf'):
+        name = f"{name}.pdf"
+    documents.append({'title': name, 'filepath': None, 'url': final})
+    return documents
 
 def extract_links(soup, base_url):
     ex = []
@@ -170,7 +168,6 @@ def write_json(data, outpath):
             used_ids = set()
 
     def gen_id():
-        # 32-bit unsigned-ish range, avoid 0
         for _ in range(10000):
             candidate = random.randint(1, 2**31-1)
             if candidate not in used_ids:
@@ -280,12 +277,12 @@ def main():
     main_soup = BeautifulSoup(html, 'html.parser')
     for a_tag in main_soup.find_all('a', href=True):
         ahref = a_tag['href']
-        if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
-            if ahref.startswith('/'):
-                ahref = combine_url(url, ahref)
-            if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
-                continue
-            download_pdf(ahref, pdf_dir, documents)
+        if ahref.startswith('/'):
+            ahref = combine_url(url, ahref)
+        if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
+            continue
+        if '.pdf' in ahref.lower() or 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
+            documents=record_pdf_link(ahref, url, documents)
 
     for link in data.get('links', []):
         ahref = link
@@ -293,8 +290,8 @@ def main():
             ahref = combine_url(url, ahref)
         if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
             continue
-        if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
-            download_pdf(ahref, pdf_dir, documents)
+        if '.pdf' in ahref.lower() or 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
+            documents=record_pdf_link(ahref, url, documents)
     
     
     video_urls = data.get('videos', [])
@@ -306,94 +303,93 @@ def main():
             t = v.get('title') if isinstance(v, dict) else None
             if t:
                 existing_titles.add(t.strip().lower())
-    if video_urls:
         
-        for vurl in video_urls:
-            driver = start_driver()
-            driver.get(vurl)
-            time.sleep(1)
-            page_html = driver.page_source
-            driver.quit()
-            soup = BeautifulSoup(page_html, 'html.parser')
-            embeds = [iframe.get('src') for iframe in soup.find_all('iframe', src=True)
-                      if 'youtube-nocookie.com/embed/' in iframe.get('src') or 'youtube.com/embed/' in iframe.get('src')]
-            seen_embeds = set()
-            unique_embeds = []
-            for src in embeds:
-                vid = src.split('/embed/')[-1].split('?')[0]
-                if vid not in seen_embeds:
-                    seen_embeds.add(vid)
-                    unique_embeds.append(src)
+    for vurl in video_urls:
+        driver = start_driver()
+        driver.get(vurl)
+        time.sleep(1)
+        page_html = driver.page_source
+        driver.quit()
+        soup = BeautifulSoup(page_html, 'html.parser')
+        embeds = [iframe.get('src') for iframe in soup.find_all('iframe', src=True)
+                    if 'youtube-nocookie.com/embed/' in iframe.get('src') or 'youtube.com/embed/' in iframe.get('src')]
+        seen_embeds = set()
+        unique_embeds = []
+        for src in embeds:
+            vid = src.split('/embed/')[-1].split('?')[0]
+            if vid not in seen_embeds:
+                seen_embeds.add(vid)
+                unique_embeds.append(src)
 
-            for embed_src in unique_embeds[:2]:
-                try:                                    #prevents crashing for yt-dlp
-                    print(f"Found YouTube embed: {embed_src} on page {vurl}")
+        for embed_src in unique_embeds[:2]:
+            try:                                    #prevents crashing for yt-dlp
+                
 
-                    # dl_cmd = [
-                    #     'yt-dlp',
-                    #     '--no-overwrites',
-                    #     '-f', 'bestvideo+bestaudio/best',
-                    #     '--merge-output-format', 'mkv',
-                    #     embed_src,
-                    #     '-o', os.path.join(out_dir, '%(title)s.%(ext)s'),
-                    # ]
-                    # actual video download disabled to avoid large downloads during scraping, but code is kept to allow possible future use
-                    # subprocess.run(dl_cmd, check=True)
+                # dl_cmd = [
+                #     'yt-dlp',
+                #     '--no-overwrites',
+                #     '-f', 'bestvideo+bestaudio/best',
+                #     '--merge-output-format', 'mkv',
+                #     embed_src,
+                #     '-o', os.path.join(out_dir, '%(title)s.%(ext)s'),
+                # ]
+                # actual video download disabled to avoid large downloads during scraping, but code is kept to allow possible future use
+                # subprocess.run(dl_cmd, check=True)
 
-                    pf = subprocess.run(['yt-dlp', '--get-filename', '-o', '%(title)s.%(ext)s', embed_src], capture_output=True, text=True, check=True)
-                    filename = pf.stdout.strip()
-                    out_path = os.path.join(out_dir, filename)
-                    
+                pf = subprocess.run(['yt-dlp', '--get-filename', '-o', '%(title)s.%(ext)s', embed_src], capture_output=True, text=True, check=True)
+                filename = pf.stdout.strip()
+                out_path = os.path.join(out_dir, filename)
+                
 
-                    pj = subprocess.run(['yt-dlp', '--dump-json', embed_src], capture_output=True, text=True, check=True)
-                    j = json.loads(pj.stdout)
-                    title = j.get('title')
-                    duration = j.get('duration')
-                except subprocess.CalledProcessError as e:
-                    print(f"Error {e}: Failed to get metadata for {embed_src}") 
+                pj = subprocess.run(['yt-dlp', '--dump-json', embed_src], capture_output=True, text=True, check=True)
+                j = json.loads(pj.stdout)
+                title = j.get('title')
+                duration = j.get('duration')
+            except subprocess.CalledProcessError as e:
+                print(f"Error {e}: Failed to get metadata for {embed_src}") 
+                continue
+            except json.JSONDecodeError:
+                print(f"JSON output failed to parse for {embed_src}")
+                continue
+            # normalize embed/watch/short URLs 
+            normalized = _normalize_youtube_url(embed_src)
+            #check to ensure URL will fit
+            if len(normalized) > URL_MAX_LENGTH:
+                print(f"Link too long, shortening: {normalized[:50]}.")
+                short_link = normalized[:URL_MAX_LENGTH]
+            else:
+                short_link = normalized
+            video_entry = {
+                'title': title if title else (os.path.basename(out_path) if out_path else None),
+                'filepath': out_path,
+                #check to ensure metadata value is valid for duration
+                'duration': int(duration) if isinstance(duration, (int, float)) and duration > 0 else None,
+                'link': short_link,
+            }
+            # skip if title already seen 
+            entry_title = video_entry.get('title') if isinstance(video_entry, dict) else None
+            norm_title = entry_title.strip().lower() if entry_title else ''
+            if norm_title and norm_title in existing_titles:
+                continue
+            else:
+                video_data_list.append(video_entry)
+                if norm_title:
+                    existing_titles.add(norm_title)
+
+        for a_tag in soup.find_all('a', href=True):
+            ahref = a_tag['href']
+            if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
+                if ahref.startswith('/'):
+                    ahref = combine_url(vurl, ahref)
+                if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
                     continue
-                except json.JSONDecodeError:
-                    print(f"JSON output failed to parse for {embed_src}")
-                    continue
-                # normalize embed/watch/short URLs 
-                normalized = _normalize_youtube_url(embed_src)
-                #check to ensure URL will fit
-                if len(normalized) > URL_MAX_LENGTH:
-                    print(f"Link too long, shortening: {normalized[:50]}.")
-                    short_link = normalized[:URL_MAX_LENGTH]
-                else:
-                    short_link = normalized
-                video_entry = {
-                    'title': title if title else (os.path.basename(out_path) if out_path else None),
-                    'filepath': out_path,
-                    #check to ensure metadata value is valid for duration
-                    'duration': int(duration) if isinstance(duration, (int, float)) and duration > 0 else None,
-                    'link': short_link,
-                }
-                # skip if title already seen 
-                entry_title = video_entry.get('title') if isinstance(video_entry, dict) else None
-                norm_title = entry_title.strip().lower() if entry_title else ''
-                if norm_title and norm_title in existing_titles:
-                    print(f"Skipping duplicate video by title: {entry_title}")
-                else:
-                    video_data_list.append(video_entry)
-                    if norm_title:
-                        existing_titles.add(norm_title)
-
-            for a_tag in soup.find_all('a', href=True):
-                ahref = a_tag['href']
-                if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
-                    if ahref.startswith('/'):
-                        ahref = combine_url(vurl, ahref)
-                    if 'IGNORE_LINKS' in globals() and ahref in IGNORE_LINKS:
-                        continue
-                    download_pdf(ahref, pdf_dir, documents)
-
-        if video_data_list:
-            data['videoData'] = video_data_list
-            write_json(data, outpath)
-        if documents:
-            data['documents'] = data.get('documents', []) + documents
-            write_json(data, outpath)
+                documents = record_pdf_link(ahref, vurl, documents)
+    
+    if video_data_list:
+        data['videoData'] = video_data_list
+        write_json(data, outpath)
+    if documents:
+        data['documents'] = data.get('documents', []) + documents
+        write_json(data, outpath)
 
 if __name__=='__main__': main()
