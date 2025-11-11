@@ -17,7 +17,6 @@ try:
 except Exception:
     IGNORE_LINKS = set()
 
-# load optional ignore words (substring match) from the same file. Support keys 'words' or 'ignore_words'
 try:
     _words = _ignore_data.get('words') if '_ignore_data' in globals() and isinstance(_ignore_data, dict) else None
     if not _words:
@@ -233,7 +232,7 @@ def write_json(data, outpath):
             used_ids = set()
 
     def gen_id():
-        for _ in range(10000):
+        for _ in range(2**31):
             candidate = random.randint(1, 2**31-1)
             if candidate not in used_ids:
                 used_ids.add(candidate)
@@ -382,7 +381,7 @@ def main():
             continue
         if '.pdf' in ahref.lower() or 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
             documents=record_pdf_link(ahref, url, documents)
-
+    
     for link in data.get('links', []):
         ahref = link
         if ahref.startswith('/'):
@@ -468,15 +467,7 @@ def main():
             # skip if title already seen 
             entry_title = video_entry.get('title') if isinstance(video_entry, dict) else None
             norm_title = entry_title.strip().lower() if entry_title else ''
-            if norm_title and norm_title in existing_titles:
-                continue
-            else:
-                video_data_list.append(video_entry)
-                if norm_title:
-                    existing_titles.add(norm_title)
-
-        for a_tag in soup.find_all('a', href=True):
-            ahref = a_tag['href']
+            
             if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
                 if ahref.startswith('/'):
                     ahref = combine_url(vurl, ahref)
@@ -519,4 +510,5 @@ def main():
         data['images'] = (data.get('images', []) or []) + images
         write_json(data, outpath)
 
+  
 if __name__=='__main__': main()
