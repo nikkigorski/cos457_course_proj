@@ -48,7 +48,8 @@ create table Note(
 
 create table pdf(
 	ResourceID int,
-    Body varchar(2048) not null,
+    Body varchar(2048) null,
+	Link varchar(2048) null check(Link regexp '\\.pdf$' and Link regexp '^https?://'),
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
@@ -56,6 +57,7 @@ create table pdf(
 create table Image(
 	ResourceID int,
     Size int unsigned not null check(Size > 0),
+	Link varchar(2048) null check(Link regexp '\\.(jpg|jpeg|png|gif)$' and Link regexp '^https?://'),
     primary key(ResourceID),
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
