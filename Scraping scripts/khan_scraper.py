@@ -8,6 +8,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import datetime
 import random
+import struct
+import io
 
 IGNORE_FILE = os.path.join(os.path.dirname(__file__), 'ignore_links.json')
 try:
@@ -64,6 +66,65 @@ def extract_meta_video(soup):
 def combine_url(base, href):
     from urllib.parse import urljoin
     return urljoin(base, href)
+
+
+def get_image_dimensions(url, driver=None, timeout=5):
+    
+    if not url or not isinstance(url, str) or not url.lower().startswith('http'):
+        return 1, 1
+
+    own_driver = False
+    if driver is None:
+        try:
+            driver = start_driver()
+            own_driver = True
+        except Exception:
+            return 1, 1
+
+    try:
+        try:
+            driver.set_script_timeout(timeout)
+        except Exception:
+            pass
+
+        # Use execute_async_script to load the image and wait for it to load
+        try:
+            res = driver.execute_async_script(
+                """
+                var src = arguments[0];
+                var cb = arguments[arguments.length - 1];
+                try {
+                    var img = new Image();
+                    img.onload = function() { cb([img.naturalWidth || 1, img.naturalHeight || 1]); };
+                    img.onerror = function() { cb([1, 1]); };
+                    img.src = src;
+                } catch (e) {
+                    cb([1, 1]);
+                }
+                """,
+                url
+            )
+        except Exception:
+            return 1, 1
+
+        if isinstance(res, (list, tuple)) and len(res) >= 2:
+            try:
+                w = int(res[0]) if res[0] else 1
+            except Exception:
+                w = 1
+            try:
+                h = int(res[1]) if res[1] else 1
+            except Exception:
+                h = 1
+            # enforce minimum 1
+            return (w if w >= 1 else 1, h if h >= 1 else 1)
+        return 1, 1
+    finally:
+        if own_driver:
+            try:
+                driver.quit()
+            except Exception:
+                pass
 
 
 def _extract_youtube_id(url):
@@ -149,7 +210,7 @@ def extract_links(soup, base_url):
         'videos_from_links': vids,
     }
 
-def parse_page(url, html):
+def parse_page(url, html, driver=None):
     soup = BeautifulSoup(html,'html.parser')
     out={'url':url}
     out['title']=soup.title.string.strip() if soup.title and soup.title.string else None
@@ -161,6 +222,17 @@ def parse_page(url, html):
     if v:
         vids.extend(v)
     vids.extend(links_info.get('videos_from_links', []))
+    # Ensure any anchor on the page containing '/v/' (Khan video pages) is treated as a video page
+    try:
+        for a in soup.find_all('a', href=True):
+            h = a['href']
+            if h.startswith('/'):
+                h = combine_url(url, h)
+            if '/v/' in (h or '').lower():
+                if not should_ignore_link(h, a.get_text() or a.get('title')):
+                    vids.append(h)
+    except Exception:
+        pass
     if vids:
         seen = set(); merged = []
         for u in vids:
@@ -177,7 +249,8 @@ def parse_page(url, html):
         if should_ignore_link(src):
             continue
         alt = img.get('alt') or img.get('title')
-        imgs.append({'url': src, 'alt': alt})
+        w, h = get_image_dimensions(src, driver=driver)
+        imgs.append({'url': src, 'alt': alt, 'width': w, 'height': h})
     for a in soup.find_all('a', href=True):
         href = a['href']
         if href.startswith('/'):
@@ -187,7 +260,8 @@ def parse_page(url, html):
             if should_ignore_link(href):
                 continue
             alt = a.get_text().strip() if a.get_text() else None
-            imgs.append({'url': href, 'alt': alt})
+            w, h = get_image_dimensions(href, driver=driver)
+            imgs.append({'url': href, 'alt': alt, 'width': w, 'height': h})
    
     seen_i = set(); uniq_imgs = []
     for it in imgs:
@@ -333,7 +407,14 @@ def write_json(data, outpath):
             'isVerified': False,
         })
         if img_url and re.match(r'^https?://', str(img_url)):
-            images.append({'ResourceID': img_id, 'Link': img_url})
+            w = im.get('width') if isinstance(im, dict) else None
+            h = im.get('height') if isinstance(im, dict) else None
+            entry = {'ResourceID': img_id, 'Link': img_url}
+            if isinstance(w, int):
+                entry['Width'] = w
+            if isinstance(h, int):
+                entry['Height'] = h
+            images.append(entry)
         if alt:
             notes.append({'ResourceID': img_id, 'Body': _truncate_string(alt, 2048)})
 
@@ -360,10 +441,10 @@ def main():
     
     URL_MAX_LENGTH = 2048 #ensures URL fits into DB
 
-    args=parse_args(); url=args.url; outpath=args.name if args.name else ('data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
+    args=parse_args(); url=args.url; outpath=args.name if args.name else ('khan_data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
     os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
-    d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
-    data = parse_page(url, html)
+    d = start_driver(); d.get(url); time.sleep(1); html = d.page_source
+    data = parse_page(url, html, driver=d)
     write_json(data, outpath)
     out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
     pdf_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloadedPDFS')
@@ -381,6 +462,11 @@ def main():
             continue
         if '.pdf' in ahref.lower() or 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
             documents=record_pdf_link(ahref, url, documents)
+        if re.search(r"\.(jpg|jpeg|png|gif|svg|webp)(?:$|[?#])", ahref.lower()):
+            if ahref not in seen_images:
+                w, h = get_image_dimensions(ahref, driver=d)
+                seen_images.add(ahref)
+                images.append({'url': ahref, 'alt': a_tag.get_text().strip() or None, 'width': w, 'height': h})
     
     for link in data.get('links', []):
         ahref = link
@@ -392,7 +478,7 @@ def main():
             documents=record_pdf_link(ahref, url, documents)
     
     
-    video_urls = data.get('videos', [])
+    video_queue = list(data.get('videos') or [])
     video_data_list = []
     # build a set of existing video titles (normalized) to avoid duplicates
     existing_titles = set()
@@ -401,14 +487,62 @@ def main():
             t = v.get('title') if isinstance(v, dict) else None
             if t:
                 existing_titles.add(t.strip().lower())
-        
-    for vurl in video_urls:
-        driver = start_driver()
-        driver.get(vurl)
-        time.sleep(1)
-        page_html = driver.page_source
-        driver.quit()
-        soup = BeautifulSoup(page_html, 'html.parser')
+
+    visited_video_pages = set()
+    while video_queue:
+        vurl = video_queue.pop(0)
+        if not vurl:
+            continue
+        if vurl.startswith('/'):
+            vurl = combine_url(url, vurl)
+        if should_ignore_link(vurl):
+            continue
+        low = vurl.lower()
+        # If this is a Khan video page (/v/), fetch and parse it to discover embedded video URLs
+        if '/v/' in low and vurl not in visited_video_pages:
+            visited_video_pages.add(vurl)
+            try:
+                d = start_driver()
+                d.get(vurl)
+                time.sleep(1)
+                vhtml = d.page_source
+                parsed = parse_page(vurl, vhtml, driver=d)
+                d.quit()
+            except Exception:
+                try:
+                    d.quit()
+                except Exception:
+                    pass
+                continue
+            # collect any images found on the video page
+            for img in parsed.get('images', []) or []:
+                img_url = img.get('url') if isinstance(img, dict) else None
+                if img_url and not should_ignore_link(img_url) and img_url not in seen_images:
+                    seen_images.add(img_url)
+                    images.append(img)
+            # collect any documents found on the video page
+            for doc in parsed.get('documents', []) or []:
+                doc_url = doc.get('url') if isinstance(doc, dict) else None
+                if doc_url and not should_ignore_link(doc_url):
+                    documents = record_pdf_link(doc_url, vurl, documents)
+            
+            for nv in parsed.get('videos', []) or []:
+                if nv and nv not in video_queue and nv not in visited_video_pages:
+                    video_queue.append(nv)
+            continue
+
+        try:
+            driver = start_driver()
+            driver.get(vurl)
+            time.sleep(1)
+            page_html = driver.page_source
+            soup = BeautifulSoup(page_html, 'html.parser')
+        except Exception:
+            try:
+                driver.quit()
+            except Exception:
+                pass
+            continue
         embeds = [iframe.get('src') for iframe in soup.find_all('iframe', src=True)
                     if 'youtube-nocookie.com/embed/' in iframe.get('src') or 'youtube.com/embed/' in iframe.get('src')]
         seen_embeds = set()
@@ -420,31 +554,17 @@ def main():
                 unique_embeds.append(src)
 
         for embed_src in unique_embeds[:2]:
-            try:                                    #prevents crashing for yt-dlp
-                
-
-                # dl_cmd = [
-                #     'yt-dlp',
-                #     '--no-overwrites',
-                #     '-f', 'bestvideo+bestaudio/best',
-                #     '--merge-output-format', 'mkv',
-                #     embed_src,
-                #     '-o', os.path.join(out_dir, '%(title)s.%(ext)s'),
-                # ]
-                # actual video download disabled to avoid large downloads during scraping, but code is kept to allow possible future use
-                # subprocess.run(dl_cmd, check=True)
-
+            try:
                 pf = subprocess.run(['yt-dlp', '--get-filename', '-o', '%(title)s.%(ext)s', embed_src], capture_output=True, text=True, check=True)
                 filename = pf.stdout.strip()
                 out_path = os.path.join(out_dir, filename)
-                
 
                 pj = subprocess.run(['yt-dlp', '--dump-json', embed_src], capture_output=True, text=True, check=True)
                 j = json.loads(pj.stdout)
                 title = j.get('title')
                 duration = j.get('duration')
             except subprocess.CalledProcessError as e:
-                print(f"Error {e}: Failed to get metadata for {embed_src}") 
+                print(f"Error {e}: Failed to get metadata for {embed_src}")
                 continue
             except json.JSONDecodeError:
                 print(f"JSON output failed to parse for {embed_src}")
@@ -467,13 +587,12 @@ def main():
             # skip if title already seen 
             entry_title = video_entry.get('title') if isinstance(video_entry, dict) else None
             norm_title = entry_title.strip().lower() if entry_title else ''
-            
-            if 'bit.ly' in ahref.lower() or 'bitly.com' in ahref.lower():
-                if ahref.startswith('/'):
-                    ahref = combine_url(vurl, ahref)
-                if should_ignore_link(ahref):
-                    continue
-                documents = record_pdf_link(ahref, vurl, documents)
+            if norm_title and norm_title in existing_titles:
+                pass
+            else:
+                video_data_list.append(video_entry)
+                if norm_title:
+                    existing_titles.add(norm_title)
         for img in soup.find_all('img', src=True):
             src = img['src']
             if src.startswith('/'):
@@ -482,19 +601,24 @@ def main():
                 continue
             if src not in seen_images:
                 seen_images.add(src)
-                images.append({'url': src, 'alt': img.get('alt') or img.get('title')})
+                w, h = get_image_dimensions(src, driver=driver)
+                images.append({'url': src, 'alt': img.get('alt') or img.get('title'), 'width': w, 'height': h})
         for a in soup.find_all('a', href=True):
             href = a['href']
             if href.startswith('/'):
                 href = combine_url(vurl, href)
             low = href.lower()
             if re.search(r"\.(jpg|jpeg|png|gif|svg|webp)(?:$|[?#])", low):
-                
                 if should_ignore_link(href, a.get_text() or a.get('title')):
                     continue
                 if href not in seen_images:
                     seen_images.add(href)
-                    images.append({'url': href, 'alt': a.get_text().strip() if a.get_text() else None})
+                    w, h = get_image_dimensions(href, driver=driver)
+                    images.append({'url': href, 'alt': a.get_text().strip() if a.get_text() else None, 'width': w, 'height': h})
+        try:
+            driver.quit()
+        except Exception:
+            pass
 
     if video_data_list:
         data['videoData'] = video_data_list
