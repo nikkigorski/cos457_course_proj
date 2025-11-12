@@ -2,7 +2,7 @@
 Lobster Notes Tables
 Gabrielle Akers
 November 2, 2025
-Edited on November 8, 2025
+Edited on November 12, 2025
 */
 create table User(
 	UserID int unsigned auto_increment,
