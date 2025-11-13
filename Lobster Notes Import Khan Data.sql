@@ -1,7 +1,8 @@
 /*
-Lobster Notes Import Data
+Lobster Notes Import Khan Data
 Gabrielle Akers
 November 11, 2025
+Created based off of sample khan web scraping data
 */
 create table StageWebData(
 	DataID int unsigned auto_increment,
@@ -15,7 +16,7 @@ create procedure ImportKhanData(in did int)
 begin
     -- Load JSON
     declare j JSON;
-    select WebData into j from ImportKhanData where DataID = did and Imported = 0;
+    select WebData into j from StageWebData where DataID = did and Imported = 0;
 
     -- Insert main URL
     insert into Resource (Date, DateFor, Author, Topic, Keywords)
