@@ -414,6 +414,8 @@ def write_json(data, outpath):
                 entry['Width'] = w
             if isinstance(h, int):
                 entry['Height'] = h
+            if isinstance(w, int) and isinstance(h, int):
+                entry['Size'] = w * h
             images.append(entry)
         if alt:
             notes.append({'ResourceID': img_id, 'Body': _truncate_string(alt, 2048)})
