@@ -183,7 +183,27 @@ def write_json(data, outpath):
             'Format': 'Image',
             'isVerified': False,
         })
-        images.append({'ResourceID': iid, 'Link': img, 'Size': None})
+        # img can be a URL string or a dict with url/width/height/size
+        if isinstance(img, dict):
+            link = img.get('url') or img.get('Link') or img.get('link')
+            w = img.get('width') or img.get('Width')
+            h = img.get('height') or img.get('Height')
+            size_val = img.get('size') or img.get('Size')
+            if size_val is None:
+                try:
+                    if isinstance(w, int) and isinstance(h, int):
+                        size_val = int(w) * int(h)
+                    elif isinstance(w, int):
+                        size_val = int(w)
+                    elif isinstance(h, int):
+                        size_val = int(h)
+                except Exception:
+                    size_val = None
+            if not isinstance(size_val, int) or size_val <= 0:
+                size_val = 1
+            images.append({'ResourceID': iid, 'Link': link, 'Size': size_val})
+        else:
+            images.append({'ResourceID': iid, 'Link': img, 'Size': 1})
 
     # Videos
     for v in (data.get('Video') or []):
@@ -234,14 +254,76 @@ def start_driver():
     opts=Options(); opts.add_argument('--headless=new'); opts.add_argument('--no-sandbox'); opts.add_argument('--disable-dev-shm-usage')
     return webdriver.Chrome(options=opts)
 
+
+def get_image_dimensions(url, driver=None, timeout=5):
+    own_driver = False
+    if not url:
+        return 1, 1
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if not parsed.scheme:
+            # assume https if missing
+            url = 'https://' + url.lstrip('/')
+    except Exception:
+        pass
+    if driver is None:
+        driver = start_driver()
+        own_driver = True
+    try:
+        script = '''
+        const url = arguments[0];
+        const timeout = arguments[1];
+        const cb = arguments[arguments.length - 1];
+        const img = document.createElement('img');
+        let finished = false;
+        img.onload = () => { if (!finished) { finished = true; cb({w: img.naturalWidth, h: img.naturalHeight}); } };
+        img.onerror = () => { if (!finished) { finished = true; cb({w: 1, h: 1}); } };
+        setTimeout(() => { if (!finished) { finished = true; cb({w: img.naturalWidth || 1, h: img.naturalHeight || 1}); } }, timeout*1000);
+        img.src = url;
+        '''
+        res = driver.execute_async_script(script, url, timeout)
+        w = int(res.get('w') or 1)
+        h = int(res.get('h') or 1)
+        if w <= 0: w = 1
+        if h <= 0: h = 1
+        return w, h
+    except Exception:
+        return 1, 1
+    finally:
+        if own_driver:
+            try:
+                driver.quit()
+            except Exception:
+                pass
+
 def parse_args():
     p=argparse.ArgumentParser(); p.add_argument('url'); p.add_argument('name', nargs='?'); return p.parse_args()
 
 def main():
     args=parse_args(); url=args.url; outpath=args.name if args.name else ('mit_data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
     os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
-    d = start_driver(); d.get(url); time.sleep(1); html = d.page_source; d.quit()
+    d = start_driver(); d.get(url); time.sleep(1); html = d.page_source
     data = parse_page(url, html)
+    images = data.get('Image') or []
+    images_updated = []
+    for img_url in images:
+        try:
+            w, h = get_image_dimensions(img_url, driver=d, timeout=5)
+            size = 1
+            try:
+                size = int(w) * int(h)
+                if size <= 0:
+                    size = 1
+            except Exception:
+                size = 1
+            images_updated.append({'url': img_url, 'width': int(w), 'height': int(h), 'size': int(size)})
+        except Exception:
+            images_updated.append({'url': img_url, 'width': 1, 'height': 1, 'size': 1})
+    data['Image'] = images_updated
+    try:
+        d.quit()
+    except Exception:
+        pass
     write_json(data, outpath)
 
 if __name__=='__main__': main()
