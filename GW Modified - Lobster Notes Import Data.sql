@@ -16,15 +16,22 @@ begin
     -- Load JSON
     declare j JSON;
     
-    declare video_count int;
-    declare image_count int;
-    declare pdf_count int;
-    declare exercise_count int;
-    declare website_count int;
-    declare note_count int;
+    declare v_start_id int;
+    declare i_start_id int;
+    declare p_start_id int;
+    declare e_start_id int;
+    declare w_start_id int;
+    declare n_start_id int;
     
     select WebData into j from StageWebData where DataID = did and Imported = 0;
 
+	create temporary table if not exists NewResourceIDs
+		(
+			ResourceID int unsigned,
+			format varchar(7),
+			sequence_num int unsigned auto_increment primary key
+        );
+        
     -- Insert main URL
     insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
     values(CURDATE(), CURDATE(), 'Web Scraped', 'Main Page', null, 'Website');
@@ -39,7 +46,8 @@ begin
     -- Insert resources for videos
     if JSON_LENGTH(j, '$.Video') > 0 then
         
-        set video_count = JSON_LENGTH(J, '$.Video');
+        set v_start_id = (select max(ResourceID) from Resource) +1;
+        
         
 		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
 		select
@@ -51,37 +59,39 @@ begin
 			'Video'
 		from JSON_TABLE(
 			cast(j as JSON),
-			'$.Video[*]' COLUMNS(url varchar(2048) PATH '$')
+			'$.Video[*]' COLUMNS(Link varchar(2048) PATH '$.Link')
 		) as jt;
-    
+		
+        insert into NewResourceIDs (ResourceID, Format)
+        select ResourceID, Format
+        from Resource
+        where ResourceID >= v_start_id and Format = 'Video'
+        order by ResourceID;
+        
 		-- Insert into Video table
 		insert into Video (ResourceID, Duration, Link)
 		select 
-			r.ResourceID, 
+			nri.ResourceID, 
 			null, 
-			jt_vid.Link
-		from(
-			select ResourceID, Topic
-			from Resource
-			where Topic = 'n/a' and Author = 'Web Scraped' and Format = 'Video'
-			order by ResourceID desc
-			limit video_count
-		) as r
-		join JSON_TABLE(
-			j, 
-			'$.Video[*]' COLUMNS(value varchar(2048) path '$.Link')
-		) as jt;
+			jt.Link
+		from NewResourceIDs as nri
+		join(
+			select jt_vid.Link,
+				row_number() over () as sequence_num
+			from json_table
+            (
+				j,
+                '$.Video[*]' COLUMNS(Link varchar(2048) path '$.Link')
+			) as jt_vid
+            )as jt
+		on nri.sequence_num = jt.sequence_num
+        where nri.Format = 'Video';
     end if;
 
 	-- Insert resources for images
     if JSON_LENGTH(j, '$.Image') > 0 then
     
-		set image_count = (
-        select count(*)
-        from json_table(j, '$.Image[*]' columns(link_value varchar(2048) path '$.Link'))
-        as jt_count
-        where jt_count.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$'
-        );
+	set i_start_id = (select max(ResourceID) from Resource) + 1;
     
 		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
         select
@@ -96,28 +106,27 @@ begin
         where jt.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$';
         
         insert into Image (ResourceID, Size, Link)
-        select r.ResourceID, jt.img_size, jt.link_value
-        from(
-            select ResourceID
-            from Resource
-            where Topic = 'n/a' and Author = 'Web Scraped' and Format = 'Image'
-            order by ResourceID desc
-            limit image_count
-        ) as r
-        join JSON_TABLE(
-            j,
-            '$.Image[*]' COLUMNS(
-            link_value varchar(2048) PATH '$.Link',
-            img_size int unsigned path '$.Size'
-            )
-        ) as jt
-        where jt.value regexp '\\.(jpg|jpeg|png|gif)$';
+        select nri.ResourceID, jt.img_size, jt.link_value
+		from NewResourceIDs as nri
+		join (
+            select
+                jt_img.link_value,
+                jt_img.img_size,
+                row_number() over () as sequence_num
+            from JSON_TABLE(
+                j,
+                '$.Image[*]' COLUMNS(link_value varchar(2048) PATH '$.Link', img_size int unsigned path '$.Size')
+            ) as jt_img
+        where jt_img.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$'
+       )as jt
+       on nri.sequence_num = jt.sequence_num
+       where nri.Format = 'Image';
     end if;
     
     -- Insert resources for pdf files
     if JSON_LENGTH(j, '$.pdf') > 0 then
     
-		set pdf_count = JSON_LENGTH(j, '$.pdf');
+		set p_start_id = (select max(ResourceID) from Resource) + 1;
     
 		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
 		select
@@ -129,29 +138,31 @@ begin
             'pdf'
 		from JSON_TABLE(
 			j, 
-			'$.pdf[*]' COLUMNS(value varchar(2048) path '$.Link')
+			'$.pdf[*]' COLUMNS(Link varchar(2048) path '$.Link')
 		) as jt;
         
         insert into pdf (ResourceID, Body, Link)
-        select r.ResourceID, null, jt.link_value
-        FROM (
-            select ResourceID
-            from Resource
-            where Topic = 'n/a' AND Author = 'Web Scraped' and Format = 'pdf'
-            order by ResourceID desc
-            limit pdf_count
-        ) as r
-        join JSON_TABLE(
+        select nri.ResourceID, null, jt.Link
+		from NewResourceIDs as nri
+        join (
+            select 
+                jt_pdf.Link,
+                row_number () over () as sequence_num
+            from JSON_TABLE(
             j,
-            '$.pdf[*]' COLUMNS(value varchar(2048) path '$.Link')
-        ) as jt
-        where jt.link_value regexp '\\.pdf$';
+            '$.pdf[*]' COLUMNS(Link varchar(2048) path '$.Link')
+        ) as jt_pdf
+        where jt_pdf.Link regexp '\\.(pdf|Pdf|PDF)$'
+        )as jt
+        on nri.sequence_num = jt.sequence_num
+        where nri.format = 'pdf';
+        
     end if;
     
     -- Insert each exercise as Website
     if JSON_LENGTH(j, '$.exercises') > 0 then
     
-		set exercise_count = JSON_LENGTH(j, '$.exercises');
+		set e_start_id = (select max(ResourceID) from Resource) + 1;
     
 		insert into Resource(Date, DateFor, Author, Topic, Keywords, Format)
 		select
@@ -163,31 +174,36 @@ begin
             'Website'
 		from JSON_TABLE(
 			j, 
-			'$.exercises[*]' COLUMNS(value varchar(2048) path '$.Link')
+			'$.exercises[*]' COLUMNS(Link varchar(2048) path '$.Link')
 		) as jt;
 
-		insert into Website (ResourceID, Link)
-		select r.ResourceID, jt.link_value
-		from (
-			select ResourceID
-			from Resource
-			where Topic = 'Exercises' and Author = 'Web Scraped'
-			order by ResourceID desc
-			limit exercise_count
-		) as r
-		join JSON_TABLE(
+
+		insert into NewResourceIDs (ResourceID, Format)
+        select ResourceID, format
+        from Resource
+        where ResourceID >= e_start_id and Topic = 'Exercises'
+        order by ResourceID;
+        
+        insert into Website (ResourceID, Link)
+		select nri.ResourceID, jt.Link
+		from NewResourceIDs as nri
+		
+        join(
+			select jt_ex.Link,
+				row_number () over () as sequence_num
+            from json_table(
 			j, 
-			'$.exercises[*]' COLUMNS(value varchar(2048) path '$.Link')
-		) as jt;
+			'$.exercises[*]' COLUMNS(Link varchar(2048) path '$.Link')
+		) as jt_ex
+        )as jt
+        on nri.sequence_num = jt.sequence_num
+        where nri.Topic = 'Exercises';
+        
     end if;
     
-    set website_count = (
-		select count(*)
-        from JSON_TABLE(
-			j, '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-			) as jt
-		where jt.value regexp '^https?://');
-        
+    if json_length(j, '$.Website') > 1 then
+		set w_start_id = (select max(ResourceID) from Resource) + 1;
+	
     -- Insert resources for web links
     insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
     select
@@ -199,31 +215,38 @@ begin
         'Website'
     from JSON_TABLE(
 		j, 
-        '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
+        '$.website[*]' COLUMNS(Link varchar(2048) PATH '$.Link', seq_num for ordinality)
 	) as jt
-    where jt.value regexp '^https?://';
+    where jt.sequence_num > 1 regexp '^https?://';
+
+	insert into NewResourceIDs (ResourceID, Format)
+    select ResourceID, Format
+    from Resource
+    where ResourceID >= w_start_id and Topic = 'n/a' and Format = 'Website'
+    order by ResourceID;
+
 
     insert into Website (ResourceID, Link)
-    select r.ResourceID, jt.link_value
-    from(
-        select ResourceID
-        from Resource
-        where Topic = 'n/a' and Author = 'Web Scraped'
-        order by ResourceID desc
-        limit website_count)
-		as r
-    join(
-        select link_value from JSON_TABLE(
-			j, '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-		) as jt
-        where jt.value regexp '^https?://'
-    ) as jt
-    where jt.value regexp '^https?://';
+    select nri.ResourceID, jt.Link
+    from NewResourceIDs as nri
+        join (
+            select 
+                jt_web.Link,
+                row_number () over () as sequence_num
+            from JSON_TABLE(
+                j, 
+                '$.Website[*]' COLUMNS(Link varchar(2048) PATH '$.Link', seq_num for ordinality)
+            ) as jt_web
+            where jt_web.seq_num > 1 and jt_web.Link regexp '^https?://'
+        ) as jt
+        on nri.sequence_num = jt.sequence_num
+        where nri.Topic = 'n/a' AND nri.Format = 'Website';
+	end if;
     
     -- Insert resources for notes
     if JSON_LENGTH(j, '$.Note') > 0 then
     
-		set note_count = JSON_LENGTH(j, '$.Note');
+		set n_start_id = (select max(ResourceID) from Resource) + 1;
     
 		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
 		select
@@ -238,22 +261,29 @@ begin
 			'$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
 		) as jt;
         
+	insert into NewResourceIDs (ResourceID, Format)
+    select ResourceID, Format
+    from Resource
+    where ResourceID >= n_start_id and Format = 'Note'
+    order by ResourceID;
+    
         insert into Note (ResourceID, Body)
-        select r.ResourceID, jt.note_body
-        from(
-            select ResourceID
-            from Resource
-            where Format = 'Note' and Author = 'Web Scraped'
-            order by ResourceID desc
-            limit note_count
-        ) as r
-        join JSON_TABLE(
-            j, '$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
-        ) as jt;
-        
-		
-        
+        select nri.ResourceID, jt.note_body
+        from NewResourceIDs as nri
+		join (
+            select
+                jt_note.note_body,
+                row_number () over () as sequence_num
+            from json_table(
+                j, '$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
+            ) as jt_note
+        ) as jt
+        on nri.sequence_num = jt.sequence_num
+        where nri.format = 'Note';
+
 	end if;
+    
+    drop temporary table if exists NewResourceIDs;
 
     -- Mark as imported
     update StageWebData set Imported = 1 where DataID = did;
