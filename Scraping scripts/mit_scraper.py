@@ -219,7 +219,7 @@ def write_json(data, outpath):
             'Format': 'Video',
             'isVerified': False,
         })
-        videos.append({'ResourceID': vid, 'Duration': None, 'Link': v})
+        videos.append({'ResourceID': vid, 'Duration': 1, 'Link': v})# was unable to get duration, so set to 1
 
     # Notes
     for n in (data.get('Note') or []):
@@ -325,5 +325,10 @@ def main():
     except Exception:
         pass
     write_json(data, outpath)
+    # return the output file path to pipe into cleaner
+    try:
+        print(outpath, flush=True)
+    except Exception:
+        pass
 
 if __name__=='__main__': main()
