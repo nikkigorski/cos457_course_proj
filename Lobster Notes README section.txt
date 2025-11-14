@@ -4,5 +4,6 @@ To run the schema script download 'Lobster Notes Import Data.sql' and run by pre
 
 To run the import script download 'Lobster Notes Import Data.sql' and any of the JSON files. Download the JSON files to a place where you can easily follow the path of. In the Query enter the following, with the file path in the load file.
 insert into StageWebData(WebData)
-values(LOAD_FILE(json path))
+values(cast(LOAD_FILE(json path) as char));
+
 JSON contents will import when run.
