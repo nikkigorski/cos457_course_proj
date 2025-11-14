@@ -37,9 +37,9 @@ begin
     );
 
     -- Insert resources for videos
-    if JSON_LENGTH(j, '$.Videos') > 0 then
+    if JSON_LENGTH(j, '$.Video') > 0 then
         
-        set video_count = JSON_LENGTH(J, '$.videos');
+        set video_count = JSON_LENGTH(J, '$.Video');
         
 		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
 		select
@@ -51,7 +51,7 @@ begin
 			'Video'
 		from JSON_TABLE(
 			cast(j as JSON),
-			'$.Videos[*]' COLUMNS(url varchar(2048) PATH '$')
+			'$.Video[*]' COLUMNS(url varchar(2048) PATH '$')
 		) as jt;
     
 		-- Insert into Video table
@@ -59,21 +59,21 @@ begin
 		select 
 			r.ResourceID, 
 			null, 
-			jt.value
+			jt_vid.Link
 		from(
-			select ResourceID
+			select ResourceID, Topic
 			from Resource
-			where Topic = 'n/a' and Author = 'Web Scraped'
+			where Topic = 'n/a' and Author = 'Web Scraped' and Format = 'Video'
 			order by ResourceID desc
 			limit video_count
 		) as r
 		join JSON_TABLE(
 			j, 
-			'$.Videos[*]' COLUMNS(value varchar(2048) PATH '$')
+			'$.Video[*]' COLUMNS(value varchar(2048) path '$.Link')
 		) as jt;
     end if;
 
-	-- Insert resources for iamges
+	-- Insert resources for images
     if JSON_LENGTH(j, '$.Image') > 0 then
     
 		set image_count = (
@@ -83,7 +83,7 @@ begin
         where jt_count.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$'
         );
     
-		insert into Resource(Date, DateFor, Author, Topic, Keywords, Format)
+		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
         select
 			CURDATE(),
             CURDATE(),
@@ -129,23 +129,23 @@ begin
             'pdf'
 		from JSON_TABLE(
 			j, 
-			'$.pdf[*]' COLUMNS(value varchar(2048) PATH '$')
+			'$.pdf[*]' COLUMNS(value varchar(2048) path '$.Link')
 		) as jt;
         
         insert into pdf (ResourceID, Body, Link)
-        select r.ResourceID, null, jt.value
+        select r.ResourceID, null, jt.link_value
         FROM (
             select ResourceID
             from Resource
-            where Topic = 'n/a' AND Author = 'Web Scraped'
+            where Topic = 'n/a' AND Author = 'Web Scraped' and Format = 'pdf'
             order by ResourceID desc
             limit pdf_count
         ) as r
         join JSON_TABLE(
             j,
-            '$.pdf[*]' COLUMNS(value varchar(2048) PATH '$')
+            '$.pdf[*]' COLUMNS(value varchar(2048) path '$.Link')
         ) as jt
-        where jt.value regexp '\\.pdf$';
+        where jt.link_value regexp '\\.pdf$';
     end if;
     
     -- Insert each exercise as Website
@@ -153,7 +153,7 @@ begin
     
 		set exercise_count = JSON_LENGTH(j, '$.exercises');
     
-		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
+		insert into Resource(Date, DateFor, Author, Topic, Keywords, Format)
 		select
 			CURDATE(),
 			CURDATE(),
@@ -163,11 +163,11 @@ begin
             'Website'
 		from JSON_TABLE(
 			j, 
-			'$.exercises[*]' COLUMNS(value varchar(2048) PATH '$')
+			'$.exercises[*]' COLUMNS(value varchar(2048) path '$.Link')
 		) as jt;
 
 		insert into Website (ResourceID, Link)
-		select r.ResourceID, jt.value
+		select r.ResourceID, jt.link_value
 		from (
 			select ResourceID
 			from Resource
@@ -177,10 +177,17 @@ begin
 		) as r
 		join JSON_TABLE(
 			j, 
-			'$.exercises[*]' COLUMNS(value varchar(2048) PATH '$')
+			'$.exercises[*]' COLUMNS(value varchar(2048) path '$.Link')
 		) as jt;
     end if;
     
+    set website_count = (
+		select count(*)
+        from JSON_TABLE(
+			j, '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
+			) as jt
+		where jt.value regexp '^https?://');
+        
     -- Insert resources for web links
     insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
     select
@@ -192,35 +199,26 @@ begin
         'Website'
     from JSON_TABLE(
 		j, 
-        '$.website[*]' COLUMNS(value varchar(2048) PATH '$')
+        '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
 	) as jt
     where jt.value regexp '^https?://';
 
     insert into Website (ResourceID, Link)
-    select r.ResourceID, jt.value
+    select r.ResourceID, jt.link_value
     from(
         select ResourceID
         from Resource
         where Topic = 'n/a' and Author = 'Web Scraped'
         order by ResourceID desc
         limit website_count)
-        -- (
---             select COUNT(*)
---             from JSON_TABLE(
--- 				j, 
---                 '$.website[*]' COLUMNS(value varchar(2048) PATH '$')
--- 			) as jt
---             where jt.value regexp '^https?://'
---         )
---     ) 
-	as r
+		as r
     join(
-        select value from JSON_TABLE(
-			j, 
-            '$.website[*]' COLUMNS(value varchar(2048) PATH '$')
+        select link_value from JSON_TABLE(
+			j, '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
 		) as jt
         where jt.value regexp '^https?://'
-    ) as jt;
+    ) as jt
+    where jt.value regexp '^https?://';
     
     -- Insert resources for notes
     if JSON_LENGTH(j, '$.Note') > 0 then
@@ -237,7 +235,7 @@ begin
             'Note'
 		from JSON_TABLE(
 			j, 
-			'$.Note[*]' columns(value varchar(2048) path '$.Body')
+			'$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
 		) as jt;
         
         insert into Note (ResourceID, Body)
@@ -250,8 +248,7 @@ begin
             limit note_count
         ) as r
         join JSON_TABLE(
-            j,
-            '$.Note[*]' columns(note_body varchar(2048) path '$.Body')
+            j, '$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
         ) as jt;
         
 		
