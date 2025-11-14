@@ -34,6 +34,22 @@ values
 end//
 delimiter ;
 
+delimiter //
+create trigger TR_User_AfterInsert
+after insert on User
+for each row
+begin
+	if new.IsProfessor = True then
+		insert into Professor (UserID, Badge)
+        values (new.UserID, Null);
+	else
+		insert into Student (UserID)
+        values (new.UserID);
+	end if;
+end//
+
+delimiter ;
+
 /*
 Procedure for updating username by taking UserID for user to be altered
 */
@@ -64,7 +80,9 @@ create procedure SP_Resource_Create
     IN resource_keywords varchar(25),
     IN format_of varchar(7),
     IN note_body varchar(2048),
-    IN web_address varchar(2048)
+    IN web_address varchar(2048),
+    IN video_duration int unsigned,
+    IN image_size int unsigned
 )
 begin
 	declare resource_id int;
@@ -112,11 +130,74 @@ begin
 				resource_id,
 				web_address
 			);
+		when 'Pdf' then
+			insert into pdf
+				(
+					ResourceID,
+                    Body,
+					Link
+				)
+                values
+                (
+					resource_id,
+                    note_body,
+                    web_address
+				);
+		when 'Image' then
+			insert into Image
+				(
+					ResourceID,
+                    Size,
+                    Link
+				)
+                values
+                (
+					resource_id,
+                    null,
+                    web_address
+				);
+			when 'Video' then
+				insert into Video
+					(
+						ResoruceID,
+                        Duration,
+                        Link
+					)
+                    values
+                    (
+						resource_id,
+                        null,
+                        web_address
+					);
+
 	end case;
     
 	commit;
 end//
 delimiter ; 
+
+/*
+Links professor to course
+*/
+delimiter //
+create procedure SP_Course_IsProfessor
+(
+	IN course_id int unsigned,
+    IN prof_id int unsigned
+)
+begin
+	if exists(
+		select 1
+        from Professor
+        where UserID = prof_id) then
+			update Course
+            set ProfessorID = prof_id
+            where CourseID = course_id;
+	end if;
+end//
+delimiter ;
+
+
 
 /*
 Allows submission of rating
@@ -144,14 +225,14 @@ begin
         rating,
         date_of
 	);
-    update Resource
-		set Rating =
-        (
-        Select avg(r.Score) 
-        from Rating as r
-        where r.ResourceID = resource_ID
-        )
-	where ResourceID = resource_ID;
+--     update Resource
+-- 		set Rating =
+--         (
+--         Select avg(r.Score) 
+--         from Rating as r
+--         where r.ResourceID = resource_ID
+--         )
+-- 	where ResourceID = resource_ID;
     
     
 end//
@@ -200,8 +281,8 @@ create function FN_Rating_Avg(resource_id int)
 	returns decimal(2,1)
 	begin
 	declare r_avg decimal(2,1);
-		select avg(Rating) into r_avg
-		from Resource
+		select round(avg(Score), 1) into r_avg
+		from Rating
 		where Resource.ResourceID = resource_id;
 	return r_avg;
 end//
