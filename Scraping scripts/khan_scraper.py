@@ -213,6 +213,7 @@ def extract_links(soup, base_url):
 def parse_page(url, html, driver=None):
     soup = BeautifulSoup(html,'html.parser')
     out={'url':url}
+    print(f"Parsing page: {url}")
     out['title']=soup.title.string.strip() if soup.title and soup.title.string else None
     md=soup.find('meta', attrs={'name':'description'})
     out['description']=md['content'].strip() if md and md.get('content') else None
@@ -230,10 +231,9 @@ def parse_page(url, html, driver=None):
             if src.startswith('/'):
                 src = combine_url(url, src)
             low_src = src.lower()
-            print(len(low_src))
             if 'youtube.com/embed/' in low_src or 'youtube-nocookie.com/embed/' in low_src:
                 if not should_ignore_link(src):
-                    print(src)
+                    print(f"Found iframe embed: {src}")
                     vids.append(src)
     except Exception:
         pass
@@ -461,7 +461,9 @@ def main():
     args=parse_args(); url=args.url; outpath=args.name if args.name else ('khan_data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
     os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
     d = start_driver(); d.get(url); time.sleep(1); html = d.page_source
+    print(f"Page loaded: {url}")
     data = parse_page(url, html, driver=d)
+    print(f"Found {len(data.get('videos') or [])} video(s), {len(data.get('images') or [])} image(s), {len(data.get('links') or [])} link(s)")
     write_json(data, outpath)
     out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
     pdf_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloadedPDFS')
@@ -496,6 +498,7 @@ def main():
     
     
     video_queue = list(data.get('videos') or [])
+    print(f"Initial video queue size: {len(video_queue)}")
     video_data_list = []
     # build a set of existing video titles (normalized) to avoid duplicates
     existing_titles = set()
@@ -546,6 +549,7 @@ def main():
             for nv in parsed.get('videos', []) or []:
                 if nv and nv not in video_queue and nv not in visited_video_pages:
                     video_queue.append(nv)
+                    print(f"Queued discovered video: {nv}")
             continue
 
         try:
@@ -562,10 +566,6 @@ def main():
             continue
         embeds = [iframe.get('src') for iframe in soup.find_all('iframe', src=True)
                     if 'youtube-nocookie.com/embed/' in (iframe.get('src') or '').lower() or 'youtube.com/embed/' in (iframe.get('src') or '').lower()]
-        # If no iframe embeds were found on the fetched page, it's possible the
-        # queued URL is itself a YouTube/watch/embed URL (we added such URLs
-        # earlier from parse_page). In that case, process the queued URL
-        # directly as the embed source.
         if not embeds:
             try:
                 low_v = vurl.lower() if isinstance(vurl, str) else ''
@@ -579,7 +579,6 @@ def main():
         for src in embeds:
             if not src:
                 continue
-            # prefer extracting id from embed path, else fall back to generic extractor
             if '/embed/' in src:
                 vid = src.split('/embed/')[-1].split('?')[0]
             else:
@@ -589,6 +588,7 @@ def main():
                 unique_embeds.append(src)
 
         for embed_src in unique_embeds[:2]:
+            print(f"Processing embed: {embed_src}")
             try:
                 pf = subprocess.run(['yt-dlp', '--get-filename', '-o', '%(title)s.%(ext)s', embed_src], capture_output=True, text=True, check=True)
                 filename = pf.stdout.strip()
@@ -598,6 +598,7 @@ def main():
                 j = json.loads(pj.stdout)
                 title = j.get('title')
                 duration = j.get('duration')
+                print(f"Metadata: title='{title}', duration={duration}")
             except subprocess.CalledProcessError as e:
                 print(f"Error {e}: Failed to get metadata for {embed_src}")
                 continue
@@ -608,7 +609,6 @@ def main():
             normalized = _normalize_youtube_url(embed_src)
             #check to ensure URL will fit
             if len(normalized) > URL_MAX_LENGTH:
-                print(f"Link too long, shortening: {normalized[:50]}.")
                 short_link = normalized[:URL_MAX_LENGTH]
             else:
                 short_link = normalized
@@ -659,14 +659,17 @@ def main():
         data['videoData'] = video_data_list
         if images:
             data['images'] = (data.get('images', []) or []) + images
+        print(f"Writing video(s) to {outpath}")
         write_json(data, outpath)
     if documents:
         data['documents'] = data.get('documents', []) + documents
         if images:
             data['images'] = (data.get('images', []) or []) + images
+        print(f"Writing documents to {outpath}")
         write_json(data, outpath)
     elif images:
         data['images'] = (data.get('images', []) or []) + images
+        print(f"Writing images to {outpath}")
         write_json(data, outpath)
 
   

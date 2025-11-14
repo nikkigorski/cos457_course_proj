@@ -86,6 +86,7 @@ def extract_links(soup, base_url):
 def parse_page(url, html):
     soup = BeautifulSoup(html,'html.parser')
     out={'url':url}
+    print(f"Parsing page: {url}")
     out['title']=soup.title.string.strip() if soup.title and soup.title.string else None
     
     links_info = extract_links(soup, url)
@@ -303,10 +304,13 @@ def main():
     args=parse_args(); url=args.url; outpath=args.name if args.name else ('mit_data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
     os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
     d = start_driver(); d.get(url); time.sleep(1); html = d.page_source
+    print(f"Page loaded: {url}")
     data = parse_page(url, html)
     images = data.get('Image') or []
+    print(f"Found {len(images)} image(s), {len(data.get('Video') or [])} video(s), {len(data.get('pdf') or [])} pdf(s), {len(data.get('Website') or [])} website(s)")
     images_updated = []
     for img_url in images:
+        print(f"Probing image: {img_url}")
         try:
             w, h = get_image_dimensions(img_url, driver=d, timeout=5)
             size = 1
@@ -324,11 +328,7 @@ def main():
         d.quit()
     except Exception:
         pass
+    print(f"Writing output to {outpath}")
     write_json(data, outpath)
-    # return the output file path to pipe into cleaner
-    try:
-        print(outpath, flush=True)
-    except Exception:
-        pass
 
 if __name__=='__main__': main()
