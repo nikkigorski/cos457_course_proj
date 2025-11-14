@@ -222,6 +222,21 @@ def parse_page(url, html, driver=None):
     if v:
         vids.extend(v)
     vids.extend(links_info.get('videos_from_links', []))
+    try:
+        for iframe in soup.find_all('iframe', src=True):
+            src = iframe.get('src')
+            if not src:
+                continue
+            if src.startswith('/'):
+                src = combine_url(url, src)
+            low_src = src.lower()
+            print(len(low_src))
+            if 'youtube.com/embed/' in low_src or 'youtube-nocookie.com/embed/' in low_src:
+                if not should_ignore_link(src):
+                    print(src)
+                    vids.append(src)
+    except Exception:
+        pass
     # Ensure any anchor on the page containing '/v/' (Khan video pages) is treated as a video page
     try:
         for a in soup.find_all('a', href=True):
@@ -546,11 +561,29 @@ def main():
                 pass
             continue
         embeds = [iframe.get('src') for iframe in soup.find_all('iframe', src=True)
-                    if 'youtube-nocookie.com/embed/' in iframe.get('src') or 'youtube.com/embed/' in iframe.get('src')]
+                    if 'youtube-nocookie.com/embed/' in (iframe.get('src') or '').lower() or 'youtube.com/embed/' in (iframe.get('src') or '').lower()]
+        # If no iframe embeds were found on the fetched page, it's possible the
+        # queued URL is itself a YouTube/watch/embed URL (we added such URLs
+        # earlier from parse_page). In that case, process the queued URL
+        # directly as the embed source.
+        if not embeds:
+            try:
+                low_v = vurl.lower() if isinstance(vurl, str) else ''
+                if ('youtube.com/embed/' in low_v or 'youtube-nocookie.com/embed/' in low_v
+                        or 'youtube.com/watch' in low_v or 'youtu.be/' in low_v):
+                    embeds = [vurl]
+            except Exception:
+                pass
         seen_embeds = set()
         unique_embeds = []
         for src in embeds:
-            vid = src.split('/embed/')[-1].split('?')[0]
+            if not src:
+                continue
+            # prefer extracting id from embed path, else fall back to generic extractor
+            if '/embed/' in src:
+                vid = src.split('/embed/')[-1].split('?')[0]
+            else:
+                vid = _extract_youtube_id(src) or src
             if vid not in seen_embeds:
                 seen_embeds.add(vid)
                 unique_embeds.append(src)
