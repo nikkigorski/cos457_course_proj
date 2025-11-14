@@ -37,7 +37,7 @@ begin
     );
 
     -- Insert resources for videos
-    if JSON_LENGTH(j, '$.videos') > 0 then
+    if JSON_LENGTH(j, '$.Videos') > 0 then
         
         set video_count = JSON_LENGTH(J, '$.videos');
         
@@ -51,7 +51,7 @@ begin
 			'Video'
 		from JSON_TABLE(
 			cast(j as JSON),
-			'$.videos[*]' COLUMNS(url varchar(2048) PATH '$')
+			'$.Videos[*]' COLUMNS(url varchar(2048) PATH '$')
 		) as jt;
     
 		-- Insert into Video table
@@ -69,14 +69,19 @@ begin
 		) as r
 		join JSON_TABLE(
 			j, 
-			'$.videos[*]' COLUMNS(value varchar(2048) PATH '$')
+			'$.Videos[*]' COLUMNS(value varchar(2048) PATH '$')
 		) as jt;
     end if;
 
 	-- Insert resources for iamges
-    if JSON_LENGTH(j, '$.image') > 0 then
+    if JSON_LENGTH(j, '$.Image') > 0 then
     
-		set image_count = JSON_LENGTH(j, '$.image');
+		set image_count = (
+        select count(*)
+        from json_table(j, '$.Image[*]' columns(link_value varchar(2048) path '$.Link'))
+        as jt_count
+        where jt_count.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$'
+        );
     
 		insert into Resource(Date, DateFor, Author, Topic, Keywords, Format)
         select
@@ -86,24 +91,22 @@ begin
             'n/a',
             null,
             'Image'
-		from JSON_TABLE(
-			j, 
-			'$.image[*]' COLUMNS(value varchar(2048) PATH '$')
+		from JSON_TABLE(j, '$.Image[*]' columns(link_value varchar(2048) path '$.Link')
 		) as jt
-        where jt.value regexp '\\.(jpg|jpeg|png|gif)$';
+        where jt.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$';
         
         insert into Image (ResourceID, Size, Link)
         select r.ResourceID, jt.img_size, jt.link_value
         from(
             select ResourceID
             from Resource
-            where Topic = 'n/a' and Author = 'Web Scraped'
+            where Topic = 'n/a' and Author = 'Web Scraped' and Format = 'Image'
             order by ResourceID desc
             limit image_count
         ) as r
         join JSON_TABLE(
             j,
-            '$.image[*]' COLUMNS(
+            '$.Image[*]' COLUMNS(
             link_value varchar(2048) PATH '$.Link',
             img_size int unsigned path '$.Size'
             )
@@ -220,9 +223,9 @@ begin
     ) as jt;
     
     -- Insert resources for notes
-    if JSON_LENGTH(j, '$.note') > 0 then
+    if JSON_LENGTH(j, '$.Note') > 0 then
     
-		set note_count = JSON_LENGTH(j, '$.note');
+		set note_count = JSON_LENGTH(j, '$.Note');
     
 		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
 		select
@@ -234,22 +237,25 @@ begin
             'Note'
 		from JSON_TABLE(
 			j, 
-			'$.note[*]' COLUMNS(value varchar(2048) PATH '$')
+			'$.Note[*]' columns(value varchar(2048) path '$.Body')
 		) as jt;
         
         insert into Note (ResourceID, Body)
-        select r.ResourceID, jt.body
+        select r.ResourceID, jt.note_body
         from(
             select ResourceID
             from Resource
-            where Topic = 'Note' and Author = 'Web Scraped'
+            where Format = 'Note' and Author = 'Web Scraped'
             order by ResourceID desc
             limit note_count
         ) as r
         join JSON_TABLE(
             j,
-            '$.note[*]' COLUMNS(body varchar(2048) PATH '$')
+            '$.Note[*]' columns(note_body varchar(2048) path '$.Body')
         ) as jt;
+        
+		
+        
 	end if;
 
     -- Mark as imported
