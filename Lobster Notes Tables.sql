@@ -180,9 +180,8 @@ CREATE TRIGGER rating_poster_chk
 BEFORE INSERT ON Rating
 FOR EACH ROW
 BEGIN
-	if(SELECT UserID
-		FROM User natural join Student as Student_Name
-        where new.Poster = Student_Name.Name LIMIT 1) then
+	if new.Poster not in(SELECT Student_Name.Name
+		FROM User natural join Student as Student_Name) then
 			SIGNAL SQLSTATE "45000";
 	END IF;
 END $$
