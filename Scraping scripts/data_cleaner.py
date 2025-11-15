@@ -193,7 +193,8 @@ def clean_data(data, preserve_ids=False):
         if not isinstance(p, dict):
             continue
         body = p.get('Body') or p.get('body') or p.get('filepath') or p.get('url')
-        new_pdfs.append({'ResourceID': p.get('ResourceID'), 'Body': _truncate_string(body, 2048)})
+        url=body
+        new_pdfs.append({'ResourceID': p.get('ResourceID'), 'Link': url, 'Body': _truncate_string(body, 2048)})
 
     # ensure Resource topics and note bodies truncated
     final_resources = []
