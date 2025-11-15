@@ -28,6 +28,7 @@ create table Subject(
 
 -- Section check is on a separate line.
 -- Year check is a Trigger.
+-- ProfessorID is now a foreign key to create the relationship. It is nullable in case the Professor isn't in the database yet.
 create table Course(
 	CourseID int unsigned auto_increment,
     Section varchar(24) null,
@@ -36,10 +37,11 @@ create table Course(
     Year numeric(4,0) not null,
     Subject char(3) not null,
     CatalogNumber numeric(3,0),
-    ProfessorID int,
+    ProfessorID int unsigned null,
     CONSTRAINT course_section_chk CHECK (REGEXP_LIKE(Section, '^[A-Za-z0-9]+$')),
     primary key(CourseID),
     foreign key(Subject) references Subject(Code) on update cascade
+    foreign key(ProfessorID) references Professor(UserID) on update cascade
 );
 
 create table Resource(
@@ -175,14 +177,17 @@ delimiter ;
 	To make sure that the user posting a rating is a student
     Send signal if the UserID associated with the Name inserted is not in Student
 */
+
+/*
 delimiter $$
 CREATE TRIGGER rating_poster_chk
 BEFORE INSERT ON Rating
 FOR EACH ROW
 BEGIN
-	if new.Poster not in(SELECT Student_Name.Name
+	if new.Poster not in(SELECT Name
 		FROM User natural join Student as Student_Name) then
 			SIGNAL SQLSTATE "45000";
 	END IF;
 END $$
 delimiter ;
+*/
