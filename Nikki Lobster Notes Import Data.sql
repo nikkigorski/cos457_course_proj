@@ -19,15 +19,17 @@ begin
     declare video_count int;
     declare image_count int;
     declare pdf_count int;
-    declare exercise_count int;
     declare website_count int;
     declare note_count int;
     
     select WebData into j from StageWebData where DataID = did and Imported = 0;
 
-    -- Insert main URL
-    insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
-    values(CURDATE(), CURDATE(), 'Web Scraped', 'Main Page', null, 'Website');
+    -- Ensure canonical fallback author exists so FK on Resource.Author won't fail
+    insert ignore into User(Name) values('Web Scraped');
+
+    -- Insert main URL (use author from JSON if present)
+    insert into Resource (Date, DateFor, Author, Topic, Keywords, Format, Rating, isVerified)
+    values(CURDATE(), CURDATE(), COALESCE(JSON_UNQUOTE(JSON_EXTRACT(j, '$.Website[0].Author')), 'Web Scraped'), 'Main Page', null, 'Website', 5.0, false);
     set @MainResourceID = LAST_INSERT_ID();
     
     insert into Website(ResourceID, Link)
@@ -41,44 +43,41 @@ begin
         
         set video_count = JSON_LENGTH(j, '$.Video');
         
-        -- create one Resource row per video
-        insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
+       insert into Resource (ResourceID, Date, DateFor, Author, Topic, Keywords, Format, Rating, isVerified)
         select
+            rt.ResourceID,
             CURDATE(),
             CURDATE(),
-            'Web Scraped',
-            'n/a',
-            null,
-            'Video'
+            COALESCE(rt.Author, 'Web Scraped'),
+            COALESCE(rt.Topic, 'n/a'),
+            rt.Keywords,
+            rt.Format,
+            5.0,
+            false
         from JSON_TABLE(
             cast(j as JSON),
-            '$.Video[*]' COLUMNS(
-                Link varchar(2048) PATH '$.Link',
-                Duration int PATH '$.Duration'
+            '$.Resource[*]' COLUMNS(
+                ResourceID int PATH '$.ResourceID',
+                Format varchar(64) PATH '$.Format',
+                Author varchar(255) PATH '$.Author',
+                Topic varchar(255) PATH '$.Topic',
+                Keywords varchar(255) PATH '$.Keywords'
             )
-        ) as jt;
+        ) as rt
+        where rt.Format = 'Video';
 
     -- Insert into Video table using the same JSON_TABLE column names
     -- Use INSERT IGNORE so re-running the procedure won't fail on duplicate primary keys
     insert ignore into Video (ResourceID, Duration, Link)
-        select 
-            r.ResourceID,
-            jt.Duration,
-            jt.Link
-        from(
-            select ResourceID
-            from Resource
-            where Topic = 'n/a' and Author = 'Web Scraped' and Format = 'Video'
-            order by ResourceID desc
-            limit video_count
-        ) as r
-        join JSON_TABLE(
-            j,
-            '$.Video[*]' COLUMNS(
-                Link varchar(2048) PATH '$.Link',
-                Duration int PATH '$.Duration'
-            )
-        ) as jt;
+    select jt.ResourceID, jt.Duration, jt.Link
+    from JSON_TABLE(
+        j,
+        '$.Video[*]' COLUMNS(
+            ResourceID int PATH '$.ResourceID',
+            Link varchar(2048) PATH '$.Link',
+            Duration int PATH '$.Duration'
+        )
+    ) as jt;
     end if;
 
 	-- Insert resources for images
@@ -91,35 +90,42 @@ begin
         where jt_count.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$'
         );
 
-        insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
+        insert into Resource (ResourceID, Date, DateFor, Author, Topic, Keywords, Format, Rating, isVerified)
         select
+            rt.ResourceID,
             CURDATE(),
             CURDATE(),
-            'Web Scraped',
-            'n/a',
-            null,
-            'Image'
-        from JSON_TABLE(j, '$.Image[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')) as jt
-        where jt.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$';
+            COALESCE(rt.Author, 'Web Scraped'),
+            COALESCE(rt.Topic, 'n/a'),
+            rt.Keywords,
+            rt.Format,
+            5.0,
+            false
+        from JSON_TABLE(
+            cast(j as JSON),
+            '$.Resource[*]' COLUMNS(
+                ResourceID int PATH '$.ResourceID',
+                Format varchar(64) PATH '$.Format',
+                Author varchar(255) PATH '$.Author',
+                Topic varchar(255) PATH '$.Topic',
+                Keywords varchar(255) PATH '$.Keywords'
+            )
+        ) as rt
+        where rt.Format = 'Image';
         
     -- Use INSERT IGNORE so re-running the procedure won't fail if child rows already exist
+    -- Insert child Image rows using ResourceID from the JSON
     insert ignore into Image (ResourceID, Size, Link)
-        select r.ResourceID, jt.img_size, jt.link_value
-        from(
-            select ResourceID
-            from Resource
-            where Topic = 'n/a' and Author = 'Web Scraped' and Format = 'Image'
-            order by ResourceID desc
-            limit image_count
-        ) as r
-        join JSON_TABLE(
-            j,
-            '$.Image[*]' COLUMNS(
-                link_value varchar(2048) PATH '$.Link',
-                img_size int unsigned PATH '$.Size'
-            )
-        ) as jt
-        where jt.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$';
+    select jt.ResourceID, jt.img_size, jt.link_value
+    from JSON_TABLE(
+        j,
+        '$.Image[*]' COLUMNS(
+            ResourceID int PATH '$.ResourceID',
+            link_value varchar(2048) PATH '$.Link',
+            img_size int unsigned PATH '$.Size'
+        )
+    ) as jt
+    where jt.link_value regexp '\\.(jpg|jpeg|png|gif|svg)$';
     end if;
     
     -- Insert resources for pdf files
@@ -127,72 +133,46 @@ begin
 
         set pdf_count = JSON_LENGTH(j, '$.pdf');
 
-        insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
+        insert into Resource (ResourceID, Date, DateFor, Author, Topic, Keywords, Format, Rating, isVerified)
         select
+            rt.ResourceID,
             CURDATE(),
             CURDATE(),
-            'Web Scraped',
-            'n/a',
-            null,
-            'pdf'
+            COALESCE(rt.Author, 'Web Scraped'),
+            COALESCE(rt.Topic, 'n/a'),
+            rt.Keywords,
+            rt.Format,
+            5.0,
+            false
         from JSON_TABLE(
-            j,
-            '$.pdf[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-        ) as jt;
+            cast(j as JSON),
+            '$.Resource[*]' COLUMNS(
+                ResourceID int PATH '$.ResourceID',
+                Format varchar(64) PATH '$.Format',
+                Author varchar(255) PATH '$.Author',
+                Topic varchar(255) PATH '$.Topic',
+                Keywords varchar(255) PATH '$.Keywords'
+            )
+        ) as rt
+        where rt.Format = 'pdf';
         
     -- Use INSERT IGNORE so re-running the procedure won't fail if child rows already exist
     insert ignore into pdf (ResourceID, Body, Link)
-        select r.ResourceID, jt.body_value, jt.link_value
-        FROM (
-            select ResourceID
-            from Resource
-            where Topic = 'n/a' AND Author = 'Web Scraped' and Format = 'pdf'
-            order by ResourceID desc
-            limit pdf_count
-        ) as r
-        join JSON_TABLE(
-            j,
-            '$.pdf[*]' COLUMNS(
-                link_value varchar(2048) PATH '$.Link',
-                body_value varchar(2048) PATH '$.Body'
-            )
-        ) as jt
-        where jt.link_value regexp '\\.(pdf)$';
+    select jt.ResourceID,
+           CASE WHEN jt.body_value IS NULL OR jt.body_value = '' THEN jt.link_value ELSE jt.body_value END as Body,
+           CASE WHEN jt.link_value IS NULL OR jt.link_value = '' THEN jt.body_value ELSE jt.link_value END as Link
+    FROM JSON_TABLE(
+        j,
+        '$.pdf[*]' COLUMNS(
+            ResourceID int PATH '$.ResourceID',
+            link_value varchar(2048) PATH '$.Link',
+            body_value varchar(2048) PATH '$.Body'
+        )
+    ) as jt
+    where (jt.link_value regexp '\\.(pdf)$' or jt.body_value regexp '\\.(pdf)$');
     end if;
     
-    -- Insert each exercise as Website
-    if JSON_LENGTH(j, '$.exercises') > 0 then
-    
-		set exercise_count = JSON_LENGTH(j, '$.exercises');
-    
-        insert into Resource(Date, DateFor, Author, Topic, Keywords, Format)
-        select
-            CURDATE(),
-            CURDATE(),
-            'Web Scraped',
-            'Exercises',
-            null,
-            'Website'
-        from JSON_TABLE(
-            j,
-            '$.exercises[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-        ) as jt;
-
-    -- Use INSERT IGNORE to avoid duplicate-key errors when re-running imports
-    insert ignore into Website (ResourceID, Link)
-        select r.ResourceID, jt.link_value
-        from (
-            select ResourceID
-            from Resource
-            where Topic = 'Exercises' and Author = 'Web Scraped'
-            order by ResourceID desc
-            limit exercise_count
-        ) as r
-        join JSON_TABLE(
-            j,
-            '$.exercises[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-        ) as jt;
-    end if;
+    -- exercises removed (not needed)
     
     set website_count = (
         select count(*)
@@ -202,35 +182,37 @@ begin
         where jt.link_value regexp '^https?://');
         
     -- Insert resources for web links
-    insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
+    insert into Resource (Date, DateFor, Author, Topic, Keywords, Format, Rating, isVerified)
     select
         CURDATE(),
         CURDATE(),
-        'Web Scraped',
-        'n/a',
-        null,
-        'Website'
+        COALESCE(rt.Author, 'Web Scraped'),
+        COALESCE(rt.Topic, 'n/a'),
+        rt.Keywords,
+        rt.Format,
+        5.0,
+        false
     from JSON_TABLE(
-        j,
-        '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-    ) as jt
-    where jt.link_value regexp '^https?://';
+        cast(j as JSON),
+        '$.Resource[*]' COLUMNS(
+            Format varchar(64) PATH '$.Format',
+            Author varchar(255) PATH '$.Author',
+            Topic varchar(255) PATH '$.Topic',
+            Keywords varchar(255) PATH '$.Keywords',
+            link_value varchar(2048) PATH '$.Link'
+        )
+    ) as rt
+    where rt.Format = 'Website' and rt.link_value regexp '^https?://';
 
     -- Use INSERT IGNORE to avoid duplicate-key errors when re-running imports
     insert ignore into Website (ResourceID, Link)
-    select r.ResourceID, jt.link_value
-    from(
-        select ResourceID
-        from Resource
-        where Topic = 'n/a' and Author = 'Web Scraped'
-        order by ResourceID desc
-        limit website_count)
-        as r
-    join(
-        select link_value from JSON_TABLE(
-            j, '$.website[*]' COLUMNS(link_value varchar(2048) PATH '$.Link')
-        ) as jt
-        where jt.link_value regexp '^https?://'
+    select jt.ResourceID, jt.link_value
+    from JSON_TABLE(
+        j,
+        '$.website[*]' COLUMNS(
+            ResourceID int PATH '$.ResourceID',
+            link_value varchar(2048) PATH '$.Link'
+        )
     ) as jt
     where jt.link_value regexp '^https?://';
     
@@ -239,32 +221,37 @@ begin
     
 		set note_count = JSON_LENGTH(j, '$.Note');
     
-		insert into Resource (Date, DateFor, Author, Topic, Keywords, Format)
-		select
-			CURDATE(),
-			CURDATE(),
-			'Web Scraped',
-			'n/a',
-			null,
-            'Note'
-		from JSON_TABLE(
-			j, 
-			'$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
-		) as jt;
+        insert into Resource (Date, DateFor, Author, Topic, Keywords, Format, Rating, isVerified)
+        select
+            CURDATE(),
+            CURDATE(),
+            COALESCE(rt.Author, 'Web Scraped'),
+            COALESCE(rt.Topic, 'n/a'),
+            rt.Keywords,
+            rt.Format,
+            5.0,
+            false
+        from JSON_TABLE(
+            cast(j as JSON), 
+            '$.Resource[*]' COLUMNS(
+                Format varchar(64) PATH '$.Format',
+                Author varchar(255) PATH '$.Author',
+                Topic varchar(255) PATH '$.Topic',
+                Keywords varchar(255) PATH '$.Keywords'
+            )
+        ) as rt
+        where rt.Format = 'Note';
         
     -- Use INSERT IGNORE so notes aren't re-inserted on procedure re-run
     insert ignore into Note (ResourceID, Body)
-        select r.ResourceID, jt.note_body
-        from(
-            select ResourceID
-            from Resource
-            where Format = 'Note' and Author = 'Web Scraped'
-            order by ResourceID desc
-            limit note_count
-        ) as r
-        join JSON_TABLE(
-            j, '$.Note[*]' COLUMNS(note_body varchar(2048) path '$.Body')
-        ) as jt;
+    select jt.ResourceID, jt.note_body
+    from JSON_TABLE(
+        j,
+        '$.Note[*]' COLUMNS(
+            ResourceID int PATH '$.ResourceID',
+            note_body varchar(2048) PATH '$.Body'
+        )
+    ) as jt;
         
 		
         
