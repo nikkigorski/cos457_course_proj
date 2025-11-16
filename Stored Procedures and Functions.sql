@@ -289,15 +289,8 @@ DECLARE outRating numeric(2,1);
 DECLARE outVerified boolean;
 DECLARE outSize int unsigned;
 
-select
-	R.ResourceID into outRID, 
-    R.date into outDateMade,
-    R.DateFor into outDateFor,
-    R.Author into outAuthor,
-	R.Topic into outTopic,
-	R.Keywords into outKeywords,
-    R.Format into outFormat,
-	R.isVerified into outVerified,
+select R.ResourceID, R.Date, R.DateFor, R.Author, R.Topic, R.Keywords, R.Format, R.isVerified
+into outRID, outDateMade, outDateFor, outAuthor, outTopic, outKeywords, outFormat, outVerified
 from Resource as R
 where R.ResourceID = resource_ID;
 
@@ -341,6 +334,7 @@ delimiter //
 drop function if exists FN_Resource_Body //
 create function FN_Resource_Body(resource_id int)
 	returns varchar(2048)
+    reads sql data
 	begin
 		declare outbody varchar(2048);
 		declare Reqformat varchar(7);
@@ -369,7 +363,8 @@ delimiter //
 drop function if exists FN_Resource_Link //
 create function FN_Resource_Link(resource_id int)
 	returns varchar(2048)
-	begin
+	reads sql data
+    begin
 		declare outlink varchar(2048);
 		declare Reqformat varchar(7);
 		select format into Reqformat
@@ -405,6 +400,7 @@ delimiter //
 drop function if exists FN_Rating_Avg //
 create function FN_Rating_Avg(resource_id int)
 	returns decimal(2,1)
+    reads sql data
 	begin
 	declare r_avg decimal(2,1);
 		select round(avg(Score), 1) into r_avg
@@ -421,6 +417,7 @@ delimiter //
 drop function if exists FN_User_Isprofessor //
 create function FN_User_Isprofessor(user_id int)
 	returns boolean
+    reads sql data
 begin
     declare is_prof boolean;
 		select IsProfessor into is_prof

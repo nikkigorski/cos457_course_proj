@@ -20,6 +20,14 @@ create table User(
     primary key(UserID)
 );
 
+create table Professor(
+	UserID int unsigned,
+    Badge boolean null,
+    primary key(UserID),
+    foreign key(UserID) references User(UserID) on update cascade
+);
+
+
 create table Subject(
 	Code char(3),
     Name varchar(50) not null,
@@ -40,7 +48,7 @@ create table Course(
     ProfessorID int unsigned null,
     CONSTRAINT course_section_chk CHECK (REGEXP_LIKE(Section, '^[A-Za-z0-9]+$')),
     primary key(CourseID),
-    foreign key(Subject) references Subject(Code) on update cascade
+    foreign key(Subject) references Subject(Code) on update cascade,
     foreign key(ProfessorID) references Professor(UserID) on update cascade
 );
 
@@ -151,12 +159,7 @@ begin
 end $$
 delimiter ;
 
-create table Professor(
-	UserID int unsigned,
-    Badge boolean null,
-    primary key(UserID),
-    foreign key(UserID) references User(UserID) on update cascade
-);
+
 
 
 -- To make sure that the Year input for a new instance in Course is valid.

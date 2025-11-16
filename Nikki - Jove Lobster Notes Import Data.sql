@@ -3,7 +3,7 @@ Lobster Notes Import Data
 Gabrielle Akers
 November 12, 2025
 */
-create table StageWebData(
+create table if not exists StageWebData(
 	DataID int unsigned auto_increment primary key,
     WebData JSON not null,
     Imported int default 0
@@ -15,19 +15,6 @@ create procedure ImportData(in did int)
 this_proc:begin
     -- Load JSON
     declare j JSON;
-    set j = null;
-    
-    select WebData into j, count() from StageWebData where DataID = did and Imported = 0;
-
-    if j is null then
-        leave this_proc;
-    end if;
-
-
-
-    -- Ensure canonical fallback author exists so FK on Resource.Author won't fail
-    insert ignore into User(Name) values('Web Scraped',"",True);
-
     declare resourceCount int unsigned;
     declare noteCount int unsigned;
     declare WebsiteCount int unsigned;
@@ -44,6 +31,21 @@ this_proc:begin
     declare web_address varchar(2048);
     declare video_duration int unsigned;
     declare image_size int unsigned;
+    
+    set j = null;
+    
+    select WebData into j from StageWebData where DataID = did and Imported = 0;
+
+    if j is null then
+        leave this_proc;
+    end if;
+
+
+
+    -- Ensure canonical fallback author exists so FK on Resource.Author won't fail
+    insert ignore into User(Name) values('Web Scraped',"",True);
+
+    
 
     set resourceCount = 0;
     set noteCount = 0;
@@ -73,11 +75,12 @@ this_proc:begin
     while resourcecount < json_length(j,'$.Resource') do
         set resourcecount = resourcecount + 1;
 
-        select COALESCE(rjt.rdatefor,CURDATE()) into lecture_date,
-        COALESCE(rjt.rauthor, 'Web Scraped'), into author_of,
-        COALESCE(rjt.rtopic, 'n/a') into lecture_topic,
-        rjt.rFormat into format_of
-        from (json_table(
+        select COALESCE(rjt.rdatefor,CURDATE()),
+        COALESCE(rjt.rauthor, 'Web Scraped'),
+        COALESCE(rjt.rtopic, 'n/a'),
+        rjt.rFormat
+        into lecture_date, author_of, lecture_topic, format_of
+        from json_table(
             cast(j as json),
             '$.Resource[*]' COLUMNS(
                 count for ordinality,
@@ -86,23 +89,20 @@ this_proc:begin
                 rtopic varchar(25) path '$.Topic',
                 rFormat varchar(7) path '$.Format'
                 )
-        )) as RJT
+        ) as rjt
         where rjt.count = resourcecount;
         
-
-
         case format_of
-
             when 'Note' then -- needs body
                 set noteCount = notecount + 1;
                 select njt.nbody into note_body
-                from (json_table(
+                from json_table(
                     cast(j as json),
                     '$.Note[*]' COLUMNS(
                         count for ordinality,
                         nbody varchar(2048) path '$.Body'
                     )
-                )) as njt
+                ) as njt
                 where njt.count = notecount;
                 call SP_Resource_Create(lecture_date,author_of,lecture_topic,
                     resource_keywords,format_of,note_body,"",
@@ -111,13 +111,13 @@ this_proc:begin
             when 'Website' then -- needs link
                 set websiteCount = websitecount + 1;
                 select wjt.wlink into web_address
-                from (json_table(
+                from json_table(
                     cast(j as json),
                     '$.Website[*]' COLUMNS(
                         count for ordinality,
                         wlink varchar(2048) path '$.Link'
                     )
-                )) as wjt
+                )as wjt
                 where wjt.count = websitecount;
                 call SP_Resource_Create(lecture_date,author_of,lecture_topic,
                     resource_keywords,format_of,"",web_address,
@@ -125,15 +125,16 @@ this_proc:begin
 
             when 'pdf' then -- needs body, link
                 set pdfCount = pdfcount + 1;
-                select pjt.pbody into note_body, pjt.plink into web_address
-                from (json_table(
+                select pjt.pbody, pjt.plink
+                into note_body, web_address
+                from json_table(
                     cast(j as json),
                     '$.pdf[*]' COLUMNS(
                         count for ordinality,
                         pbody varchar(2048) path '$.Body',
                         plink varchar(2048) path '$.Link'
                     )
-                )) as pjt
+                )as pjt
                 where pjt.count = pdfcount;
                 call SP_Resource_Create(lecture_date,author_of,lecture_topic,
                     resource_keywords,format_of,note_body,web_address,
@@ -141,15 +142,16 @@ this_proc:begin
 
             when 'Image' then -- needs size, link
                 set imageCount = imagecount + 1;
-                select ijt.isize into image_size, ijt.ilink into web_address
-                from (json_table(
+                select ijt.isize, ijt.ilink
+                into image_size, web_address
+                from json_table(
                     cast(j as json),
                     '$.Image[*]' COLUMNS(
                         count for ordinality,
                         isize int unsigned path '$.Size',
                         ilink varchar(2048) path '$.Link'
                     )
-                )) as ijt
+                )as ijt
                 where ijt.count = imagecount;
                 call SP_Resource_Create(lecture_date,author_of,lecture_topic,
                     resource_keywords,format_of,"",web_address,
@@ -157,15 +159,16 @@ this_proc:begin
 
             when 'Video' then -- needs duration, link
                 set videoCount = videocount + 1;
-                select vjt.vduration into video_duration, vjt.vlink into web_address
-                from (json_table(
+                select vjt.vduration, vjt.vlink
+                into video_duration, web_address
+                from json_table(
                     cast(j as json),
                     '$.Video[*]' COLUMNS(
                         count for ordinality,
                         vlink varchar(2048) path '$.Link',
                         vduration int unsigned path '$.Duration'
                     )
-                )) as vjt
+                )as vjt
                 where vjt.count = videocount;
                 call SP_Resource_Create(lecture_date,author_of,lecture_topic,
                     resource_keywords,format_of,"",web_address,
