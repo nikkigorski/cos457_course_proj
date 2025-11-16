@@ -141,7 +141,7 @@ begin
 				resource_id,
 				web_address
 			);
-		when 'Pdf' then
+		when 'pdf' then
 			insert into pdf
 				(
 					ResourceID,
@@ -316,7 +316,7 @@ case outFormat
 			set outBody = FN_Resource_Body(resource_ID);
 		when 'Website' then
 			set outLink = FN_Resource_Link(resource_ID);
-		when 'Pdf' then
+		when 'pdf' then
 			set outBody = FN_Resource_Body(resource_ID);
 			set outLink = FN_Resource_Link(resource_ID);
 		when 'Image' then
@@ -352,7 +352,7 @@ create function FN_Resource_Body(resource_id int)
 				select body into outbody
 				from Note
 				where resourceid = resource_ID;
-			when 'Pdf' then
+			when 'pdf' then
 				select body into outbody
 				from Pdf
 				where resourceid = resource_ID;
@@ -376,7 +376,7 @@ create function FN_Resource_Link(resource_id int)
 		from Resource
 		where resourceid = resource_ID;
 		case format
-			when 'Pdf' then
+			when 'pdf' then
 				select link into outlink
 				from Pdf
 				where resourceid = resource_ID;
