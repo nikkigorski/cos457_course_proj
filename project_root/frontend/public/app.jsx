@@ -1,16 +1,16 @@
 const { useState, useEffect } = React;
 
 const sampleNotes = [
-  { ResourceID: 1,Title: "test title1" },
-  { ResourceID: 2,Title: "test title2" },
-  { ResourceID: 3,Title: "test title3" },
-  { ResourceID: 4,Title: "test title4" },
-  { ResourceID: 5,Title: "test title5" },
-  { ResourceID: 6,Title: "test title6" },
-  { ResourceID: 7,Title: "test title7" },
-  { ResourceID: 8,Title: "test title8" },
-  { ResourceID: 9,Title: "test title9" },
-  { ResourceID: 10,Title: "test title10" }
+  { ResourceID: 1,Title: "Computational music theory" ,Author: "mit ocw, lobster notes web scraper", Rating: "5", Date: "2025-11-15", Format: "Video", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4" },
+  { ResourceID: 2,Title: "test title2" ,Author: "Author2", Rating: "4", Date: "2024-02-15", Format: "PDF" },
+  { ResourceID: 3,Title: "test title3" ,Author: "Author3", Rating: "3", Date: "2024-03-10", Format: "PDF" },
+  { ResourceID: 4,Title: "test title4" ,Author: "Author4", Rating: "2", Date: "2024-04-20", Format: "PDF" },
+  { ResourceID: 5,Title: "test title5" ,Author: "Author5", Rating: "4", Date: "2024-05-05", Format: "PDF" },
+  { ResourceID: 6,Title: "test title6" ,Author: "Author6", Rating: "3", Date: "2024-06-15", Format: "PDF" },
+  { ResourceID: 7,Title: "test title7" , Author: "Author7", Rating: "5", Date: "2024-07-22", Format: "PDF" },
+  { ResourceID: 8,Title: "test title8" ,Author: "Author8", Rating: "4", Date: "2024-08-30", Format: "PDF" },
+  { ResourceID: 9,Title: "test title9" ,Author: "Author9", Rating: "3", Date: "2024-09-15", Format: "PDF" },
+  { ResourceID: 10,Title: "test title10" ,Author: "Author10", Rating: "4", Date: "2024-10-10", Format: "PDF" }
   
 ];
 
@@ -87,7 +87,6 @@ function App(){
   }, []);
 
   const openNote = (id) => {
-    if (typeof console !== 'undefined' && console.log) console.log('openNote called with', id);
     const noteUrl = `/note/${id}`;
     window.history.pushState({ route: 'note', id }, '', noteUrl);
     setRoute({ name: 'note', id });
