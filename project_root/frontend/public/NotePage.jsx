@@ -16,7 +16,7 @@ function NotePage({ note, resource, onBack }) {
   const rating = data.Rating || '—';
   const date = data.Date || 'Unknown';
   const format = data.Format || 'Unknown';
-  const videoLink = data.Url || '';
+  const Link = data.Url || '';
   
 
   return (
@@ -30,12 +30,24 @@ function NotePage({ note, resource, onBack }) {
         <div><strong>Format:</strong> {format}</div>
       </div>
 
-      {}
-      {String(format).toLowerCase() === 'video' && videoLink ? (
+      {String(format).toLowerCase() === 'pdf' && Link ? (
+        <div className="note-pdf" style={{ marginBottom: '12px' }}>
+          <iframe
+            src={Link}
+            title={title + ' — PDF'}
+            style={{ width: '100%', height: '720px', border: 'none' }}
+          />
+          <div style={{ color: 'var(--muted)', marginTop: '8px' }}>
+            If the PDF doesn't display, <a href={Link} download>download here</a>.
+          </div>
+        </div>
+      ) : null}
+
+      {String(format).toLowerCase() === 'video' && Link ? (
         <div className="note-video" style={{ marginBottom: '12px' }}>
-          {(/youtube\.com|youtu\.be/).test(videoLink) ? (
+          {(/youtube\.com|youtu\.be/).test(Link) ? (
             (() => {
-              let embed = videoLink;
+              let embed = Link;
               if (embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
               if (embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'www.youtube.com/embed/');
               if (!/^https?:\/\//.test(embed)) embed = 'https://' + embed;
@@ -53,7 +65,7 @@ function NotePage({ note, resource, onBack }) {
               );
             })()
           ) : (
-            <video controls style={{ width: '100%' }} src={videoLink}>
+            <video controls style={{ width: '100%' }} src={Link}>
               Your browser does not support the video tag.
             </video>
           )}

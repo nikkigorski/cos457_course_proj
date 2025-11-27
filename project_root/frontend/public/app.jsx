@@ -2,7 +2,7 @@ const { useState, useEffect } = React;
 
 const sampleNotes = [
   { ResourceID: 1,Title: "Computational music theory" ,Author: "mit ocw, lobster notes web scraper", Rating: "5", Date: "2025-11-15", Format: "Video", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4" },
-  { ResourceID: 2,Title: "test title2" ,Author: "Author2", Rating: "4", Date: "2024-02-15", Format: "PDF" },
+  { ResourceID: 2,Title: "Computational Music teory and Analysis QUIZ 1" ,Author: "mit ocw, lobster notes web scraper", Rating: "4", Date: "2025-11-15", Format: "PDF", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/mit21m383s23_quiz_1.pdf" },
   { ResourceID: 3,Title: "test title3" ,Author: "Author3", Rating: "3", Date: "2024-03-10", Format: "PDF" },
   { ResourceID: 4,Title: "test title4" ,Author: "Author4", Rating: "2", Date: "2024-04-20", Format: "PDF" },
   { ResourceID: 5,Title: "test title5" ,Author: "Author5", Rating: "4", Date: "2024-05-05", Format: "PDF" },
