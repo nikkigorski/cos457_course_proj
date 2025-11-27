@@ -37,34 +37,7 @@ function NoteEditor(){
   );
 }
 
-function NoteList({ onOpenNote }){
-  return (
-    <div className="note-list">
-      <h2>My Notes</h2>
-      <div className="notes">
-        {sampleNotes.map(n => (
-          <div key={n.ResourceID} style={{marginBottom: '8px'}}>
-            <button
-              className="btn"
-              type="button"
-              onClick={() => {
-                if (onOpenNote) {
-                  onOpenNote(n.ResourceID);
-                } else {
-                  const url = `/note/${n.ResourceID}`;
-                  window.history.pushState({ route: 'note', id: n.ResourceID }, '', url);
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                }
-              }}
-            >
-              {n.Title}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// NoteList moved to its own file `NoteList.jsx` and receives notes via props
 
 function App(){
   const [route, setRoute] = useState({ name: 'list', id: null });
@@ -116,7 +89,7 @@ function App(){
               <NoteEditor />
             </section>
             <section className="right">
-              <NoteList onOpenNote={openNote} />
+              <NoteList notes={sampleNotes} onOpenNote={openNote} />
             </section>
           </React.Fragment>
         )}
