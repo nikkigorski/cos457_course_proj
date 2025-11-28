@@ -4,6 +4,9 @@ Author: Gage White
 Date: 10 November 2025
 Description: Stored Procedures and Functions for Lobster Notes Project
 */
+/*
+Edited by Jove Emmons 15 November 2025
+*/
 
 
 
@@ -11,6 +14,7 @@ Description: Stored Procedures and Functions for Lobster Notes Project
 Procedure for creating a new user, specifying enrolled courses and if user is a professor
 */
 delimiter //
+drop procedure if exists SP_User_Create //
 create procedure SP_User_Create
 (
     IN user_name varchar(50),
@@ -35,6 +39,7 @@ end//
 delimiter ;
 
 delimiter //
+drop trigger if exists TR_User_AfterInsert //
 create trigger TR_User_AfterInsert
 after insert on User
 for each row
@@ -54,6 +59,7 @@ delimiter ;
 Procedure for updating username by taking UserID for user to be altered
 */
 delimiter //
+drop procedure if exists SP_Update_User //
 create procedure SP_Update_User
 (
 	IN user_id int UNSIGNED,
@@ -72,6 +78,7 @@ Creates a new resource
 */
 
 delimiter //
+drop procedure if exists SP_Resource_Create //
 create procedure SP_Resource_Create
 (
 	IN lecture_date date,
@@ -90,19 +97,23 @@ begin
 		
 	insert into resource
 	(
+			Date,
 			DateFor,
 			Author,
 			Topic,
 			Keywords,
-			Format
+			Format,
+			isVerified
 	)
 	values
 	(
+			curdate(),
 			lecture_date,
 			author_of,
 			lecture_topic,
 			resource_keywords,
-			format_of
+			format_of,
+			false
 	);
 
 	set resource_id = last_insert_id();
@@ -130,7 +141,7 @@ begin
 				resource_id,
 				web_address
 			);
-		when 'Pdf' then
+		when 'pdf' then
 			insert into pdf
 				(
 					ResourceID,
@@ -153,20 +164,20 @@ begin
                 values
                 (
 					resource_id,
-                    null,
+                    image_size,
                     web_address
 				);
 			when 'Video' then
 				insert into Video
 					(
-						ResoruceID,
+						ResourceID,
                         Duration,
                         Link
 					)
                     values
                     (
 						resource_id,
-                        null,
+                        video_duration,
                         web_address
 					);
 
@@ -180,6 +191,7 @@ delimiter ;
 Links professor to course
 */
 delimiter //
+drop procedure if exists SP_Course_IsProfessor //
 create procedure SP_Course_IsProfessor
 (
 	IN course_id int unsigned,
@@ -203,6 +215,7 @@ delimiter ;
 Allows submission of rating
 */
 delimiter //
+drop procedure if exists SP_Rating_Rate //
 create procedure SP_Rating_Rate
 (
 	IN resource_ID int unsigned,
@@ -238,47 +251,156 @@ begin
 end//
 delimiter ;
 
+
 /*
 Gets details for a resource based on ResourceID
 */
 delimiter //
+drop procedure if exists SP_Resource_Details //
 create procedure SP_Resource_Details
 (
-	IN resource_ID int unsigned
+	IN resource_ID int unsigned,
+	OUT outRID int unsigned,
+	OUT	outTopic varchar(25),
+	OUT	outFormat varchar(7),
+	OUT outDateMade date,
+	OUT outDateFor date,
+	OUT outAuthor varchar(50),
+	OUT outBody varchar(2048),
+	OUT outLink varchar(2048),
+	OUT outDuration int unsigned,
+	OUT outKeywords varchar(25),
+	OUT outRating numeric(2,1),
+	OUT outVerified boolean,
+	OUT outSize int unsigned
 )
 begin
-select
-	R.ResourceID, 
-    R.Topic, 
-    R.Format, 
-    R.DateFor,
-    R.Author as Author_Name,
-    N.Body as Note_Body,
-    W.Link as Web_Address,
-    V.Duration as Video_Duration,
-    
-    (
-    select avg(score) 
-    from Rating 
-    where ResourceID = R.ResourceID
-    ) as Average_Rating
-    
-from Resource as R join user as U on R.Author = U.Name
-left join Note as N on R.ResourceID = N.ResourceID
-left join Website as W on R.ResourceID = W.ResourceID
-left join Video as V on R.ResourceID = V.ResourceID
+DECLARE outRID int unsigned;
+DECLARE	outTopic varchar(25);
+DECLARE	outFormat varchar(7);
+DECLARE outDateMade date;
+DECLARE outDateFor date;
+DECLARE outAuthor varchar(50);
+DECLARE outBody varchar(2048);
+DECLARE outLink varchar(2048);
+DECLARE outDuration int unsigned;
+DECLARE outKeywords varchar(25);
+DECLARE outRating numeric(2,1);
+DECLARE outVerified boolean;
+DECLARE outSize int unsigned;
 
+select R.ResourceID, R.Date, R.DateFor, R.Author, R.Topic, R.Keywords, R.Format, R.isVerified
+into outRID, outDateMade, outDateFor, outAuthor, outTopic, outKeywords, outFormat, outVerified
+from Resource as R
 where R.ResourceID = resource_ID;
+
+select avg(score) into outRating
+from Rating 
+where ResourceID = resource_id;
+
+set outBody = "";
+set outLink = "";
+set outSize = 0;
+set outDuration = 0;
+
+
+case outFormat
+		when 'Note' then
+			set outBody = FN_Resource_Body(resource_ID);
+		when 'Website' then
+			set outLink = FN_Resource_Link(resource_ID);
+		when 'pdf' then
+			set outBody = FN_Resource_Body(resource_ID);
+			set outLink = FN_Resource_Link(resource_ID);
+		when 'Image' then
+			set outLink = FN_Resource_Link(resource_ID);
+			select size into outsize
+			from Image
+			where resourceid = resource_ID;
+		when 'Video' then
+			set outLink = FN_Resource_Link(resource_ID);
+			select Duration into outDuration
+			from Video
+			where ResourceID = resource_ID;
+end case;
 
 end//
 delimiter ; 
 
 /*
+Returns body of requested resource
+*/
+delimiter //
+drop function if exists FN_Resource_Body //
+create function FN_Resource_Body(resource_id int)
+	returns varchar(2048)
+    reads sql data
+	begin
+		declare outbody varchar(2048);
+		declare Reqformat varchar(7);
+		select format into Reqformat
+		from resource
+		where resourceid = resource_ID;
+		case format
+			when 'Note' then
+				select body into outbody
+				from Note
+				where resourceid = resource_ID;
+			when 'pdf' then
+				select body into outbody
+				from Pdf
+				where resourceid = resource_ID;
+			return outbody;
+		end case;
+end//
+delimiter ;
+
+
+/*
+Returns link of requested resource
+*/
+delimiter //
+drop function if exists FN_Resource_Link //
+create function FN_Resource_Link(resource_id int)
+	returns varchar(2048)
+	reads sql data
+    begin
+		declare outlink varchar(2048);
+		declare Reqformat varchar(7);
+		select format into Reqformat
+		from Resource
+		where resourceid = resource_ID;
+		case format
+			when 'pdf' then
+				select link into outlink
+				from Pdf
+				where resourceid = resource_ID;
+			when 'Image' then
+				select link into outlink
+				from Image
+				where resourceid = resource_ID;
+			when 'Video' then
+				select link into outlink
+				from Video
+				where resourceid = resource_ID;
+			when 'Website' then
+				select link into outlink
+				from Website
+				where resourceid = resource_ID;
+			return outlink;
+		end case;
+end//
+delimiter ;
+
+
+/*
 Returns average score of given ResourceID
 */
 delimiter //
+drop function if exists FN_Rating_Avg //
 create function FN_Rating_Avg(resource_id int)
 	returns decimal(2,1)
+    reads sql data
 	begin
 	declare r_avg decimal(2,1);
 		select round(avg(Score), 1) into r_avg
@@ -291,9 +413,11 @@ delimiter ;
 /*
 Takes UserID and checks if user is professor
 */
-delimiter //Name
+delimiter //
+drop function if exists FN_User_Isprofessor //
 create function FN_User_Isprofessor(user_id int)
 	returns boolean
+    reads sql data
 begin
     declare is_prof boolean;
 		select IsProfessor into is_prof
