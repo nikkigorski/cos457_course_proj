@@ -1,0 +1,49 @@
+Relationships:
+
+- Takes
+Student takes a Course
+    Many to Many relationship between Student and Course
+    Participation of Student in the relationship is partial
+    Participation of Course in the relationship is partial
+
+- Posts
+Student posts Rating
+    One to Many relationship between Student and Rating
+    Participation of Student in the relationship is partial
+    Participation of Rating in the relationship is total
+
+- Creates
+User Creates a Resource
+    One to Many relationship between User and Resource
+    Participation of User in the relationship is partial
+    Participation of Resource in the relationship is total
+
+- Verifies
+Professor verifies Resource
+    One to Many relationship between Professor and Resource
+    Participation of Professor in the relationship is partial
+    Participation of Resource in the relationship is partial
+
+- Receives
+Resource Receives Rating
+    One to Many relationship between Resource and Rating
+    Participation of Resource in the relationship is partial
+    Participation of Rating in the relationship is total
+
+- Corresponds
+Resource Corresponds to a Course
+    Many to Many relationship between Resource and Course
+    Participation of Resource in the relationship is total
+    Participation of Course in the relationship is partial
+
+- Contains
+Subject contains Course
+    One to Many relationship between Subject and Course
+    Participation of Subject in the relationship is partial
+    Participation of Course in the relationship is total
+
+- Teaches
+Professor Teaches a Course
+    One to Many relationship between Professor and Course
+    Participation of Professor in the relationship is partial
+    Participation of Course in the relationship is partial
