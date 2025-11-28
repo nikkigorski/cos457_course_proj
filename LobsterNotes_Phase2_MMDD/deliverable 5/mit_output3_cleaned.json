@@ -1,0 +1,155 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 600104966,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "Resources | City Visions:",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 981776196,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 2129132951,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1936445397,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 278871970,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1250857770,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1362138227,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1986436606,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1884948763,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "image",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    }
+  ],
+  "Note": [],
+  "pdf": [
+    {
+      "ResourceID": 981776196,
+      "Link": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/fe10211fe7ded76d4b5e4ab0fa53a3cc_bierbaum.pdf",
+      "Body": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/fe10211fe7ded76d4b5e4ab0fa53a3cc_bierbaum.pdf"
+    },
+    {
+      "ResourceID": 2129132951,
+      "Link": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/bd175ef328843ef46fbdf611bf4093df_chris_becker.pdf",
+      "Body": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/bd175ef328843ef46fbdf611bf4093df_chris_becker.pdf"
+    },
+    {
+      "ResourceID": 1936445397,
+      "Link": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/5643cf32cb08da72acb1977c6a2036db_eric_orozco.pdf",
+      "Body": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/5643cf32cb08da72acb1977c6a2036db_eric_orozco.pdf"
+    },
+    {
+      "ResourceID": 278871970,
+      "Link": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/ad3584813e4c7bd0e8855e81862660f2_nora.pdf",
+      "Body": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/ad3584813e4c7bd0e8855e81862660f2_nora.pdf"
+    }
+  ],
+  "Image": [],
+  "Video": [
+    {
+      "ResourceID": 1250857770,
+      "Duration": 1,
+      "Link": "https://ia801307.us.archive.org/20/items/MIT11.949S04/mit-ocw-11.949-09feb2004-220k_512kb.mp4"
+    },
+    {
+      "ResourceID": 1362138227,
+      "Duration": 1,
+      "Link": "https://ia801307.us.archive.org/20/items/MIT11.949S04/mit-ocw-11.949-08mar2004-220k_512kb.mp4"
+    },
+    {
+      "ResourceID": 1986436606,
+      "Duration": 1,
+      "Link": "https://ia801307.us.archive.org/20/items/MIT11.949S04/mit-ocw-11.949-26apr2004-220k_512kb.mp4"
+    },
+    {
+      "ResourceID": 1884948763,
+      "Duration": 1,
+      "Link": "https://ia601307.us.archive.org/20/items/MIT11.949S04/mit-ocw-11.949-10may2004-220k_512kb.mp4"
+    }
+  ],
+  "Website": [
+    {
+      "ResourceID": 600104966,
+      "Link": "https://ocw.mit.edu/courses/11-949-city-visions-past-and-future-spring-2004/download/"
+    }
+  ]
+}
