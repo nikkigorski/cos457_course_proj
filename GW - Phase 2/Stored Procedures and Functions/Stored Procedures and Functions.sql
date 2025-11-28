@@ -1,0 +1,305 @@
+/*
+File: Stored Procedures and Functions - Lobster Notes.sql
+Author: Gage White
+Date: 10 November 2025
+Description: Stored Procedures and Functions for Lobster Notes Project
+*/
+
+
+
+/*
+Procedure for creating a new user, specifying enrolled courses and if user is a professor
+*/
+delimiter //
+create procedure SP_User_Create
+(
+    IN user_name varchar(50),
+    IN enrolled_courses varchar(50),
+    IN professor_check boolean
+)
+
+begin
+Insert into user
+(
+    Name,
+    Courses,
+    IsProfessor
+)
+values
+(
+    user_name,
+    enrolled_courses,
+    professor_check
+);
+end//
+delimiter ;
+
+delimiter //
+create trigger TR_User_AfterInsert
+after insert on User
+for each row
+begin
+	if new.IsProfessor = True then
+		insert into Professor (UserID, Badge)
+        values (new.UserID, Null);
+	else
+		insert into Student (UserID)
+        values (new.UserID);
+	end if;
+end//
+
+delimiter ;
+
+/*
+Procedure for updating username by taking UserID for user to be altered
+*/
+delimiter //
+create procedure SP_Update_User
+(
+	IN user_id int UNSIGNED,
+	IN new_name varchar(50)
+)
+begin
+	update user
+	set name = new_name
+	where UserID = user_id;
+
+end//
+delimiter ;
+
+/*
+Creates a new resource
+*/
+
+delimiter //
+create procedure SP_Resource_Create
+(
+	IN lecture_date date,
+    IN author_of varchar(50),
+    IN lecture_topic varchar(25),
+    IN resource_keywords varchar(25),
+    IN format_of varchar(7),
+    IN note_body varchar(2048),
+    IN web_address varchar(2048),
+    IN video_duration int unsigned,
+    IN image_size int unsigned
+)
+begin
+	declare resource_id int;
+	start transaction;
+		
+	insert into resource
+	(
+			DateFor,
+			Author,
+			Topic,
+			Keywords,
+			Format
+	)
+	values
+	(
+			lecture_date,
+			author_of,
+			lecture_topic,
+			resource_keywords,
+			format_of
+	);
+
+	set resource_id = last_insert_id();
+
+	case format_of
+		when 'Note' then
+			insert into note
+				(
+					ResourceID,
+					Body
+				)
+				values
+				(
+					resource_id,
+					note_body
+				);
+		when 'Website' then
+			insert into website
+			(
+				ResourceID,
+				Link
+			)
+			values
+			(
+				resource_id,
+				web_address
+			);
+		when 'Pdf' then
+			insert into pdf
+				(
+					ResourceID,
+                    Body,
+					Link
+				)
+                values
+                (
+					resource_id,
+                    note_body,
+                    web_address
+				);
+		when 'Image' then
+			insert into Image
+				(
+					ResourceID,
+                    Size,
+                    Link
+				)
+                values
+                (
+					resource_id,
+                    null,
+                    web_address
+				);
+			when 'Video' then
+				insert into Video
+					(
+						ResoruceID,
+                        Duration,
+                        Link
+					)
+                    values
+                    (
+						resource_id,
+                        null,
+                        web_address
+					);
+
+	end case;
+    
+	commit;
+end//
+delimiter ; 
+
+/*
+Links professor to course
+*/
+delimiter //
+create procedure SP_Course_IsProfessor
+(
+	IN course_id int unsigned,
+    IN prof_id int unsigned
+)
+begin
+	if exists(
+		select 1
+        from Professor
+        where UserID = prof_id) then
+			update Course
+            set ProfessorID = prof_id
+            where CourseID = course_id;
+	end if;
+end//
+delimiter ;
+
+
+
+/*
+Allows submission of rating
+*/
+delimiter //
+create procedure SP_Rating_Rate
+(
+	IN resource_ID int unsigned,
+	IN rater varchar(50),
+    IN rating numeric(2,1),
+    IN date_of date
+)
+begin
+	insert into rating
+		(
+			ResourceID,
+			Poster,
+            Score,
+            Date
+		)
+	values
+    (
+		resource_ID,
+		rater,
+        rating,
+        date_of
+	);
+--     update Resource
+-- 		set Rating =
+--         (
+--         Select avg(r.Score) 
+--         from Rating as r
+--         where r.ResourceID = resource_ID
+--         )
+-- 	where ResourceID = resource_ID;
+    
+    
+end//
+delimiter ;
+
+/*
+Gets details for a resource based on ResourceID
+*/
+delimiter //
+create procedure SP_Resource_Details
+(
+	IN resource_ID int unsigned
+)
+begin
+select
+	R.ResourceID, 
+    R.Topic, 
+    R.Format, 
+    R.DateFor,
+    R.Author as Author_Name,
+    N.Body as Note_Body,
+    W.Link as Web_Address,
+    V.Duration as Video_Duration,
+    
+    (
+    select avg(score) 
+    from Rating 
+    where ResourceID = R.ResourceID
+    ) as Average_Rating
+    
+from Resource as R join user as U on R.Author = U.Name
+left join Note as N on R.ResourceID = N.ResourceID
+left join Website as W on R.ResourceID = W.ResourceID
+left join Video as V on R.ResourceID = V.ResourceID
+
+where R.ResourceID = resource_ID;
+
+end//
+delimiter ; 
+
+/*
+Returns average score of given ResourceID
+*/
+delimiter //
+create function FN_Rating_Avg(resource_id int)
+	returns decimal(2,1)
+	begin
+	declare r_avg decimal(2,1);
+		select round(avg(Score), 1) into r_avg
+		from Rating
+		where Resource.ResourceID = resource_id;
+	return r_avg;
+end//
+delimiter ;
+
+/*
+Takes UserID and checks if user is professor
+*/
+delimiter //Name
+create function FN_User_Isprofessor(user_id int)
+	returns boolean
+begin
+    declare is_prof boolean;
+		select IsProfessor into is_prof
+        from User
+        where User.UserID = user_id;
+	return is_prof;
+end//
+delimiter ;
+    
