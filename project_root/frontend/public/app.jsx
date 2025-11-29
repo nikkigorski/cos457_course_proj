@@ -24,7 +24,7 @@ const sampleSearch = [
 
 window.__SAMPLE_NOTES__ = sampleNotes;
 
-function NoteEditor(){
+function NoteEditor({ user }){
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
@@ -50,6 +50,13 @@ function App(){
   const [route, setRoute] = useState({ name: 'list', id: null });
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // current user info passed to subcomponents
+  const user = {
+    userid: 12345,
+    username: 'nikki.gorski',
+    courses: ['Biology 101', 'Computational Music'],
+    isProffesor: false
+  };
 
   useEffect(() => {
     const syncRouteFromLocation = () => {
@@ -86,39 +93,30 @@ function App(){
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-          <div className="brand">Lobster Notes</div>
-          <form onSubmit={(e) => { e.preventDefault(); setSearchActive(true); setRoute({ name: 'list', id: null }); }} style={{display:'flex', alignItems:'center', gap: '8px'}}>
-            <input
-              className="note-search"
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{padding: '6px 8px', borderRadius: 6, border: '1px solid #e6e9ef'}}
-            />
-            <button className="btn" type="submit">Search</button>
-            <button className="btn" type="button" onClick={() => { setSearchQuery(''); setSearchActive(false); }}>Clear</button>
-          </form>
-        </div>
-      </header>
+      <Topbar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearch={(e) => { e.preventDefault(); setSearchActive(true); setRoute({ name: 'list', id: null }); }}
+        onClear={() => { setSearchQuery(''); setSearchActive(false); }}
+        user={user}
+      />
       <main className="main">
         {searchActive ? (
           // pass sample notes rather than search for now
           <section style={{width: '100%'}}>
-            <NoteList notes={sampleSearch} onOpenNote={openNote} />
+            <NoteList notes={sampleSearch} onOpenNote={openNote} user={user} />
           </section>
         ) : route.name === 'note' ? (
           <section className="note-full">
-            <NotePage note={activeNote} onBack={goBack} />
+            <NotePage note={activeNote} onBack={goBack} user={user} />
           </section>
         ) : (
           <React.Fragment>
             <section className="left">
-              <NoteEditor />
+              <NoteEditor user={user} />
             </section>
             <section className="right">
-              <NoteList notes={sampleNotes} onOpenNote={openNote} />
+              <NoteList notes={sampleNotes} onOpenNote={openNote} user={user} />
             </section>
           </React.Fragment>
         )}

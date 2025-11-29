@@ -1,4 +1,4 @@
-function NotePage({ note, resource, onBack }) {
+function NotePage({ note, resource, onBack, user }) {
   const data = resource || note || null;
 
   if (!data) {

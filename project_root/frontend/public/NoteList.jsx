@@ -1,4 +1,4 @@
-function NoteList({ notes, onOpenNote }){
+function NoteList({ notes, onOpenNote, user }){
   const list = notes || window.__SAMPLE_NOTES__ || [];
 
   return (
