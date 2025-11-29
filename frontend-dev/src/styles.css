@@ -31,6 +31,7 @@ body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica
 .note-editor{background:var(--card); padding:16px; border-radius:10px; box-shadow:0 6px 20px rgba(12,23,64,0.06)}
 
 .note-title{width:100%; padding:10px; border:1px solid #e6e9ef; border-radius:6px; margin-bottom:8px}
+.note-course, .note-keywords, .note-title{width:100%; padding:10px; border:1px solid #e6e9ef; border-radius:6px; margin-bottom:8px}
 .note-body{width:100%; min-height:160px; padding:10px; border:1px solid #e6e9ef; border-radius:6px; resize:vertical}
 .note-actions{display:flex; justify-content:flex-end; margin-top:10px}
 

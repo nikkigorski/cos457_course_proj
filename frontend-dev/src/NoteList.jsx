@@ -5,7 +5,6 @@ function NoteList({ notes, onOpenNote, user }){
 
   return (
     <div className="note-list">
-      <h2>My Notes</h2>
       <div className="notes">
         {list.map(n => (
           <div key={n.ResourceID} style={{marginBottom: '8px'}}>

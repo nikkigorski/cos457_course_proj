@@ -3,6 +3,7 @@ import NoteList from './NoteList.jsx';
 import NotePage from './NotePage.jsx';
 import Topbar from './Topbar.jsx';
 import ProfessorDashboard from './pages/ProfessorDashboard.jsx';
+import SearchPage from './pages/SearchPage.jsx';
 
 const sampleNotes = [
   { ResourceID: 1,Title: "Computational music theory" ,Author: "mit ocw, lobster notes web scraper", Rating: "5", Date: "2025-11-15", Format: "Video", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4" },
@@ -40,6 +41,8 @@ function NoteEditor({ user }){
     <form className="note-editor" onSubmit={submit}>
       <h2>Note Editor</h2>
       <input className="note-title" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} />
+      <input className="note-course" placeholder="Course" value={title} onChange={e=>setTitle(e.target.value)} />
+      <input className="note-keywords" placeholder="Keywords (separated by commas)" value={title} onChange={e=>setTitle(e.target.value)} />
       <textarea className="note-body" placeholder="Write your note here..." value={body} onChange={e=>setBody(e.target.value)} />
       <div className="note-actions">
         <button className="btn btn-primary" type="submit">Save Note</button>
@@ -68,6 +71,8 @@ export default function App(){
         setRoute({ name: 'note', id: Number(m[1]) });
       } else if (p === '/dashboard') {
         setRoute({ name: 'dashboard', id: null });
+      } else if (p === '/search') {
+        setRoute({ name: 'search', id: null });
       } else {
         setRoute({ name: 'list', id: null });
       }
@@ -94,9 +99,20 @@ export default function App(){
     setSearchActive(false);
   };
 
+  const openSearch = (query) => {
+    const url = '/search';
+    window.history.pushState({ route: 'search', query }, '', url);
+    setRoute({ name: 'search', id: null });
+    setSearchActive(true);
+    setSearchQuery(query || '');
+  };
+
   const goBack = () => {
     window.history.pushState({}, '', '/');
     setRoute({ name: 'list', id: null });
+    // Ensure any active search UI is closed and query cleared
+    setSearchActive(false);
+    setSearchQuery('');
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
@@ -107,7 +123,7 @@ export default function App(){
       <Topbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        onSearch={(e) => { e.preventDefault(); setSearchActive(true); setRoute({ name: 'list', id: null }); }}
+        onSearch={(e) => { e.preventDefault(); openSearch(searchQuery); }}
         onClear={() => { setSearchQuery(''); setSearchActive(false); }}
         onDashboard={openDashboard}
         onNotes={goBack}
@@ -115,9 +131,8 @@ export default function App(){
       />
       <main className="main">
         {searchActive ? (
-          // pass sample notes rather than search for now
           <section style={{width: '100%'}}>
-            <NoteList notes={sampleSearch} onOpenNote={openNote} user={user} />
+            <SearchPage notes={sampleSearch} onOpenNote={openNote} user={user} />
           </section>
         ) : route.name === 'note' ? (
           <section className="note-full">
@@ -139,6 +154,7 @@ export default function App(){
               <NoteEditor user={user} />
             </section>
             <section className="right">
+              <h2>My Notes</h2>
               <NoteList notes={sampleNotes} onOpenNote={openNote} user={user} />
             </section>
           </React.Fragment>
