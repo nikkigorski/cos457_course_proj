@@ -110,7 +110,6 @@ export default function App(){
   const goBack = () => {
     window.history.pushState({}, '', '/');
     setRoute({ name: 'list', id: null });
-    // Ensure any active search UI is closed and query cleared
     setSearchActive(false);
     setSearchQuery('');
     window.dispatchEvent(new PopStateEvent('popstate'));
@@ -132,7 +131,7 @@ export default function App(){
       <main className="main">
         {searchActive ? (
           <section style={{width: '100%'}}>
-            <SearchPage notes={sampleSearch} onOpenNote={openNote} user={user} />
+            <SearchPage notes={sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} />
           </section>
         ) : route.name === 'note' ? (
           <section className="note-full">
