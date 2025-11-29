@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Topbar({ searchQuery, setSearchQuery, onSearch, onClear, user }){
+function Topbar({ searchQuery, setSearchQuery, onSearch, onClear, onDashboard, onNotes, user }){
   // `user` is available here for potential personalization (not used yet)
   return (
     <header className="topbar">
@@ -16,6 +16,9 @@ function Topbar({ searchQuery, setSearchQuery, onSearch, onClear, user }){
           />
           <button className="btn" type="submit">Search</button>
           <button className="btn" type="button" onClick={onClear}>Clear</button>
+          <button className="btn" type="button" onClick={onDashboard} title="Open Professor Dashboard">Dashboard</button>
+          <button className="btn" type="button" onClick={onNotes} title="Back to Notes">Notes</button>
+          
         </form>
       </div>
     </header>
