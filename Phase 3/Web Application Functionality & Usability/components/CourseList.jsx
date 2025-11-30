@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 function CourseList({ courses }) {
   return (
@@ -10,7 +11,15 @@ function CourseList({ courses }) {
         {courses.map(function(course) {
           // Standard function syntax
           return (
-            <li key={course.CourseID} className="list-group-item d-flex justify-content-between align-items-center">
+
+            <li key={course.CourseID} className="list-group-item p-0">
+              
+            <Link 
+              to={`/course/${course.CourseID}`} 
+              key={course.CourseID} 
+              className="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3"
+              style={{textDecoration: 'none', color: 'inherit'}}
+            >
               <div>
                 {/* Combines subject and catalog number into a course */}
                 <strong>{course.Subject} {course.CatalogNumber}</strong>: {course.Name}
@@ -27,6 +36,7 @@ function CourseList({ courses }) {
                   Prof ID: {course.ProfessorID}
                 </span>
               </div>
+              </Link>
             </li>
           );
         })}
