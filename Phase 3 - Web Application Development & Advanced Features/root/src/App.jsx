@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import NoteList from './NoteList.jsx';
 import NotePage from './NotePage.jsx';
 import Topbar from './Topbar.jsx';
-import ProfessorDashboard from './pages/ProfessorDashboard.jsx';
-import SearchPage from './pages/SearchPage.jsx';
+import HomePage from './pages/HomePage.jsx';
+import Login from './pages/Login.jsx';
+import AccountCreation from './pages/AccountCreation.jsx';
+import axios from 'axios';
+//import ProfessorDashboard from './pages/ProfessorDashboard.jsx'; //replace <ProfessorDashboard /> at end of dashboard when exists
+//import SearchPage from './pages/SearchPage.jsx'; // replace <SearchPage notes={sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} /> in first searchactive section when ../data exists
 
 const sampleNotes = [
   { ResourceID: 1,Title: "Computational music theory" ,Author: "mit ocw, lobster notes web scraper", Rating: "5", Date: "2025-11-15", Format: "Video", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4" },
@@ -52,10 +56,26 @@ function NoteEditor({ user }){
 }
 
 export default function App(){
-  const [route, setRoute] = useState({ name: 'list', id: null });
+  const [route, setRoute] = useState({ name: 'home', id: null });
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
+  const fetchAPI = async () => {
+    const response = await axios.get("http://localhost:8080/api/users");
+    //above is asking the python backend code for whatever corresponds to that URI
+    //think of the react jsx stuff making http requests to the python/flask stuff
+    //tbf thats exactly what its doing
+    console.log(response.data.users);
+
+  };
+
+  useEffect(() => {
+    fetchAPI();
+  },[]
+
+  );
+
+
   const user = {
     userid: 12345,
     username: 'nikki.gorski',
@@ -73,8 +93,14 @@ export default function App(){
         setRoute({ name: 'dashboard', id: null });
       } else if (p === '/search') {
         setRoute({ name: 'search', id: null });
-      } else {
-        setRoute({ name: 'list', id: null });
+      } else if (p ==='/notes'){
+        setRoute({name: 'list', id: null })
+      } else if (p === '/login'){
+        setRoute({name: 'login',id: null});
+      } else if (p === '/create-account'){
+        setRoute({name: 'create-account', id: null});
+      } else{
+        setRoute({ name: 'home', id: null });
       }
     };
 
@@ -107,13 +133,43 @@ export default function App(){
     setSearchQuery(query || '');
   };
 
+  //deprecated. previously returned to default page, which was the notes page
+  //default page was changed to homepage, so this functionality is outdated
+  //replaced with goNotes
+  //this functionality copied over to goHome
   const goBack = () => {
     window.history.pushState({}, '', '/');
-    setRoute({ name: 'list', id: null });
+    setRoute({ name: 'home', id: null });
     setSearchActive(false);
     setSearchQuery('');
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
+
+  const goNotes = () => {
+    window.history.pushState({route: 'list'}, '', '/notes');
+    setRoute({ name: 'list', id: null });
+    setSearchActive(false);
+  }
+
+  const goHome = () => {
+    window.history.pushState({}, '', '/');
+    setRoute({ name: 'home', id: null });
+    setSearchActive(false);
+    setSearchQuery('');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
+  const goLogin = () => {
+    window.history.pushState({route: 'login'},'','/login');
+    setRoute({name:'login',id:null});
+    setSearchActive(false);
+  }
+
+  const goAcctCreate = () => {
+    window.history.pushState({route: 'create-account'},'','/create-account');
+    setRoute({name:'create-account',id:null});
+    setSearchActive(false);
+  }
 
   const activeNote = sampleNotes.find(n => n.ResourceID === route.id) || null;
 
@@ -125,29 +181,32 @@ export default function App(){
         onSearch={(e) => { e.preventDefault(); openSearch(searchQuery); }}
         onClear={() => { setSearchQuery(''); setSearchActive(false); }}
         onDashboard={openDashboard}
-        onNotes={goBack}
+        onNotes={goNotes}
+        onHome={goHome}
+        onLoginButton={goLogin}
+        onCreateAccount={goAcctCreate}
         user={user}
       />
       <main className="main">
         {searchActive ? (
           <section style={{width: '100%'}}>
-            <SearchPage notes={sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} />
+            
           </section>
         ) : route.name === 'note' ? (
           <section className="note-full">
-            <NotePage note={activeNote} onBack={goBack} user={user} />
+            <NotePage note={activeNote} onBack={goNotes} user={user} />
           </section>
         ) : route.name === 'dashboard' ? (
           <section style={{width: '100%'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12}}>
               <h2>Professor Dashboard</h2>
               <div>
-                <button className="btn" onClick={goBack}>Back</button>
+                <button className="btn" onClick={goHome}>Back</button>
               </div>
             </div>
-            <ProfessorDashboard />
+            
           </section>
-        ) : (
+        ) : route.name === 'list' ? (
           <React.Fragment>
             <section className="left">
               <NoteEditor user={user} />
@@ -157,6 +216,18 @@ export default function App(){
               <NoteList notes={sampleNotes} onOpenNote={openNote} user={user} />
             </section>
           </React.Fragment>
+        ) : route.name === 'login' ? (
+          <section className='login-full'>
+            <Login/>
+          </section>
+        ) : route.name === 'create-account' ? (
+          <section>
+            <AccountCreation/>
+          </section>
+        ) : (
+          <section className='note-full'>
+            <HomePage user={user}/>
+          </section>
         )}
       </main>
     </div>
