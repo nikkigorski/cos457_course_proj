@@ -1,32 +1,141 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify #request is useful, just not used here yet
 from flaskext.mysql import MySQL
-from markupsafe import escape
+from markupsafe import escape # must call escape on any user input when its placed into html
 from flask_cors import CORS
 import pymysql
-import re
+import re # not needed?
 
 from pymysql import cursors
 
-'''
-todo
--attach to database
--
-'''
+
 
 
 app = Flask(__name__)
 cors = CORS(app,origins='*')
 
+
+#""" maybe don't need these?
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'admin'
 app.config['MYSQL_PASSWORD'] = 'admin'
 app.config['MYSQL_DB'] = 'LobsterNotes'
+#"""
 
 mysql = MySQL(cursorclass=cursors.DictCursor)
 mysql.init_app(app)
-cursor = mysql.connect().cursor()
-# above is potentially a correct way to get a cursor
+connection = pymysql.connect(user='admin', password='admin',
+    host='localhost', database='LobsterNotes', port=3306,
+    charset='utf8mb4', collation='utf8mb4_0900_ai_ci', use_unicode=True,
+    cursorclass=pymysql.cursors.DictCursor)
+cursor = connection.cursor(cursor=cursors.DictCursor)
 
+#ignore the comments below, code continues after them
+
+#connect parameters we may want?
+    #init_command - str – Initial SQL statement to run when connection is established.
+    #read_default_group - str – Group to read from in the configuration file.
+    #local_infile – Boolean to enable the use of LOAD DATA LOCAL command. (default: False)
+
+
+"""
+pymysql stuff
+-connecting
+    -need to connect and store the object returned
+        -ex:
+            -connection = pymysql.connect(args)
+        -important arguments:
+            -user
+            -password
+            -host
+            -database
+            -port
+            -charset
+            -collation
+            -use_unicode
+            -cursorclass
+                -the type of cursor to make
+                -use DictCursor since it'll return the data in a dictionary
+    -methods connection objects can call
+        -begin()
+            -"begin transaction"
+        -close()
+            -"Send the quit message and close the socket."
+        -commit()
+            -commits changes
+        -cursor(cursor=None)
+            -makes a new cursor to execute queries with
+            -parameter cursor - cursor - the type of cursor to make
+                -choices are: Cursor, SSCursor, DictCursor, or SSDictCursor
+                -default value of None means to make a Cursor object
+        -ping(reconnect=)
+            -checks if the server is alive
+            -parameter reconnect - boolean - if the connection is closed, reconnect if True
+                -default value is True
+        -rollback()
+            -roll back the current transaction
+                -see begin() for how to start a transaction
+        -select_db(db)
+            -sets the current database
+            -NOT NECESSARY if the connect call included a "database" parameter
+            -parameter db - str - the name of the database
+        -set_character_set(charset, collation=None)
+            -Set charaset (and collation)
+            -Send “SET NAMES charset [COLLATE collation]” query. Update Connection.encoding based on charset.)
+        -show_warnings()
+            -Send the “SHOW WARNINGS” SQL command.
+    -properties of connection objects
+        -open
+            -returns true if connected
+cursor stuff
+    -used to interact with the mysql db
+    -making cursor
+        -must connect first
+        -cursor = connection.cursor()
+    -methods cursor objects can use via cursor.method(args)
+        -execute(query,args)
+            -EXECUTES the QUERY
+            -query - str - Query to execute.
+            -args - tuple, list or dict - Parameters used with query. (optional)
+            -ex:
+                -cursor.execute('INSERT INTO table_name VALUES(%s,%s)','value1','value2')
+            -returns
+                -int - number of affected rows
+        -commit()
+            -COMMITS CHANGES
+            -need to do this since mysql doesn't auto-commit. though some of our stored functions commit, so not after those.
+                -though we may as well just to be safe.
+        -callproc(procname,args=())
+            -Execute STORED PROCEDURES procname with args.
+            -procname - str - Name of procedure to execute on server.
+            -args - tuple or list - Sequence of parameters to use with procedure.
+            -Compatibility warning: PEP-249 specifies that any modified parameters must be returned. This is currently impossible as they are only available by storing them in a server variable and then retrieved by a query. Since stored procedures return zero or more result sets, there is no reliable way to get at OUT or INOUT parameters via callproc. The server variables are named @_procname_n, where procname is the parameter above and n is the position of the parameter (from zero). Once all result sets generated by the procedure have been fetched, you can issue a SELECT @_procname_0, … query using .execute() to get any OUT or INOUT values.
+            -Compatibility warning: The act of calling a stored procedure itself creates an empty result set. This appears after any result sets generated by the procedure. This is non-standard behavior with respect to the DB-API. Be sure to use nextset() to advance through all result sets; otherwise you may get disconnected.
+            -returns
+                -the original args
+        -executemany(query,args)
+            -Run several data against one query.
+            -This method improves performance on multiple-row INSERT and REPLACE. Otherwise it is equivalent to looping over args with execute().
+            -query - str - Query to execute.
+            -args - tuple or list - Sequence of sequences or mappings. It is used as parameter.
+            -returns
+                -int or none - Number of rows affected, if any.
+        -close()
+            -CLOSES the cursor
+        -fetchone()
+            -get the next row in results
+        -fetchmany(size=None)
+            -get the next <size> rows
+        -fetchall()
+            -get all the available rows
+        -mogrify(query, args=None)
+            -Returns the exact string that would be sent to the database by calling the execute() method.
+            -query - str - Query to mogrify.
+            -args - tuple, list or dict - Parameters used with query. (optional)
+            -returns
+                -str - The query with argument binding applied.
+    -closing cursor
+        -cursor.close()
+"""
 
 
 
@@ -34,28 +143,27 @@ cursor = mysql.connect().cursor()
 
 @app.route("/")
 def index():
-    cur = mysql.connect().cursor()
-    request.form
+    cursor.execute(''' select * from user''')
+    result = cursor.fetchall()
+    print(result)
+
     return ("")
-# above is another potentially correct way to get a cursor
-# same thing is made, difference is this is in a flask function
-# apparently necessary??
 
 
-# practice
+
+
 @app.route("/api/users",methods=['GET'])
 def hello_world():
-    return jsonify(
-        {
-            "users": [
-                "me","you","them"
-            ]
-        }
-    )
+    cursor.execute('select * from user')
+    result = cursor.fetchall()
+    print(result)
+    connection.commit() # need to commit or rollback before every .execute so the previous transaction ends and we get updated data from the db
+    # its probably better to do it after each instead of before each just to make sure that queries that change the db resolve either way
+    return (jsonify(result))
 
 
 
 
 
 if __name__ == "__main__":
-    app.run(debug=False,port=8080)
+    app.run(debug=False,port=5000)

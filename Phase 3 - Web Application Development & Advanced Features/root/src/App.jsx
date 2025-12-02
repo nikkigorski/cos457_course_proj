@@ -8,6 +8,8 @@ import AccountCreation from './pages/AccountCreation.jsx';
 import axios from 'axios';
 //import ProfessorDashboard from './pages/ProfessorDashboard.jsx'; //replace <ProfessorDashboard /> at end of dashboard when exists
 //import SearchPage from './pages/SearchPage.jsx'; // replace <SearchPage notes={sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} /> in first searchactive section when ../data exists
+//above 2 imports commented out due to not fully working
+
 
 const sampleNotes = [
   { ResourceID: 1,Title: "Computational music theory" ,Author: "mit ocw, lobster notes web scraper", Rating: "5", Date: "2025-11-15", Format: "Video", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4" },
@@ -61,19 +63,29 @@ export default function App(){
   const [searchQuery, setSearchQuery] = useState('');
   
   const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:8080/api/users");
+    const response = await axios.get("http://localhost:5000/api/users",);
     //above is asking the python backend code for whatever corresponds to that URI
-    //think of the react jsx stuff making http requests to the python/flask stuff
-    //tbf thats exactly what its doing
-    console.log(response.data.users);
+    //think of it as the react jsx stuff making http requests to the python/flask stuff
+    //cause thats exactly what its doing
+    console.log(response.data);
 
   };
 
   useEffect(() => {
-    fetchAPI();
+    //fetchAPI();
   },[]
 
   );
+
+  /*
+  first trial with getting data from mysql server to react frontend
+  works
+  */
+  const getUsers = async () => {
+    console.log("hi");
+    const users = await axios.get("http://localhost:5000/api/users");
+    return users.data;
+  };
 
 
   const user = {
@@ -226,7 +238,7 @@ export default function App(){
           </section>
         ) : (
           <section className='note-full'>
-            <HomePage user={user}/>
+            <HomePage user={user} users={getUsers}/>
           </section>
         )}
       </main>
