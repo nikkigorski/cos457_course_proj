@@ -16,26 +16,29 @@ python-dotenv==1.2.1    # py
 Werkzeug==3.1.4         # py
 
 #   below are javascript-related requirements
-#       install with npm? can get pip to call other programs from within this file.
-    "axios": "^1.13.2", # regular depends
-    "babel-preset-react": "^6.24.1",
-    "bootstrap": "^5.3.8",
-    "core-js": "^3.47.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.6"
-    "@babel/cli": "^7.28.3",    # start of dev depends
-    "@babel/core": "^7.28.5",
-    "@babel/plugin-transform-react-jsx": "^7.27.1",
-    "@babel/preset-env": "^7.28.5",
-    "@babel/preset-react": "^7.28.5",
-    "@babel/standalone": "^7.28.5",
-    "@eslint/js": "^9.39.1",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "vite": "^7.2.4"
+#       -install with npm? can get pip to call other programs from within this file.
+#       -some of these probably aren't actually required for running the server, just for development.
+
+
+#    "axios": "^1.13.2", # regular depends
+#    "babel-preset-react": "^6.24.1",
+#    "bootstrap": "^5.3.8",
+#    "core-js": "^3.47.0",
+#    "react": "^19.2.0",
+#    "react-dom": "^19.2.0",
+#    "react-router-dom": "^7.9.6"
+#    "@babel/cli": "^7.28.3",    # start of dev depends
+#    "@babel/core": "^7.28.5",
+#    "@babel/plugin-transform-react-jsx": "^7.27.1",
+#    "@babel/preset-env": "^7.28.5",
+#    "@babel/preset-react": "^7.28.5",
+#    "@babel/standalone": "^7.28.5",
+#    "@eslint/js": "^9.39.1",
+#    "@types/react": "^19.2.7",
+#    "@types/react-dom": "^19.2.3",
+#    "@vitejs/plugin-react": "^5.1.1",
+#    "eslint": "^9.39.1",
+#    "eslint-plugin-react-hooks": "^7.0.1",
+#    "eslint-plugin-react-refresh": "^0.4.24",
+#    "globals": "^16.5.0",
+#    "vite": "^7.2.4"
