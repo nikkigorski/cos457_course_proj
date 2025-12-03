@@ -2,7 +2,7 @@
 Lobster Notes Tables
 Gabrielle Akers
 November 2, 2025
-Edited on November 12, 2025
+Edited on December 3, 2025
 */
 create table User(
 	UserID int unsigned auto_increment,
@@ -14,7 +14,7 @@ create table User(
 
 create table Course(
 	CourseID int unsigned auto_increment,
-    Section varchar(24) null check(REGEXP_LIKE(accno, '^[A-Za-z0-9]+$')),
+    Section varchar(24) null check(REGEXP_LIKE(Section, '^[A-Za-z0-9]+$')),
     Name varchar(50) not null,
     Session varchar(6) not null check(Session in('Spring', 'Summer', 'Fall', 'Winter')),
     Year numeric(4,0) not null check(Year>2000 AND Year<=year(curdate())),
