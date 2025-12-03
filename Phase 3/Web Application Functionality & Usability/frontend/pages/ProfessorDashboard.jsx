@@ -11,11 +11,10 @@ function ProfessorDashboard( {onCourseSelect}) {
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState(''); 
-
   const [inputSearchTerm, setInputSearchTerm] = useState('');
 
   const API_BASE_URL = 'http://127.0.0.1:8080/api';
-  const PROFESSOR_ID = 1; // Test Professor ID 1
+  const PROFESSOR_ID = 12420; // Test Professor ID 1
 
   const handleCourseSelection = function(courseID){
     setSelectedCourseId(courseID);

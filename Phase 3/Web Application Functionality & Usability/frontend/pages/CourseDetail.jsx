@@ -1,34 +1,60 @@
-import React from 'react';
-//import { useParams, Link } from 'react-router-dom';
-import { sampleCourses, sampleStudents, sampleResources } from '../data.js';
+import React, { useState, useEffect } from 'react';
 
-function CourseDetail(id, onBack) {
-  //const { id } = useParams(); // Get CourseID from URL
-  const courseId = parseInt(id);
+function CourseDetail({ id, onBack }) {
+  const [course, setCourse] = useState(null);
+  const [enrolledStudents, setEnrolledStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
- //Find Course
-  const course = sampleCourses.find(function(c) {
-    return c.CourseID === courseId;
-  });
+  
+  const resources = []; 
 
-  if (!course) {
-    return <div className="container mt-5"><h2>Course not found</h2></div>;
+  const API_BASE_URL = 'http://127.0.0.1:8080/api';
+
+  useEffect(function() {
+    if (!id) return;
+
+    setLoading(true);
+
+//get course details
+    fetch(API_BASE_URL + '/course/' + id)
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(courseData) {
+        //has course data
+        setCourse(courseData);
+
+//get roster
+        return fetch(API_BASE_URL + '/course/' + id + '/roster');
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(rosterData) {
+        //has roster data
+        setEnrolledStudents(rosterData);
+      
+        setLoading(false);
+      })
+      .catch(function(err) {
+        console.error("Error loading data:", err);
+        setLoading(false);
+      });
+      
+  }, [id]);
+
+  if (loading) {
+    return <div className="container mt-5"><h3>Loading...</h3></div>;
   }
 
-  //Find Professor
-  const professor = sampleStudents.find(function(u) {
-    return u.UserID === course.ProfessorID;
-  });
-
-  // Find Enrolled Students
-  const enrolledStudents = sampleStudents.filter(function(s) {
-    return s.Courses === course.Subject && s.IsProfessor === "False";
-  });
-
-  //Find Resources
-  const resources = sampleResources.filter(function(r) {
-    return r.CourseID === courseId;
-  });
+  if (!course || course.error) {
+    return (
+      <div className="container mt-5">
+        <h3>Course not found</h3>
+        <button className="btn btn-secondary mt-3" onClick={onBack}>Back to Dashboard</button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-5">
@@ -40,7 +66,7 @@ function CourseDetail(id, onBack) {
             {course.Session} {course.Year} | Section {course.Section} | Dept: {course.Subject}
           </p>
         </div>
-        <Link to="/professor" className="btn btn-outline-secondary">Back to Dashboard</Link>
+        <button onClick={onBack} className="btn btn-outline-secondary">Back to Dashboard</button>
       </div>
 
       <div className="row">
@@ -50,7 +76,7 @@ function CourseDetail(id, onBack) {
           <div className="card mb-4">
             <div className="card-header">Instructor</div>
             <div className="card-body">
-              <h5 className="card-title">{professor ? professor.Name : "Unknown"}</h5>
+              <h5 className="card-title">{course.ProfessorName || "Unknown"}</h5>
               <p className="card-text text-muted">User ID: {course.ProfessorID}</p>
             </div>
           </div>
