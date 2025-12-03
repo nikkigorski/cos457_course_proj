@@ -4,7 +4,6 @@ export default function AccountCreation() {
     const [formData, setFormData] = React.useState({
         name: "",
         password: "",
-        courses: "",
         isProfessor: false,
     });
 
@@ -18,14 +17,13 @@ export default function AccountCreation() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Submitting:", formData);
-        alert(
-            "Account created for: " +
-                formData.name +
-                " (" +
-                (formData.isProfessor ? "Professor" : "Student") +
-                ")"
-        );
+
+        // ---- NAVIGATION LOGIC ----
+        if (formData.isProfessor) {
+            window.location.href = "/professor.html";
+        } else {
+            window.location.href = "/student.html";
+        }
     };
 
     return (
@@ -41,7 +39,7 @@ export default function AccountCreation() {
 
                         <form onSubmit={handleSubmit} className="account-form">
                             <label>
-                                Username:
+                                Name:
                                 <input
                                     type="text"
                                     name="name"
@@ -65,19 +63,7 @@ export default function AccountCreation() {
                                     className="note-title"
                                 />
                             </label>
-
-                            <label>
-                                Courses:
-                                <input
-                                    type="text"
-                                    name="courses"
-                                    value={formData.courses}
-                                    onChange={handleChange}
-                                    maxLength="50"
-                                    className="note-title"
-                                />
-                            </label>
-
+                            
                             <div className="role-select" style={{ marginTop: "12px" }}>
                                 <p>Select your role:</p>
 
