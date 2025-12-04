@@ -109,6 +109,116 @@ def get_course_roster(course_id):
         if cursor:
             cursor.close()
 
+#create a new course
+@app.route('/api/courses', methods=['POST'])
+def add_course():
+    cursor = None
+    try:
+        #Get data from frontend
+        data = request.get_json()
+        
+        #validate frontend required fields
+        subject = data.get('Subject')
+        catalog_number = data.get('CatalogNumber')
+        name = data.get('Name')
+        section = data.get('Section')
+        year = data.get('Year')
+        session = data.get('Session')
+        professor_id = data.get('ProfessorID')
+
+        conn = mysql.connection
+        # Use DictCursor to easily access ProfessorID later, though not strictly required for INSERT
+        cursor = conn.cursor(MySQLdb.cursors.DictCursor) 
+        
+        #Insert query
+        query = """
+        INSERT INTO Course (Subject, CatalogNumber, Name, Section, Year, Session, ProfessorID)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        
+        #Execute query
+        cursor.execute(query, (subject, catalog_number, name, section, year, session, professor_id))
+        
+        #Save insert to DB
+        conn.commit()
+
+        return jsonify({"message": "Course created successfully", "course_id": cursor.lastrowid}), 201
+    except Exception as e:
+        print(f"Error adding course: {e}")
+        return jsonify({"error": "Failed to add course"}), 500
+    finally:
+        if cursor: cursor.close()
+
+#Update course
+@app.route('/api/courses/<int:course_id>', methods=['PUT'])
+def update_course(course_id):
+    cursor = None
+    try:
+        data = request.get_json()
+        
+        # Attributes that can be updated
+        name = data.get('Name')
+        section = data.get('Section')
+        session = data.get('Session')
+        year = data.get('Year')
+
+        conn = mysql.connection
+        cursor = conn.cursor(MySQLdb.cursors.DictCursor) 
+        
+        #Update query
+        query = """
+        UPDATE Course
+        SET Name = %s, Section = %s, Session = %s, Year = %s
+        WHERE CourseID = %s
+        """
+        
+        # Execute query
+        cursor.execute(query, (name, section, session, year, course_id))
+        #save to DB
+        conn.commit()
+
+        if cursor.rowcount == 0:
+             return jsonify({"error": "Course not found or no changes made"}), 404
+             
+        return jsonify({"message": "Course updated successfully"}), 200
+    except Exception as e:
+        print(f"Error updating course: {e}")
+        return jsonify({"error": "Failed to update course"}), 500
+    finally:
+        if cursor: cursor.close()
+
+
+#Delete Course (ENSURE PROFESSOR ONLY -> Will delete all records attached to course)
+@app.route('/api/courses/<int:course_id>', methods=['DELETE'])
+def delete_course(course_id):
+    cursor = None
+    try:
+        conn = mysql.connection
+        cursor = conn.cursor(MySQLdb.cursors.DictCursor) 
+        
+        # Delete query
+        query = """
+        DELETE FROM Course
+        WHERE CourseID = %s
+        """
+        
+        #Execute query
+        cursor.execute(query, (course_id,))
+        
+        #update DB
+        conn.commit()
+
+        if cursor.rowcount == 0:
+             return jsonify({"error": "Course not found"}), 404
+             
+        return jsonify({"message": f"Course {course_id} deleted successfully"}), 200
+    except Exception as e:
+        print(f"Error deleting course: {e}")
+        return jsonify({"error": "Failed to delete course"}), 500
+    finally:
+        if cursor: cursor.close()
+
+
 
 #Runs app
 if __name__ == "__main__":
