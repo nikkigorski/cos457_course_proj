@@ -109,12 +109,20 @@ create table Website(
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
 
-create table Enrollment (
+create table Enrolled(
     StudentID int unsigned,
     CourseID int unsigned,
-    primary key (StudentID, CourseID),
-    foreign key (StudentID) references Student(UserID) on update cascade,
-    foreign key (CourseID) references Course(CourseID) on update cascade
+    primary key(StudentID, CourseID),
+    foreign key(StudentID) references Student(UserID) on update cascade,
+    foreign key(CourseID) references Course(CourseID) on update cascade
+);
+
+create table Teaches(
+	ProfessorID int unsigned,
+	CourseID int unsigned,
+	primary key(ProfessorID, CourseID),
+	foreign key(ProfessorID) references Professor(UserID) on update cascade,
+    foreign key(CourseID) references Course(CourseID) on update cascade
 );
 
 -- Average Rating attribute of Resource with Scores
