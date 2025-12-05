@@ -15,6 +15,7 @@ create table User(
 	UserID int unsigned auto_increment,
     Name varchar(50) not null unique,
     Courses varchar(50) null,
+	Password varchar(50) not null,
     IsProfessor boolean null,
     primary key(UserID)
 );
@@ -108,7 +109,13 @@ create table Website(
     foreign key(ResourceID) references Resource(ResourceID) on update cascade
 );
 
-
+create table Enrollment (
+    StudentID int unsigned,
+    CourseID int unsigned,
+    primary key (StudentID, CourseID),
+    foreign key (StudentID) references Student(UserID) on update cascade,
+    foreign key (CourseID) references Course(CourseID) on update cascade
+);
 
 -- Average Rating attribute of Resource with Scores
 delimiter $$
