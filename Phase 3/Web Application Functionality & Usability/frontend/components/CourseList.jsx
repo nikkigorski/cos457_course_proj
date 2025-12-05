@@ -1,5 +1,10 @@
 import React from 'react';
 //import { Link } from 'react-router-dom';
+/*
+CourseList: displays courses on professor dashboard
+@author Gage White
+@date 5 December 2025
+*/
 
 function CourseList({ courses, onCourseSelect }) {
   return (

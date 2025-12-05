@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 import { updateCourse, deleteCourse } from '../utils/courseApi';
 
+/*
+Course Detail: An interface to view and edit courses
+@author Gage White
+@Version 5 December 2025
+*/
+
 function CourseDetail({ id, onBack }) {
   const [course, setCourse] = useState(null);
   const [enrolledStudents, setEnrolledStudents] = useState([]);

@@ -1,5 +1,9 @@
 import React from 'react';
-
+/*
+StudentRoster: displays students on professor dashboard
+@author Gage White
+@date 5 December 2025
+*/
 function StudentRoster({ students }) {
   return (
     <div className="card shadow-sm">

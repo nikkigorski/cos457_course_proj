@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import CourseList from '../components/CourseList';
 import StudentRoster from '../components/StudentRoster';
 
-
+/*
+Professor Dashboard: a frontend interface for professors to view/edit courses and students enrolled in those courses
+@author Gage White
+@Version 5 December 2025
+*/
 
 function ProfessorDashboard( {onCourseSelect}) {
   const [courses, setCourses] = useState([]);

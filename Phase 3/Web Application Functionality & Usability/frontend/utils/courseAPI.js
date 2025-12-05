@@ -1,5 +1,12 @@
 const API_BASE_URL = 'http://127.0.0.1:8080/api';
 
+
+/*
+CourseAPI: logic to update and delete courses
+@author Gage White
+@Version 5 December 2025
+*/
+
 /**
  * update course
  * @param {number} courseId ID of course to update

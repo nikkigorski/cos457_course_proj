@@ -66,7 +66,7 @@ export default function App(){
   const [searchQuery, setSearchQuery] = useState('');
   
   const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:5000/api/users",);
+    const response = await axios.get("http://localhost:8080/api/users",);
     //above is asking the python backend code for whatever corresponds to that URI
     //think of it as the react jsx stuff making http requests to the python/flask stuff
     //cause thats exactly what its doing
