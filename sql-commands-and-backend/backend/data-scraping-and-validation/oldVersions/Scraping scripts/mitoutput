@@ -1,0 +1,283 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 346531793,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Activity: How do stem cel",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 322955989,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Human fertilization and e",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1677458517,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Cellular specialization (",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1387133819,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Non-coding RNA (ncRNA) | ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 326541760,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Operons and gene regulati",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 20712190,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Student Guide  How do ste",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 26138369,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Teacher Guide  How do ste",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 539163632,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Activity packet  How do s",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1447151619,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Student Guide  How do ste",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 810393922,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Teacher Guide  How do ste",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1522664805,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Activity packet  How do s",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1170104431,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Specialized cells of the ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 964652254,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Amgen Foundation logo",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 592245612,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "play.png",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 2064954583,
+      "Date": "2025-11-14",
+      "DateFor": "2025-11-14",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "play.png",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    }
+  ],
+  "Note": [
+    {
+      "ResourceID": 346531793,
+      "Body": "Make science come alive in your classroom with this free hands-on activity aligned to high school standards."
+    },
+    {
+      "ResourceID": 322955989,
+      "Body": "filepath:./downloaded_videos/Human fertilization and early development ｜ High school biology ｜ Khan Academy.mkv"
+    },
+    {
+      "ResourceID": 1677458517,
+      "Body": "filepath:./downloaded_videos/Cellular specialization (differentiation) ｜ Cells ｜ MCAT ｜ Khan Academy.webm"
+    },
+    {
+      "ResourceID": 1387133819,
+      "Body": "filepath:./downloaded_videos/Non-coding RNA (ncRNA) ｜ Biomolecules ｜ MCAT ｜ Khan Academy.mkv"
+    },
+    {
+      "ResourceID": 326541760,
+      "Body": "filepath:./downloaded_videos/Operons and gene regulation in bacteria.webm"
+    },
+    {
+      "ResourceID": 1170104431,
+      "Body": "Specialized cells of the human body (clockwise from top left): red blood cells, a dendritic cell of the immune system, smooth muscle cells, and a neuron."
+    },
+    {
+      "ResourceID": 964652254,
+      "Body": "Amgen Foundation logo"
+    }
+  ],
+  "pdf": [
+    {
+      "ResourceID": 20712190,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Student%20Guide_%20How%20do%20stem%20cells%20give%20rise%20to%20the%20diverse%20cell%20types%20that%20make%20up%20the%20human%20body.pdf"
+    },
+    {
+      "ResourceID": 26138369,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Teacher%20Guide_%20How%20do%20stem%20cells%20give%20rise%20to%20the%20diverse%20cell%20types%20that%20make%20up%20the%20human%20body.pdf"
+    },
+    {
+      "ResourceID": 539163632,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Activity%20packet_%20How%20do%20stem%20cells%20give%20rise%20to%20the%20diverse%20cell%20types%20that%20make%20up%20the%20human%20body.pdf"
+    },
+    {
+      "ResourceID": 1447151619,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Student%20Guide_%20How%20do%20stem%20cells%20give%20rise%20to%20the%20diverse%20cell%20types%20that%20make%20up%20the%20human%20body.pdf"
+    },
+    {
+      "ResourceID": 810393922,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Teacher%20Guide_%20How%20do%20stem%20cells%20give%20rise%20to%20the%20diverse%20cell%20types%20that%20make%20up%20the%20human%20body.pdf"
+    },
+    {
+      "ResourceID": 1522664805,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Activity%20packet_%20How%20do%20stem%20cells%20give%20rise%20to%20the%20diverse%20cell%20types%20that%20make%20up%20the%20human%20body.pdf"
+    }
+  ],
+  "Image": [
+    {
+      "ResourceID": 1170104431,
+      "Link": "https://cdn.kastatic.org/ka-content-images/c00cbbb2fe9b42d8205171747e6f70547d1eac5b.png",
+      "Width": 500,
+      "Height": 374,
+      "Size": 187000
+    },
+    {
+      "ResourceID": 964652254,
+      "Link": "https://cdn.kastatic.org/ka-content-images/43c9f9ad349b079cc646a7258910365a34ad76c9.png",
+      "Width": 275,
+      "Height": 28,
+      "Size": 7700
+    },
+    {
+      "ResourceID": 592245612,
+      "Link": "https://cdn.kastatic.org/images/play.png",
+      "Width": 48,
+      "Height": 48,
+      "Size": 2304
+    },
+    {
+      "ResourceID": 2064954583,
+      "Link": "https://cdn.kastatic.org/images/play.png",
+      "Width": 48,
+      "Height": 48,
+      "Size": 2304
+    }
+  ],
+  "Video": [
+    {
+      "ResourceID": 322955989,
+      "Duration": 479,
+      "Link": "https://www.youtube.com/watch?v=-7WKUNG9v-w"
+    },
+    {
+      "ResourceID": 1677458517,
+      "Duration": 510,
+      "Link": "https://www.youtube.com/watch?v=YtvL-LQlPrU"
+    },
+    {
+      "ResourceID": 1387133819,
+      "Duration": 280,
+      "Link": "https://www.youtube.com/watch?v=9YrS35wxE7o"
+    },
+    {
+      "ResourceID": 326541760,
+      "Duration": 609,
+      "Link": "https://www.youtube.com/watch?v=N7_K0yl0Egk"
+    }
+  ],
+  "Website": [
+    {
+      "ResourceID": 346531793,
+      "Link": "https://www.khanacademy.org/science/hs-bio/x230b3ff252126bb6:the-cell-cycle-and-differentiation/x230b3ff252126bb6:activity-how-do-stem-cells-give-rise-to-the-diverse-cell-types-that-make-up-the-human-body/a/activity-how-do-stem-cells-give-rise-to-the-diverse-cell-types-that-make-up-the-human-body"
+    }
+  ]
+}
