@@ -18,6 +18,9 @@ export default function AccountCreation() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        localStorage.setItem("name", formData.name);
+        localStorage.setItem("isProfessor", formData.isProfessor);
+
         // ---- NAVIGATION LOGIC ----
         if (formData.isProfessor) {
             window.location.href = "/professor.html";
