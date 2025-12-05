@@ -76,7 +76,7 @@ function StudentCourses() {
   const handleConfirm = async (e) => {
     e.preventDefault();
     //Flask call
-    const studentName = localStorage.getItem("username");
+    const studentName = localStorage.getItem("name");
   
     if (!studentName) {
       alert("Student name not found. Please create account again.");
