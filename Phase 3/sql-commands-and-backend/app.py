@@ -109,45 +109,6 @@ def get_course_roster(course_id):
         if cursor:
             cursor.close()
 
-#create a new course
-@app.route('/api/courses', methods=['POST'])
-def add_course():
-    cursor = None
-    try:
-        #Get data from frontend
-        data = request.get_json()
-        
-        #validate frontend required fields
-        subject = data.get('Subject')
-        catalog_number = data.get('CatalogNumber')
-        name = data.get('Name')
-        section = data.get('Section')
-        year = data.get('Year')
-        session = data.get('Session')
-        professor_id = data.get('ProfessorID')
-
-        conn = mysql.connection
-        # Use DictCursor to easily access ProfessorID later, though not strictly required for INSERT
-        cursor = conn.cursor(MySQLdb.cursors.DictCursor) 
-        
-        #Insert query
-        query = """
-        INSERT INTO Course (Subject, CatalogNumber, Name, Section, Year, Session, ProfessorID)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """
-        
-        #Execute query
-        cursor.execute(query, (subject, catalog_number, name, section, year, session, professor_id))
-        
-        #Save insert to DB
-        conn.commit()
-
-        return jsonify({"message": "Course created successfully", "course_id": cursor.lastrowid}), 201
-    except Exception as e:
-        print(f"Error adding course: {e}")
-        return jsonify({"error": "Failed to add course"}), 500
-    finally:
-        if cursor: cursor.close()
 
 #Update course
 @app.route('/api/courses/<int:course_id>', methods=['PUT'])
