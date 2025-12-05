@@ -7,6 +7,7 @@ function ProfessorCourses() {
     subject: "",
     catalogNumber: "",
     section: "",
+    name: "",
     session: "",
     year: "",
   });
@@ -40,10 +41,16 @@ function ProfessorCourses() {
       return;
     }
 
+    if (!courseInput.name.trim()) {
+      alert("Course Name is required");
+      return;
+    }
+
     const newCourse = {
       Subject: courseInput.subject,
       CatalogNumber: courseInput.catalogNumber,
       Section: courseInput.section,
+      Name: courseInput.name,
       Session: courseInput.session,
       Year: courseInput.year,
     };
@@ -54,6 +61,7 @@ function ProfessorCourses() {
       subject: "",
       catalogNumber: "",
       section: "",
+      name: "",
       session: "",
       year: "",
     });
@@ -88,6 +96,10 @@ function ProfessorCourses() {
                 <input name="section" value={courseInput.section} onChange={handleChange} className="note-title"/>
               </label>
 
+              <label>Name:
+                <input name="name" value={courseInput.name} onChange={handleChange} className="note-title"/>
+              </label>
+
               <label>Session:
                 <select name="session" value={courseInput.session} onChange={handleChange} required className="note-title">
                   <option value="">Select</option>
@@ -108,6 +120,7 @@ function ProfessorCourses() {
             <div className="note-list">
               {courses.map((course, index) => (
                 <div key={index} className="notes">
+                  <strong>{course.Name}</strong><br />
                   {course.Subject}
                   {course.CatalogNumber} — {course.Section} — {course.Session} {course.Year}
                 </div>
