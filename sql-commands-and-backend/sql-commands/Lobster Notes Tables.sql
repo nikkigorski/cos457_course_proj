@@ -5,6 +5,10 @@ November 2, 2025
 Edited on December 4, 2025
 */
 
+-- Create database if it doesn't exist and use it
+CREATE DATABASE IF NOT EXISTS LobsterNotes;
+USE LobsterNotes;
+
 create table Subject(
 	Code char(3),
     Name varchar(50) not null,
