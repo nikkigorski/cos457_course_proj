@@ -7,6 +7,7 @@ function StudentCourses() {
     subject: "",
     catalogNumber: "",
     section: "",
+    name: "",
     session: "",
     year: "",
   });
@@ -41,13 +42,13 @@ function StudentCourses() {
       return;
     }
 
-    if (!["Spring", "Summer", "Fall", "Winter"].includes(courseInput.session)) {
-      alert("Session must be Spring, Summer, Fall, or Winter");
+    if (courseInput.year < 2000) {
+      alert("Year must be after 2000");
       return;
     }
 
-    if (courseInput.year < 2000) {
-      alert("Year must be after 2000");
+    if (!courseInput.name.trim()) {
+      alert("Course Name is required");
       return;
     }
 
@@ -55,6 +56,7 @@ function StudentCourses() {
       Subject: courseInput.subject,
       CatalogNumber: courseInput.catalogNumber,
       Section: courseInput.section,
+      Name: courseInput.name,
       Session: courseInput.session,
       Year: courseInput.year,
     };
@@ -65,6 +67,7 @@ function StudentCourses() {
       subject: "",
       catalogNumber: "",
       section: "",
+      name: "",
       session: "",
       year: "",
     });
@@ -73,7 +76,7 @@ function StudentCourses() {
   const handleConfirm = () => {
     console.log("Student Courses:", courses);
     alert("Student courses confirmed!");
-    // Flask will go here
+    //Flask goes here
   };
 
   return (
@@ -125,6 +128,10 @@ function StudentCourses() {
                 />
               </label>
 
+              <label>Name:
+                <input name="name" value={courseInput.name} onChange={handleChange} className="note-title"/>
+              </label>
+
               <label>
                 Session:
                 <select
@@ -172,6 +179,7 @@ function StudentCourses() {
 
               {courses.map((course, index) => (
                 <div key={index} className="notes">
+                  <strong>{course.Name}</strong><br />
                   {course.Subject}
                   {course.CatalogNumber} — Section {course.Section} —{" "}
                   {course.Session} {course.Year}
