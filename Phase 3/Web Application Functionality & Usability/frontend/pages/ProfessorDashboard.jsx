@@ -13,16 +13,19 @@ function ProfessorDashboard( {onCourseSelect}) {
   const [searchTerm, setSearchTerm] = useState(''); 
   const [inputSearchTerm, setInputSearchTerm] = useState('');
 
-  const API_BASE_URL = 'http://127.0.0.1:8080/api';
-  const PROFESSOR_ID = 12420; // Test Professor ID 1
 
+  const API_BASE_URL = 'http://127.0.0.1:8080/api';
+  const PROFESSOR_ID = 12420; // Test Professor ID
+
+
+   
   const handleCourseSelection = function(courseID){
     setSelectedCourseId(courseID);
-
     if (onCourseSelect) {
       onCourseSelect(courseID);
     }
   };
+
 
   const handleSearchSubmit = function(e) {
       e.preventDefault();
@@ -58,7 +61,7 @@ function ProfessorDashboard( {onCourseSelect}) {
         console.error("Error fetching courses:", error);
         setLoading(false);
       });
-  }, [searchTerm]); 
+  }, [searchTerm]);
 
   // Fetch Roster when a Course is Selected
   useEffect(function() {
@@ -112,14 +115,17 @@ function ProfessorDashboard( {onCourseSelect}) {
       </div>
 
       <div className="row">
-        {/* Courses on left */}
+        
         <div className="col-md-5 mb-4">
-          <CourseList 
-            courses={courses} 
-            onCourseSelect={handleCourseSelection}
-            selectedCourseId={selectedCourseId}
-          /> 
-        </div>
+
+    
+    {/* course list */}
+    <CourseList 
+        courses={courses} 
+        onCourseSelect={handleCourseSelection}
+        selectedCourseId={selectedCourseId}
+    /> 
+</div>
 
         {/* Students on right*/}
         <div className="col-md-7">
@@ -129,5 +135,4 @@ function ProfessorDashboard( {onCourseSelect}) {
     </div>
   );
 }
-
 export default ProfessorDashboard;
