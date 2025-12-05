@@ -23,14 +23,14 @@ create table User(
 create table Student(
 	UserID int unsigned,
 	primary key(UserID),
-    foreign key(UserID) references User(UserID) on update cascade
+    foreign key(UserID) references User(UserID) on update cascade on delete cascade
 );
 
 create table Professor(
 	UserID int unsigned,
     Badge boolean null,
     primary key(UserID),
-    foreign key(UserID) references User(UserID) on update cascade
+    foreign key(UserID) references User(UserID) on update cascade on delete cascade
 );
 
 create table Course(
@@ -43,7 +43,7 @@ create table Course(
     CatalogNumber numeric(3,0),
     ProfessorID int,
     primary key(CourseID),
-    foreign key(Subject) references Subject(Code) on update cascade
+    foreign key(Subject) references Subject(Code) on update cascade on delete cascade
 );
 
 create table Resource(
@@ -57,7 +57,7 @@ create table Resource(
     Format varchar(7) not null check(Format in('Note', 'Video', 'Website', 'Pdf', 'Image')),
     isVerified boolean null,
     primary key(ResourceID),
-    foreign key(Author) references User(Name) on update cascade
+    foreign key(Author) references User(Name) on update cascade on delete cascade
 );
 
 create table Rating(
@@ -67,15 +67,15 @@ create table Rating(
     Score numeric(2,1) not null check(Score >= 0.0 and Score <= 5.0),
     Date date not null,
     primary key(RatingID),
-    foreign key(Poster) references User(Name) on update cascade,
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+    foreign key(Poster) references User(Name) on update cascade on delete cascade,
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
 );
 
 create table Note(
 	ResourceID int unsigned,
     Body varchar(2048) not null,
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
 );
 
 create table pdf(
@@ -83,7 +83,7 @@ create table pdf(
     Body varchar(2048) null,
 	Link varchar(2048) null check(Link regexp '\\.pdf$' and Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
 );
 
 create table Image(
@@ -91,7 +91,7 @@ create table Image(
     Size int unsigned not null check(Size > 0),
 	Link varchar(2048) null check(Link regexp '\\.(jpg|jpeg|png|gif)$' and Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
 );
 
 create table Video(
@@ -99,30 +99,30 @@ create table Video(
     Duration int unsigned not null check(Duration > 0),
     Link varchar(2048) null check(Link is null or Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
 );
 
 create table Website(
 	ResourceID int unsigned,
     Link varchar(2048) not null check(Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade
+    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
 );
 
 create table Enrolled(
     StudentID int unsigned,
     CourseID int unsigned,
     primary key(StudentID, CourseID),
-    foreign key(StudentID) references Student(UserID) on update cascade,
-    foreign key(CourseID) references Course(CourseID) on update cascade
+    foreign key(StudentID) references Student(UserID) on update cascade on delete cascade,
+    foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
 );
 
 create table Teaches(
 	ProfessorID int unsigned,
 	CourseID int unsigned,
 	primary key(ProfessorID, CourseID),
-	foreign key(ProfessorID) references Professor(UserID) on update cascade,
-    foreign key(CourseID) references Course(CourseID) on update cascade
+	foreign key(ProfessorID) references Professor(UserID) on update cascade on delete cascade,
+    foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
 );
 
 -- Average Rating attribute of Resource with Scores
