@@ -17,6 +17,8 @@ create table User(
     Name varchar(50) not null unique,
     Courses varchar(50) null,
     IsProfessor boolean null,
+    Password varchar(50) not null,
+    CONSTRAINT user_password_chk CHECK (REGEXP_LIKE(Section, '^[A-Za-z0-9]+$')),
     primary key(UserID)
 );
 

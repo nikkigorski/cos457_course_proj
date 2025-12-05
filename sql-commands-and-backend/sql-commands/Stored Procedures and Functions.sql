@@ -18,6 +18,7 @@ drop procedure if exists SP_User_Create //
 create procedure SP_User_Create
 (
     IN user_name varchar(50),
+    IN password varchar(50),
     IN enrolled_courses varchar(50),
     IN professor_check boolean
 )
@@ -26,12 +27,14 @@ begin
 Insert into user
 (
     Name,
+    Password,
     Courses,
     IsProfessor
 )
 values
 (
     user_name,
+    password,
     enrolled_courses,
     professor_check
 );
