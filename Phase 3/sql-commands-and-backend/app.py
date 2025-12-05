@@ -22,11 +22,13 @@ mysql = MySQL(app)
 def get_professor_courses(prof_id):
     cursor = None
     try:
+        #gets data
         conn = mysql.connection
         cursor = conn.cursor(MySQLdb.cursors.DictCursor) 
         
         search_term = request.args.get('search')
         
+        #query to find course based on specified professorID
         query = """
         SELECT CourseID, Subject, CatalogNumber, Name, Section, Year, ProfessorID
         FROM Course
@@ -39,12 +41,14 @@ def get_professor_courses(prof_id):
             search_param = '%' + search_term + '%'
             params.extend([search_param, search_param])
 
+        #executes query
         cursor.execute(query, tuple(params))
         courses = cursor.fetchall()
         return jsonify(courses)
     except Exception as e:
+
         print(f"Error: {e}")
-        return jsonify({"error": "Failed to fetch courses"}), 500
+        return jsonify({"error": "Failed to find courses"}), 500
     finally:
         if cursor: cursor.close()
 
@@ -71,8 +75,9 @@ def get_course_details(course_id):
             
         return jsonify(course)
     except Exception as e:
+
         print(f"Error: {e}")
-        return jsonify({"error": "Failed to fetch details"}), 500
+        return jsonify({"error": "Failed to find details"}), 500
     finally:
         if cursor: cursor.close()
 
@@ -102,6 +107,7 @@ def get_course_roster(course_id):
         return jsonify(students)
         
     except Exception as e:
+
         print(f"Database Query Error in get_course_roster: {e}")
         return jsonify({"error": "Failed to fetch student roster from database"}), 500
 
@@ -135,7 +141,8 @@ def update_course(course_id):
         
         # Execute query
         cursor.execute(query, (name, section, session, year, course_id))
-        #save to DB
+        
+        #update DB for Durability in ACID
         conn.commit()
 
         if cursor.rowcount == 0:
@@ -143,6 +150,9 @@ def update_course(course_id):
              
         return jsonify({"message": "Course updated successfully"}), 200
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID
+        if conn:
+            conn.rollback()
         print(f"Error updating course: {e}")
         return jsonify({"error": "Failed to update course"}), 500
     finally:
@@ -166,7 +176,7 @@ def delete_course(course_id):
         #Execute query
         cursor.execute(query, (course_id,))
         
-        #update DB
+        #update DB for Durability in ACID
         conn.commit()
 
         if cursor.rowcount == 0:
@@ -174,6 +184,9 @@ def delete_course(course_id):
              
         return jsonify({"message": f"Course {course_id} deleted successfully"}), 200
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID
+        if conn:
+            conn.rollback()
         print(f"Error deleting course: {e}")
         return jsonify({"error": "Failed to delete course"}), 500
     finally:
