@@ -17,7 +17,7 @@ import os
 socket_paths = [
     '/tmp/mysql.sock',  # Standard Linux location
     '/var/run/mysqld/mysql.sock',  # Another common Linux location
-    '/home/nikki.gorski/mysql.sock'  # Local installation
+    os.path.expanduser('~/mysql.sock'),  # Home directory location
 ]
 for socket_path in socket_paths:
     if os.path.exists(socket_path):
@@ -232,7 +232,83 @@ def delete_course(course_id):
         if cursor: cursor.close()
 
 
-# ==================== RESOURCE/NOTES ENDPOINTS ====================
+# ==================== USER ENDPOINTS ====================
+
+# List users (basic info)
+@app.route('/api/users', methods=['GET'])
+def list_users():
+    cursor = None
+    try:
+        conn = mysql.connection
+        cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT UserID, Name, Courses, IsProfessor FROM User ORDER BY UserID")
+        users = cursor.fetchall()
+        return jsonify(users)
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return jsonify({"error": "Failed to fetch users"}), 500
+    finally:
+        if cursor: cursor.close()
+
+
+# Create a new user (student or professor)
+@app.route('/api/users', methods=['POST'])
+def create_user():
+    cursor = None
+    try:
+        data = request.get_json()
+
+        name = data.get('Name')
+        courses = data.get('Courses')
+        is_professor = data.get('IsProfessor', False)
+
+        # Normalize boolean (handle string inputs)
+        if isinstance(is_professor, str):
+            is_professor = is_professor.strip().lower() in ['true', '1', 'yes', 'y']
+
+        if not name:
+            return jsonify({"error": "Missing required field: Name"}), 400
+
+        conn = mysql.connection
+        cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+
+        # If user already exists, return their id
+        cursor.execute("SELECT UserID FROM User WHERE Name = %s", (name,))
+        existing = cursor.fetchone()
+        if existing:
+            return jsonify({"message": "User already exists", "user_id": existing['UserID']}), 200
+
+        # Insert user
+        cursor.execute(
+            "INSERT INTO User (Name, Courses, IsProfessor) VALUES (%s, %s, %s)",
+            (name, courses, is_professor)
+        )
+        conn.commit()
+
+        user_id = cursor.lastrowid
+
+        # Insert into role table
+        if is_professor:
+            cursor.execute("INSERT INTO Professor (UserID, Badge) VALUES (%s, NULL)", (user_id,))
+        else:
+            cursor.execute("INSERT INTO Student (UserID) VALUES (%s)", (user_id,))
+
+        conn.commit()
+
+        return jsonify({
+            "message": "User created successfully",
+            "user_id": user_id,
+            "Name": name,
+            "IsProfessor": bool(is_professor)
+        }), 201
+
+    except Exception as e:
+        print(f"Error creating user: {e}")
+        return jsonify({"error": "Failed to create user"}), 500
+    finally:
+        if cursor: cursor.close()
+
+
 
 # Get all resources/notes with optional search and filtering
 @app.route('/api/resources', methods=['GET'])
@@ -304,11 +380,10 @@ def get_resources():
         
         cursor.execute(query, tuple(params))
         resources = cursor.fetchall()
-        
-        # Consolidate URL field based on format
+        # Consolidate URLs
         for resource in resources:
             if resource['Format'] == 'Website' and resource['Url']:
-                pass  # Already has Url
+                pass
             elif resource['Format'] == 'Video':
                 resource['Url'] = resource['VideoUrl']
             elif resource['Format'] == 'Pdf':
@@ -316,7 +391,6 @@ def get_resources():
             elif resource['Format'] == 'Image':
                 resource['Url'] = resource['ImageUrl']
             
-            # Clean up unnecessary fields
             if 'VideoUrl' in resource:
                 del resource['VideoUrl']
             if 'PdfUrl' in resource:
@@ -340,7 +414,6 @@ def get_resource_details(resource_id):
         conn = mysql.connection
         cursor = conn.cursor(MySQLdb.cursors.DictCursor)
         
-        # Direct query instead of stored procedure (DictCursor doesn't support stored_results)
         query = """
         SELECT 
             r.ResourceID,

@@ -1,6 +1,21 @@
 #!/usr/bin/env python3
 import MySQLdb
 import re
+import os
+
+# Get script directory and try common socket paths
+script_dir = os.path.dirname(os.path.abspath(__file__))
+socket_paths = [
+    '/tmp/mysql.sock',
+    '/var/run/mysqld/mysql.sock',
+    os.path.expanduser('~/mysql.sock'),
+]
+
+socket_path = None
+for path in socket_paths:
+    if os.path.exists(path):
+        socket_path = path
+        break
 
 # Connect to MySQL
 conn = MySQLdb.connect(
@@ -8,16 +23,17 @@ conn = MySQLdb.connect(
     user='admin',
     passwd='admin',
     db='lobsternotes',
-    unix_socket='/home/nikki.gorski/mysql.sock'
+    unix_socket=socket_path if socket_path else '/tmp/mysql.sock'
 )
 
 cursor = conn.cursor()
 
-# Read the SQL files
-with open('/home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/sql-commands/Lobster Notes Tables.sql', 'r') as f:
+# Read the SQL files - relative to script directory
+sql_dir = os.path.join(script_dir, 'sql-commands')
+with open(os.path.join(sql_dir, 'Lobster Notes Tables.sql'), 'r') as f:
     tables_sql = f.read()
 
-with open('/home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/sql-commands/Stored Procedures and Functions.sql', 'r') as f:
+with open(os.path.join(sql_dir, 'Stored Procedures and Functions.sql'), 'r') as f:
     procs_sql = f.read()
 
 # Split into individual statements (procedures/functions end with 'end;')
