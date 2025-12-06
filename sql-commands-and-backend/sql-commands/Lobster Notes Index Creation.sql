@@ -5,7 +5,7 @@ Date: 6 November 2025
 Description: Index creation scripts to be applied to table scripts for Lobster Notes Project
 */
 
-USE LobsterNotes;
+USE lobsternotes;
 
 /*
 User index creation scripts

@@ -5,6 +5,28 @@ November 12, 2025
 Gage White And nikki Gorski
 November 14, 2025
 */
+
+-- Insert sample subjects
+INSERT INTO Subject (Code, Name) VALUES ('CS', 'Computer Science');
+INSERT INTO Subject (Code, Name) VALUES ('MTH', 'Mathematics');
+INSERT INTO Subject (Code, Name) VALUES ('PHY', 'Physics');
+
+-- Create sample professor and students
+CALL SP_User_Create('Dr. Smith', 'CS', TRUE);
+CALL SP_User_Create('Alice Johnson', 'CS,MTH', FALSE);
+CALL SP_User_Create('Bob Williams', 'CS', FALSE);
+
+-- Create sample course with the professor
+INSERT INTO Course (Section, Name, Session, Year, Subject, CatalogNumber, ProfessorID)
+VALUES ('001', 'Introduction to Programming', 'Fall', 2024, 'CS', 101, 1);
+
+-- Enroll students in the course
+INSERT INTO Enrolled (StudentID, CourseID) VALUES (2, 1);
+INSERT INTO Enrolled (StudentID, CourseID) VALUES (3, 1);
+
+-- Professor teaches the course
+INSERT INTO Teaches (ProfessorID, CourseID) VALUES (1, 1);
+
 create table StageWebData(
 	DataID int unsigned auto_increment primary key,
     WebData JSON not null,
