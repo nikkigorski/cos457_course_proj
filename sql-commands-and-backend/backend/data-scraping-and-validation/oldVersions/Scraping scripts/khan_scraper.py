@@ -307,7 +307,7 @@ def write_json(data, outpath):
 
     # collect used ids from existing file to avoid collisions across runs
     used_ids = set()
-    if os.path.exists(outpath):
+    if outpath and os.path.exists(outpath):
         try:
             with open(outpath, 'r', encoding='utf-8') as ef:
                 existing = json.load(ef)
@@ -443,8 +443,13 @@ def write_json(data, outpath):
         'Video': videos,
         'Website': websites,
     }
-    with open(outpath,'w',encoding='utf-8') as f:
-        json.dump(out,f,ensure_ascii=False,indent=2)
+    
+    # If outpath is provided, write to file; otherwise return data
+    if outpath:
+        with open(outpath,'w',encoding='utf-8') as f:
+            json.dump(out,f,ensure_ascii=False,indent=2)
+    
+    return out
 
 
 def start_driver():
@@ -452,21 +457,129 @@ def start_driver():
     return webdriver.Chrome(options=opts)
 
 def parse_args():
-    p=argparse.ArgumentParser(); p.add_argument('url'); p.add_argument('name', nargs='?'); return p.parse_args()
+    p=argparse.ArgumentParser()
+    p.add_argument('url', help='URL to scrape or CSV file with links')
+    p.add_argument('name', nargs='?', help='Output file name (optional)')
+    p.add_argument('--csv', action='store_true', help='Treat input as CSV file with links')
+    return p.parse_args()
 
 def main():
     
     URL_MAX_LENGTH = 2048 #ensures URL fits into DB
 
-    args=parse_args(); url=args.url; outpath=args.name if args.name else ('khan_data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
-    os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
-    d = start_driver(); d.get(url); time.sleep(1); html = d.page_source
-    print(f"Page loaded: {url}")
+    args=parse_args()
+    url_or_csv = args.url
+    is_csv = args.csv or (url_or_csv.lower().endswith('.csv'))
+    
+    # Handle CSV input
+    if is_csv:
+        import csv
+        urls_to_scrape = []
+        try:
+            with open(url_or_csv, 'r', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                # Skip header row
+                next(reader, None)
+                # Read all URLs
+                for row in reader:
+                    if row and row[0].strip():
+                        # Filter out invalid URLs and headers
+                        url_str = row[0].strip().lower()
+                        if url_str and url_str.startswith(('http://', 'https://')):
+                            urls_to_scrape.append(row[0].strip())
+        except Exception as e:
+            print(f"Error reading CSV file: {e}")
+            return
+        
+        if not urls_to_scrape:
+            print("No URLs found in CSV file")
+            return
+        
+        print(f"Found {len(urls_to_scrape)} URL(s) in CSV file")
+        
+        # Consolidated output file
+        outpath = args.name if args.name else ('khan_data_combined_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
+        
+        # Collect all data from all URLs
+        combined_resources = []
+        combined_notes = []
+        combined_pdfs = []
+        combined_images = []
+        combined_videos = []
+        combined_websites = []
+        
+        # Process each URL
+        for idx, url in enumerate(urls_to_scrape, 1):
+            print(f"\n--- Processing URL {idx}/{len(urls_to_scrape)}: {url} ---")
+            try:
+                data = process_url(url, URL_MAX_LENGTH)
+            except Exception as e:
+                print(f"Error processing URL {url}: {e}")
+                import traceback
+                traceback.print_exc()
+                data = {}
+            
+            # Merge data into consolidated structures
+            if data and isinstance(data, dict):
+                combined_resources.extend(data.get('Resource', []))
+                combined_notes.extend(data.get('Note', []))
+                combined_pdfs.extend(data.get('pdf', []))
+                combined_images.extend(data.get('Image', []))
+                combined_videos.extend(data.get('Video', []))
+                combined_websites.extend(data.get('Website', []))
+        
+        # Write combined data to single file
+        combined_data = {
+            'Resource': combined_resources,
+            'Note': combined_notes,
+            'pdf': combined_pdfs,
+            'Image': combined_images,
+            'Video': combined_videos,
+            'Website': combined_websites,
+        }
+        
+        os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
+        with open(outpath, 'w', encoding='utf-8') as f:
+            json.dump(combined_data, f, ensure_ascii=False, indent=2)
+        
+        print(f"\n✓ Combined data written to: {outpath}")
+        print(f"  Total Resources: {len(combined_resources)}")
+        print(f"  Total Notes: {len(combined_notes)}")
+        print(f"  Total PDFs: {len(combined_pdfs)}")
+        print(f"  Total Images: {len(combined_images)}")
+        print(f"  Total Videos: {len(combined_videos)}")
+        print(f"  Total Websites: {len(combined_websites)}")
+    else:
+        # Single URL processing
+        url = url_or_csv
+        outpath = args.name if args.name else ('khan_data_' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.json')
+        data = process_url(url, URL_MAX_LENGTH)
+        
+        if data:
+            os.makedirs(os.path.dirname(outpath) or '.', exist_ok=True)
+            with open(outpath, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"\n✓ Data written to: {outpath}")
+
+def process_url(url, url_max_length):
+    """Process a single URL and scrape its content, return structured data"""
+    try:
+        d = start_driver(); d.get(url); time.sleep(1); html = d.page_source
+        print(f"Page loaded: {url}")
+    except Exception as e:
+        print(f"Error loading page {url}: {e}")
+        try:
+            d.quit()
+        except Exception:
+            pass
+        return {}
+    
     data = parse_page(url, html, driver=d)
     print(f"Found {len(data.get('videos') or [])} video(s), {len(data.get('images') or [])} image(s), {len(data.get('links') or [])} link(s)")
-    write_json(data, outpath)
-    out_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloaded_videos')
-    pdf_dir = os.path.join(os.path.dirname(outpath) or '.', 'downloadedPDFS')
+    
+    # Use temporary directory for intermediate files
+    out_dir = os.path.join(os.path.dirname(__file__) or '.', 'temp_downloads')
+    pdf_dir = os.path.join(os.path.dirname(__file__) or '.', 'temp_pdfs')
     os.makedirs(out_dir, exist_ok=True)
     os.makedirs(pdf_dir, exist_ok=True)
     documents = []
@@ -608,8 +721,8 @@ def main():
             # normalize embed/watch/short URLs 
             normalized = _normalize_youtube_url(embed_src)
             #check to ensure URL will fit
-            if len(normalized) > URL_MAX_LENGTH:
-                short_link = normalized[:URL_MAX_LENGTH]
+            if len(normalized) > url_max_length:
+                short_link = normalized[:url_max_length]
             else:
                 short_link = normalized
             video_entry = {
@@ -659,18 +772,16 @@ def main():
         data['videoData'] = video_data_list
         if images:
             data['images'] = (data.get('images', []) or []) + images
-        print(f"Writing video(s) to {outpath}")
-        write_json(data, outpath)
     if documents:
         data['documents'] = data.get('documents', []) + documents
         if images:
             data['images'] = (data.get('images', []) or []) + images
-        print(f"Writing documents to {outpath}")
-        write_json(data, outpath)
     elif images:
         data['images'] = (data.get('images', []) or []) + images
-        print(f"Writing images to {outpath}")
-        write_json(data, outpath)
+    
+    # Convert parsed data to database format and return
+    converted_data = write_json(data, None)  # Pass None to get data without writing
+    return converted_data
 
   
 if __name__=='__main__': main()
