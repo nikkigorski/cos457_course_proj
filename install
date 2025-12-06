@@ -1,0 +1,152 @@
+#!/bin/bash
+
+################################################################
+# install - Lobster Notes dependency installation script
+# Installs Python packages and Node.js dependencies
+#
+# Author: Nikki Gorski (Lobster Notes Team, 2025)
+################################################################
+
+set +e  # Don't exit on errors, handle them gracefully
+
+PROJECT_ROOT="/home/nikki.gorski/databases/cos457_course_proj"
+VENV_PATH="$PROJECT_ROOT/lobsterenv"
+FRONTEND_DIR="$PROJECT_ROOT/frontend"
+REQUIREMENTS="$PROJECT_ROOT/requirements.txt"
+
+ERRORS=0
+
+echo "================================================================"
+echo "Installing Lobster Notes Dependencies"
+echo "================================================================"
+
+# Check for Python 3
+if ! command -v python3 &> /dev/null; then
+    echo "[Python] ✗ Python 3 not found. Please install Python 3.8 or higher"
+    ERRORS=$((ERRORS + 1))
+else
+    echo "[Python] ✓ Python 3 found: $(python3 --version)"
+fi
+
+# Check if virtual environment exists
+if [ ! -d "$VENV_PATH" ]; then
+    echo "[Python] Creating virtual environment..."
+    python3 -m venv "$VENV_PATH" 2>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "[Python] ✓ Virtual environment created at $VENV_PATH"
+    else
+        echo "[Python] ✗ Failed to create virtual environment"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo "[Python] ✓ Virtual environment already exists"
+fi
+
+# Activate virtual environment and install Python packages
+if [ -d "$VENV_PATH" ]; then
+    echo "[Python] Activating virtual environment..."
+    source "$VENV_PATH/bin/activate"
+    
+    echo "[Python] Upgrading pip..."
+    pip install --upgrade pip -q 2>/dev/null
+    
+    if [ -f "$REQUIREMENTS" ]; then
+        echo "[Python] Checking Python dependencies..."
+        
+        # Read requirements and check/install each package
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            [[ -z "$line" || "$line" =~ ^#.*$ ]] && continue
+            
+            # Extract package name (before ==, >=, etc.)
+            PACKAGE=$(echo "$line" | sed 's/[=<>].*//')
+            
+            # Check if package is already installed
+            if pip show "$PACKAGE" &> /dev/null; then
+                echo "[Python]   ✓ $PACKAGE already installed"
+            else
+                echo "[Python]   Installing $line..."
+                pip install "$line" -q
+                if [ $? -eq 0 ]; then
+                    echo "[Python]   ✓ $PACKAGE installed successfully"
+                else
+                    echo "[Python]   ✗ Failed to install $PACKAGE"
+                    ERRORS=$((ERRORS + 1))
+                fi
+            fi
+        done < "$REQUIREMENTS"
+        
+        echo "[Python] ✓ Python dependency check complete"
+    else
+        echo "[Python] ✗ requirements.txt not found at $REQUIREMENTS"
+        ERRORS=$((ERRORS + 1))
+    fi
+fi
+
+# Check for Node.js and npm
+echo ""
+if ! command -v node &> /dev/null; then
+    echo "[Frontend] ✗ Node.js not found. Please install Node.js 18 or higher"
+    ERRORS=$((ERRORS + 1))
+else
+    echo "[Frontend] ✓ Node.js found: $(node --version)"
+fi
+
+if ! command -v npm &> /dev/null; then
+    echo "[Frontend] ✗ npm not found. Please install npm"
+    ERRORS=$((ERRORS + 1))
+else
+    echo "[Frontend] ✓ npm found: $(npm --version)"
+fi
+
+# Install Node.js dependencies for frontend
+if [ -d "$FRONTEND_DIR" ]; then
+    cd "$FRONTEND_DIR"
+    
+    if [ -f "package.json" ]; then
+        if [ -d "node_modules" ]; then
+            echo "[Frontend] ✓ node_modules directory already exists"
+            echo "[Frontend] Checking for updates..."
+        else
+            echo "[Frontend] Installing Node.js dependencies..."
+        fi
+        
+        npm install 2>&1 | grep -v "^npm WARN"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            echo "[Frontend] ✓ Node.js dependencies installed successfully"
+        else
+            echo "[Frontend] ✗ Error installing Node.js dependencies"
+            ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo "[Frontend] ✗ package.json not found in $FRONTEND_DIR"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo "[Frontend] ✗ Frontend directory not found: $FRONTEND_DIR"
+    ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "================================================================"
+if [ $ERRORS -eq 0 ]; then
+    echo "✓ Installation Complete - No Errors!"
+    echo "================================================================"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Make sure MySQL is installed"
+    echo "  2. Run './run' to start the application"
+else
+    echo "⚠ Installation Complete with $ERRORS error(s)"
+    echo "================================================================"
+    echo ""
+    echo "Please review the errors above and resolve them before running."
+    echo "You may need to:"
+    echo "  - Install missing system dependencies"
+    echo "  - Check network connectivity"
+    echo "  - Ensure you have proper permissions"
+fi
+echo ""
+
+exit 0  # Always exit 0 so we can see the summary
