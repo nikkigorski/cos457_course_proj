@@ -75,6 +75,8 @@
     "badge",
     "mpp",
     "quiz",
-    "test"
+    "test",
+    "answer",
+    "question"
   ]
 }

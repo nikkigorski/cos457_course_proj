@@ -1,12 +1,14 @@
 import React from 'react';
 
-function NoteList({ notes, onOpenNote, user }){
+function NoteList({ notes, onOpenNote, user, filterByUser = true }){
   const list = notes || window.__SAMPLE_NOTES__ || [];
+  // Filter notes to show only those by the current user (unless filterByUser is false)
+  const displayNotes = filterByUser && user?.username ? list.filter(n => n.Author === user.username) : list;
 
   return (
     <div className="note-list">
       <div className="notes">
-        {list.map(n => (
+        {displayNotes.map(n => (
           <div key={n.ResourceID} style={{marginBottom: '8px'}}>
             <button
               className="btn"

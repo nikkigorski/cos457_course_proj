@@ -4,7 +4,7 @@ import StudentRoster from '../components/StudentRoster';
 
 
 
-function ProfessorDashboard( {onCourseSelect}) {
+function ProfessorDashboard( {onCourseSelect, professorId = 1}) {
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [students, setStudents] = useState([]);
@@ -14,7 +14,6 @@ function ProfessorDashboard( {onCourseSelect}) {
   const [inputSearchTerm, setInputSearchTerm] = useState('');
 
   const API_BASE_URL = 'http://127.0.0.1:8080/api';
-  const PROFESSOR_ID = 1; // Test Professor ID 1
 
   const handleCourseSelection = function(courseID){
     setSelectedCourseId(courseID);
@@ -32,7 +31,8 @@ function ProfessorDashboard( {onCourseSelect}) {
     setLoading(true); 
     
   
-    var url = API_BASE_URL + '/professor/' + PROFESSOR_ID + '/courses';
+    const pid = professorId || 1;
+    var url = API_BASE_URL + '/professor/' + pid + '/courses';
     if (searchTerm) {
         url += '?search=' + encodeURIComponent(searchTerm);
     }

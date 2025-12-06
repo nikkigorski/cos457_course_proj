@@ -4,6 +4,8 @@ import NotePage from './NotePage.jsx';
 import Topbar from './Topbar.jsx';
 import ProfessorDashboard from './pages/ProfessorDashboard.jsx';
 import SearchPage from './pages/SearchPage.jsx';
+import AccountCreation from './AccountCreation.jsx';
+import UsersList from './UsersList.jsx';
 
 const API_BASE_URL = 'http://127.0.0.1:8080/api';
 
@@ -107,19 +109,14 @@ function NoteEditor({ user, onNoteCreated }){
 }
 
 export default function App(){
-  const [route, setRoute] = useState({ name: 'list', id: null });
+  const [route, setRoute] = useState({ name: 'account', id: null });
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [notes, setNotes] = useState(sampleNotes);
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  
-  const user = {
-    userid: 12345,
-    username: 'nikki.gorski',
-    courses: ['Biology 101', 'Computational Music'],
-    isProffesor: false
-  };
+  const [user, setUser] = useState(null);
+  const hasUser = !!user;
 
   // Fetch notes from API on mount
   useEffect(() => {
@@ -152,10 +149,14 @@ export default function App(){
         setRoute({ name: 'note', id: Number(m[1]) });
       } else if (p === '/dashboard') {
         setRoute({ name: 'dashboard', id: null });
+      } else if (p === '/account') {
+        setRoute({ name: 'account', id: null });
+      } else if (p === '/users') {
+        setRoute({ name: 'users', id: null });
       } else if (p === '/search') {
         setRoute({ name: 'search', id: null });
       } else {
-        setRoute({ name: 'list', id: null });
+        setRoute({ name: 'account', id: null });
       }
     };
 
@@ -165,6 +166,19 @@ export default function App(){
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+
+  // Enforce account page until user exists; once user exists, prevent navigating back to account
+  useEffect(() => {
+    if (!hasUser && route.name !== 'account') {
+      setRoute({ name: 'account', id: null });
+      window.history.replaceState({ route: 'account' }, '', '/account');
+    }
+    if (hasUser && route.name === 'account') {
+      // Move to notes homepage and replace history to avoid back navigation to account page
+      setRoute({ name: 'list', id: null });
+      window.history.replaceState({ route: 'list' }, '', '/');
+    }
+  }, [hasUser, route.name]);
 
   const openNote = (id) => {
     const noteUrl = `/note/${id}`;
@@ -178,6 +192,28 @@ export default function App(){
     window.history.pushState({ route: 'dashboard' }, '', '/dashboard');
     setRoute({ name: 'dashboard', id: null });
     setSearchActive(false);
+  };
+
+  const openUsers = () => {
+    window.history.pushState({ route: 'users' }, '', '/users');
+    setRoute({ name: 'users', id: null });
+    setSearchActive(false);
+  };
+
+  const handleAccountCreated = ({ userId, name, isProfessor }) => {
+    const newUser = {
+      userId,
+      username: name,
+      isProfessor: isProfessor,
+    };
+    setUser(newUser);
+    if (isProfessor) {
+      window.history.replaceState({ route: 'dashboard' }, '', '/dashboard');
+      setRoute({ name: 'dashboard', id: null });
+    } else {
+      window.history.replaceState({ route: 'list' }, '', '/');
+      setRoute({ name: 'list', id: null });
+    }
   };
 
   const openSearch = async (query) => {
@@ -219,6 +255,15 @@ export default function App(){
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    window.history.replaceState({ route: 'account' }, '', '/account');
+    setRoute({ name: 'account', id: null });
+    setSearchActive(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
   const activeNote = notes.find(n => n.ResourceID === route.id) || null;
 
   // Callback to refresh notes after creating a new one
@@ -246,7 +291,9 @@ export default function App(){
         onClear={() => { setSearchQuery(''); setSearchActive(false); }}
         onDashboard={openDashboard}
         onNotes={goBack}
-        user={user}
+        user={user || {}}
+        hasUser={hasUser}
+        onLogout={handleLogout}
       />
       <main className="main">
         {searchActive ? (
@@ -257,6 +304,14 @@ export default function App(){
           <section className="note-full">
             <NotePage noteId={route.id} note={activeNote} onBack={goBack} user={user} apiBaseUrl={API_BASE_URL} />
           </section>
+        ) : route.name === 'account' ? (
+          <section style={{width: '100%'}}>
+            <AccountCreation onSuccess={handleAccountCreated} />
+          </section>
+        ) : route.name === 'users' ? (
+          <section style={{width: '100%'}}>
+            <UsersList onBack={goBack} />
+          </section>
         ) : route.name === 'dashboard' ? (
           <section style={{width: '100%'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12}}>
@@ -265,12 +320,15 @@ export default function App(){
                 <button className="btn" onClick={goBack}>Back</button>
               </div>
             </div>
-            <ProfessorDashboard />
+            <ProfessorDashboard professorId={user?.userId || 1} />
           </section>
         ) : (
           <React.Fragment>
             <section className="left">
-              <NoteEditor user={user} onNoteCreated={handleNoteCreated} />
+              <div style={{display: 'flex', gap: '8px', marginBottom: '12px'}}>
+                <button className="btn" onClick={openUsers}>View Users</button>
+              </div>
+              <NoteEditor user={user || { username: 'Anonymous' }} onNoteCreated={handleNoteCreated} />
             </section>
             <section className="right">
               <h2>My Notes</h2>

@@ -14,7 +14,7 @@ export default function SearchPage({ notes = sampleNotes, onOpenNote = () => {},
       {loading ? (
         <p>Searching...</p>
       ) : notes && notes.length > 0 ? (
-        <NoteList notes={notes} onOpenNote={onOpenNote} user={user} />
+        <NoteList notes={notes} onOpenNote={onOpenNote} user={user} filterByUser={false} />
       ) : (
         <p>No notes found. Try a different search term.</p>
       )}
