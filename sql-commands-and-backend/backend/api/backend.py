@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify #request is useful, just not used here yet
+from flask import Flask, request, jsonify, abort #request is useful, just not used here yet
 from flaskext.mysql import MySQL
 from markupsafe import escape # must call escape on any user input when its placed into html
 from flask_cors import CORS
 import pymysql
 import re # not needed?
+from threading import Timer, Event, Thread
+from time import sleep
 
 from pymysql import cursors
 
@@ -97,7 +99,7 @@ cursor stuff
             -query - str - Query to execute.
             -args - tuple, list or dict - Parameters used with query. (optional)
             -ex:
-                -cursor.execute('INSERT INTO table_name VALUES(%s,%s)','value1','value2')
+                -cursor.execute('INSERT INTO table_name VALUES(%s,%s)',['value1','value2'])
             -returns
                 -int - number of affected rows
         -commit()
@@ -143,7 +145,7 @@ cursor stuff
 
 @app.route("/")
 def index():
-    cursor.execute(''' select * from user''')
+    cursor.execute(''' select userid,name,courses,isprofessor from user''')
     result = cursor.fetchall()
     print(result)
 
@@ -154,16 +156,84 @@ def index():
 
 @app.route("/api/users",methods=['GET'])
 def hello_world():
-    cursor.execute('select * from user')
+    cursor.execute('select userid,name,courses,isprofessor from user')
     result = cursor.fetchall()
     print(result)
     connection.commit() # need to commit or rollback before every .execute so the previous transaction ends and we get updated data from the db
     # its probably better to do it after each instead of before each just to make sure that queries that change the db resolve either way
     return (jsonify(result))
+ 
+@app.route("/api/login",methods=["GET"])
+def login():
+    print(request.args['username'])
+    cursor.execute('select userid, name, courses, isprofessor from user where name = %s and password = %s',args=[request.args.get('username'),request.args.get('password')])
+    result = cursor.fetchall()
+    connection.commit()
+    print(done.is_set())
+    return (jsonify(result))
+
+@app.route("/api/user",methods=["GET"])
+def user():
+    print("args for user get are",request.args)
+    print("name arg is",request.args.get("name"))
+    cursor.execute("select userid,name,courses,isprofessor from user where name = %s",args=[request.args.get("name")])
+    result = cursor.fetchall()
+    if len(result)!=1:
+        abort(404)
+    print("result type",type(result))
+    print("result",result)
+    reslist = result[0].values()
+    print("reslist",reslist)
+    value = list(reslist)
+    print("value",value)
+    send = {'user':value}
+    print("send",send)
+    connection.commit()
+
+    print("jsonify result",jsonify(result))
+    return (jsonify(result))
 
 
+def fullbackup():
+    sleep(2)
+    # do full dump here
 
 
+    #mysqldump --allow-keywords -B LobsterNotes --single-transaction -F --dump-date --insert-ignore --order-by-primary -p admin -P 3306 -R --triggers -u admin -r resultfilename --source-data=2 -f --log-error=dumperrlog
+
+    done.set()
+    pass
+
+def partialbackup():
+    # do partial here
+    # just need to flush log here
+    sleep(2)
+    pass
+
+def backup():
+    backupConnection = pymysql.connect(user='admin', password='admin',
+    host='localhost', database='LobsterNotes', port=3306,
+    charset='utf8mb4', collation='utf8mb4_0900_ai_ci', use_unicode=True,
+    cursorclass=pymysql.cursors.DictCursor)
+    backupCursor = backupConnection.cursor(cursor=cursors.DictCursor)
+    sleep(0.001)
+    backupTimer = Timer(8,fullbackup)
+    backupTimer.start()
+    backupTimer.join()
+    while running.is_set():
+        backupTimer = Timer(58,partialbackup)
+        backupTimer.start()
+        backupTimer.join()
+        print("         making backup here")
+        
+        pass
+
+done = Event()
+running = Event()
 
 if __name__ == "__main__":
+    running.set()
+    backupManager = Thread(target=backup,kwargs={},daemon=True)
+    backupManager.start()
+    print(done.is_set())
     app.run(debug=False,port=5000)
