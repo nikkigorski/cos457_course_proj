@@ -12,6 +12,17 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'admin'
 app.config['MYSQL_PASSWORD'] = 'admin' 
 app.config['MYSQL_DB'] = 'lobsternotes'
+# Try common socket locations - the driver will use the first one that exists
+import os
+socket_paths = [
+    '/tmp/mysql.sock',  # Standard Linux location
+    '/var/run/mysqld/mysql.sock',  # Another common Linux location
+    '/home/nikki.gorski/mysql.sock'  # Local installation
+]
+for socket_path in socket_paths:
+    if os.path.exists(socket_path):
+        app.config['MYSQL_UNIX_SOCKET'] = socket_path
+        break
 
 # Initialize MySQL connection. Using PyMySQL as the driver.
 mysql = MySQL(app)
@@ -85,14 +96,16 @@ def get_course_roster(course_id):
         conn = mysql.connection
         cursor = conn.cursor(MySQLdb.cursors.DictCursor)
         
-        # QueryUses the View_StudentEnrollments DB View
+        # Query students enrolled in the course
         query = """
         SELECT 
-            UserID,
-            StudentName AS Name,     
-            MajorOrSubject AS Courses 
-        FROM View_StudentEnrollments
-        WHERE CourseID = %s;
+            u.UserID,
+            u.Name,     
+            u.Courses 
+        FROM Student s
+        JOIN User u ON s.UserID = u.UserID
+        JOIN Enrolled e ON s.UserID = e.StudentID
+        WHERE e.CourseID = %s;
         """
         
         cursor.execute(query, (course_id,))
