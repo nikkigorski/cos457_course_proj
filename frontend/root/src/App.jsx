@@ -1,11 +1,8 @@
-
-
-
 /*
+Author: 
 
+Contributor: Jove Emmons
 */
-
-
 import React, { useState, useEffect } from 'react';
 import NoteList from './NoteList.jsx';
 import NotePage from './NotePage.jsx';
@@ -16,7 +13,7 @@ import AccountCreation from './pages/AccountCreation.jsx';
 import axios from 'axios';
 //import ProfessorDashboard from './pages/ProfessorDashboard.jsx'; //replace <ProfessorDashboard /> at end of dashboard when exists
 //import SearchPage from './pages/SearchPage.jsx'; // replace <SearchPage notes={sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} /> in first searchactive section when ../data exists
-//above 2 imports commented out due to not fully working
+//above 2 imports commented out temporarily. Add back as possible
 
 
 const sampleNotes = [
@@ -69,39 +66,7 @@ export default function App(){
   const [route, setRoute] = useState({ name: 'home', id: null });
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:5000/api/users",);
-    //above is asking the python backend code for whatever corresponds to that URI
-    //think of it as the react jsx stuff making http requests to the python/flask stuff
-    //cause thats exactly what its doing
-    console.log(response.data);
-
-  };
-
-  useEffect(() => {
-    //fetchAPI();
-  },[]
-
-  );
-
-  /*
-  first trial with getting data from mysql server to react frontend
-  works
-  */
-  const getUsers = async () => {
-    console.log("hi");
-    const users = await axios.get("http://localhost:5000/api/users");
-    return users.data;
-  };
-
-
-  const user = {
-    userid: 12345,
-    username: 'nikki.gorski',
-    courses: ['Biology 101', 'Computational Music'],
-    isProffesor: false
-  };
+  const [user,setUser] = useState(null);
 
   useEffect(() => {
     const syncRouteFromLocation = () => {
@@ -131,20 +96,32 @@ export default function App(){
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  /**Goes to the page for the given resource.
+   * 
+   * @param {int} id 
+   */
   const openNote = (id) => {
     const noteUrl = `/note/${id}`;
     window.history.pushState({ route: 'note', id }, '', noteUrl);
     setRoute({ name: 'note', id });
-
     setSearchActive(false);
   };
 
+  /**Goes to the Professor Dashboard page.
+   * 
+   * Used by the corresponding button on the topbar.
+   */
   const openDashboard = () => {
     window.history.pushState({ route: 'dashboard' }, '', '/dashboard');
     setRoute({ name: 'dashboard', id: null });
     setSearchActive(false);
   };
 
+  /**Goes to the Search page.
+   * 
+   * Used by the corresponding button on the topbar.
+   * @param {string} query 
+   */
   const openSearch = (query) => {
     const url = '/search';
     window.history.pushState({ route: 'search', query }, '', url);
@@ -153,11 +130,34 @@ export default function App(){
     setSearchQuery(query || '');
   };
 
-  //deprecated. previously returned to default page, which was the notes page
-  //default page was changed to homepage, so this functionality is outdated
+  //deprecated. previously returned to default page, which was the Notes page
+  //default page was changed to Homepage, so this functionality is outdated
   //replaced with goNotes
   //this functionality copied over to goHome
+  /*
   const goBack = () => {
+    window.history.pushState({}, '', '/');
+    setRoute({ name: 'home', id: null });
+    setSearchActive(false);
+    setSearchQuery('');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };*/
+
+  /**Goes to the Notes page.
+   * 
+   * Used by the corresponding button on the topbar.
+   */
+  const goNotes = () => {
+    window.history.pushState({route: 'list'}, '', '/notes');
+    setRoute({ name: 'list', id: null });
+    setSearchActive(false);
+  };
+
+  /**Goes to the Home page.
+   * 
+   * Used by the corresponding button on the topbar.
+   */
+  const goHome = () => {
     window.history.pushState({}, '', '/');
     setRoute({ name: 'home', id: null });
     setSearchActive(false);
@@ -165,31 +165,90 @@ export default function App(){
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  const goNotes = () => {
-    window.history.pushState({route: 'list'}, '', '/notes');
-    setRoute({ name: 'list', id: null });
-    setSearchActive(false);
-  }
 
-  const goHome = () => {
-    window.history.pushState({}, '', '/');
-    setRoute({ name: 'home', id: null });
-    setSearchActive(false);
-    setSearchQuery('');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }
-
+  /**Goes to the Login page.
+   * 
+   * Used by the corresponding button on the topbar.
+   */
   const goLogin = () => {
     window.history.pushState({route: 'login'},'','/login');
     setRoute({name:'login',id:null});
     setSearchActive(false);
-  }
+  };
 
+  /**Goes to the Account Create page.  
+   * 
+   * Used by the corresponding button on the topbar.
+   */
   const goAcctCreate = () => {
     window.history.pushState({route: 'create-account'},'','/create-account');
     setRoute({name:'create-account',id:null});
     setSearchActive(false);
+  };
+
+  /**Sends a login request to the api and returns the response.  
+   * 
+   * @param {string} username 
+   * @param {string} password 
+   * @returns
+   */
+  const APIonLogin = async (username,password) => {
+    console.log("trying to log in");
+    console.log("in apilogin",Date.now());
+    const response = await axios.get("http://localhost:5000/api/login",{params : { //takes like 300 ms
+      username: username, password: password
+    }});
+    console.log("apionlogin after await, returning now",Date.now());
+    return response;
+  };
+
+  /**Makes a request to the api for all non-password attributes of the user with the given name.  
+   * 
+   * Returns the response received.
+   * @param {string} username 
+   * @returns 
+   */
+  const APIFetchUser = async (username) => {
+    const response = await axios.get("http://localhost:5000/api/user",{params:{
+      name: username
+    }});
+    return response;
+  };
+
+  /**Internal procedure for logging a user in after the username and password have been validated.  
+   * 
+   * Makes a request to the api for the attributes of the given user, aside from password, in the database.  
+   * Sets the user state variable to object received from the api.  
+   * Goes to the Homepage.  
+   * @param {string} username 
+   * @returns 
+   */
+  const doLogin = async (username) => {
+    console.log("dologin before await",Date.now());
+    let userData = await APIFetchUser(username); //takes like 270 ms
+    if (userData != null){
+      console.log("dologin after not null",Date.now());
+      console.log("good user data is", userData);
+      console.log("specific is",userData.data[0]);
+      console.log("after other console logs",Date.now());
+      setUser(userData.data[0]);
+      console.log("dologin after setuser",Date.now());
+      goHome();
+      console.log("dologin after gohome",Date.now());
+    }
+    return;
   }
+
+  /**Used when a user clicks the log out button.  
+   * 
+   * Sets the user state variable to null and goes to the Homepage.  
+  */
+  const onLogoutButton = () => {
+    setUser(null);
+    goHome();
+    console.log(Date.now());
+    return;
+  };
 
   const activeNote = sampleNotes.find(n => n.ResourceID === route.id) || null;
 
@@ -206,6 +265,7 @@ export default function App(){
         onLoginButton={goLogin}
         onCreateAccount={goAcctCreate}
         user={user}
+        onLogoutButton={onLogoutButton}
       />
       <main className="main">
         {searchActive ? (
@@ -238,7 +298,11 @@ export default function App(){
           </React.Fragment>
         ) : route.name === 'login' ? (
           <section className='login-full'>
-            <Login/>
+            <Login
+            onLogin={APIonLogin}
+            user={user}
+            fetchUser={APIFetchUser}
+            doLogin={doLogin}/>
           </section>
         ) : route.name === 'create-account' ? (
           <section>
@@ -246,7 +310,7 @@ export default function App(){
           </section>
         ) : (
           <section className='note-full'>
-            <HomePage user={user} users={getUsers}/>
+            <HomePage user={user}/>
           </section>
         )}
       </main>
