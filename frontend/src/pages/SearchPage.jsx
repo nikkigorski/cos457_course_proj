@@ -1,8 +1,7 @@
 import React from 'react';
 import NoteList from '../NoteList.jsx';
-import { sampleNotes } from '../data';
 
-export default function SearchPage({ notes = sampleNotes, onOpenNote = () => {}, onBack = () => {}, user = {}, loading = false }){
+export default function SearchPage({ notes = null, onOpenNote = () => {}, onBack = () => {}, user = {}, loading = false }){
   return (
     <div style={{width: '100%'}}>
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
