@@ -5,6 +5,8 @@ import Topbar from './Topbar.jsx';
 import ProfessorDashboard from './pages/ProfessorDashboard.jsx';
 import SearchPage from './pages/SearchPage.jsx';
 
+const API_BASE_URL = 'http://127.0.0.1:8080/api';
+
 const sampleNotes = [
   { ResourceID: 1,Title: "Computational music theory" ,Author: "mit ocw, lobster notes web scraper", Rating: "5", Date: "2025-11-15", Format: "Video", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4" },
   { ResourceID: 2,Title: "Computational Music teory and Analysis QUIZ 1" ,Author: "mit ocw, lobster notes web scraper", Rating: "4", Date: "2025-11-15", Format: "PDF", Url:"https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/mit21m383s23_quiz_1.pdf" },
@@ -28,24 +30,77 @@ const sampleSearch = [
 
 window.__SAMPLE_NOTES__ = sampleNotes;
 
-function NoteEditor({ user }){
+function NoteEditor({ user, onNoteCreated }){
   const [title, setTitle] = useState('');
+  const [course, setCourse] = useState('');
+  const [keywords, setKeywords] = useState('');
   const [body, setBody] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
 
-  function submit(e){
+  async function submit(e){
     e.preventDefault();
-    return;
+    
+    if (!title || !body) {
+      setMessage('Title and body are required');
+      return;
+    }
+    
+    setSubmitting(true);
+    setMessage('');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/resources`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          DateFor: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD
+          Author: user.username || 'Anonymous',
+          Topic: title,
+          Keywords: keywords || null,
+          Format: 'Note',
+          Body: body,
+        }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setMessage('Note saved successfully!');
+        setTitle('');
+        setCourse('');
+        setKeywords('');
+        setBody('');
+        
+        // Notify parent to refresh notes list
+        if (onNoteCreated) {
+          onNoteCreated();
+        }
+      } else {
+        const error = await response.json();
+        setMessage(`Error: ${error.error || 'Failed to save note'}`);
+      }
+    } catch (error) {
+      console.error('Error saving note:', error);
+      setMessage('Error: Failed to save note');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <form className="note-editor" onSubmit={submit}>
       <h2>Note Editor</h2>
-      <input className="note-title" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} />
-      <input className="note-course" placeholder="Course" value={title} onChange={e=>setTitle(e.target.value)} />
-      <input className="note-keywords" placeholder="Keywords (separated by commas)" value={title} onChange={e=>setTitle(e.target.value)} />
-      <textarea className="note-body" placeholder="Write your note here..." value={body} onChange={e=>setBody(e.target.value)} />
+      {message && <div style={{padding: '8px', marginBottom: '8px', backgroundColor: message.includes('Error') ? '#f8d7da' : '#d4edda', borderRadius: '4px'}}>{message}</div>}
+      <input className="note-title" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} required />
+      <input className="note-course" placeholder="Course" value={course} onChange={e=>setCourse(e.target.value)} />
+      <input className="note-keywords" placeholder="Keywords (separated by commas)" value={keywords} onChange={e=>setKeywords(e.target.value)} />
+      <textarea className="note-body" placeholder="Write your note here..." value={body} onChange={e=>setBody(e.target.value)} required />
       <div className="note-actions">
-        <button className="btn btn-primary" type="submit">Save Note</button>
+        <button className="btn btn-primary" type="submit" disabled={submitting}>
+          {submitting ? 'Saving...' : 'Save Note'}
+        </button>
       </div>
     </form>
   );
@@ -55,6 +110,9 @@ export default function App(){
   const [route, setRoute] = useState({ name: 'list', id: null });
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notes, setNotes] = useState(sampleNotes);
+  const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
   
   const user = {
     userid: 12345,
@@ -62,6 +120,29 @@ export default function App(){
     courses: ['Biology 101', 'Computational Music'],
     isProffesor: false
   };
+
+  // Fetch notes from API on mount
+  useEffect(() => {
+    const fetchNotes = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/resources`);
+        if (response.ok) {
+          const data = await response.json();
+          setNotes(data);
+        } else {
+          console.error('Failed to fetch notes');
+          setNotes(sampleNotes); // Fallback to sample data
+        }
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+        setNotes(sampleNotes); // Fallback to sample data
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotes();
+  }, []);
 
   useEffect(() => {
     const syncRouteFromLocation = () => {
@@ -99,12 +180,34 @@ export default function App(){
     setSearchActive(false);
   };
 
-  const openSearch = (query) => {
+  const openSearch = async (query) => {
     const url = '/search';
     window.history.pushState({ route: 'search', query }, '', url);
     setRoute({ name: 'search', id: null });
     setSearchActive(true);
     setSearchQuery(query || '');
+    
+    // Fetch search results from API
+    if (query && query.trim()) {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/resources?search=${encodeURIComponent(query)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data);
+        } else {
+          console.error('Failed to fetch search results');
+          setSearchResults(sampleSearch);
+        }
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        setSearchResults(sampleSearch);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setSearchResults([]);
+    }
   };
 
   const goBack = () => {
@@ -112,10 +215,27 @@ export default function App(){
     setRoute({ name: 'list', id: null });
     setSearchActive(false);
     setSearchQuery('');
+    setSearchResults([]);
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  const activeNote = sampleNotes.find(n => n.ResourceID === route.id) || null;
+  const activeNote = notes.find(n => n.ResourceID === route.id) || null;
+
+  // Callback to refresh notes after creating a new one
+  const handleNoteCreated = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/resources`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotes(data);
+      }
+    } catch (error) {
+      console.error('Error refreshing notes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -131,11 +251,11 @@ export default function App(){
       <main className="main">
         {searchActive ? (
           <section style={{width: '100%'}}>
-            <SearchPage notes={sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} />
+            <SearchPage notes={searchResults.length > 0 ? searchResults : sampleSearch} onOpenNote={openNote} onBack={goBack} user={user} loading={loading} />
           </section>
         ) : route.name === 'note' ? (
           <section className="note-full">
-            <NotePage note={activeNote} onBack={goBack} user={user} />
+            <NotePage noteId={route.id} note={activeNote} onBack={goBack} user={user} apiBaseUrl={API_BASE_URL} />
           </section>
         ) : route.name === 'dashboard' ? (
           <section style={{width: '100%'}}>
@@ -150,11 +270,11 @@ export default function App(){
         ) : (
           <React.Fragment>
             <section className="left">
-              <NoteEditor user={user} />
+              <NoteEditor user={user} onNoteCreated={handleNoteCreated} />
             </section>
             <section className="right">
               <h2>My Notes</h2>
-              <NoteList notes={sampleNotes} onOpenNote={openNote} user={user} />
+              {loading ? <p>Loading notes...</p> : <NoteList notes={notes} onOpenNote={openNote} user={user} />}
             </section>
           </React.Fragment>
         )}
