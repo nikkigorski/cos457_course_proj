@@ -21,13 +21,12 @@ function Topbar({ searchQuery, setSearchQuery, onSearch, onClear, onDashboard, o
             style={{padding: '6px 8px', borderRadius: 6, border: '1px solid #e6e9ef'}}
           />
           <button className="btn" type="submit" title="Search">Search</button>
-          <button className="btn" type="button" onClick={onClear} title="Clear Search Bar">Clear</button>
-          <button className="btn" type="button" onClick={onDashboard} title="Open Professor Dashboard">Dashboard</button>
-          <button className="btn" type="button" style={{marginRight:8}} onClick={onNotes} title="Back to Notes">Notes</button>
+          <button className="btn" type="button" onClick={onClear} title="Clear Search Bar">Clear</button>  
         </form>
+        <button className="btn" type="button" onClick={onDashboard} title="Open Professor Dashboard">Dashboard</button>
+        <button className="btn" type="button" style={{marginRight:8}} onClick={onNotes} title="Back to Notes">Notes</button>
         {(user == null) && <button className='btn' type='button' onClick={onCreateAccount} title='Account Creation'>Create Account</button>}
         {loginOrUser(onLoginButton,onLogoutButton,user)}
-        
       </div>
     </header>
   );
@@ -81,7 +80,6 @@ function loginOrUser(onLoginButton,onLogoutButton,user){
      */
     function onLogout(){
       setVisibility(false);
-      console.log(Date.now())
       onLogoutButton();
     };
 

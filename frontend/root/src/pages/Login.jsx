@@ -23,20 +23,15 @@ export default function Login({onLogin,user,fetchUser,doLogin}){
 
   const login = async (e) => {
     e.preventDefault();
-    console.log("login attempt");
-    console.log("button clicked at ",Date.now());
     let response = await onLogin(username,password);
-    console.log("after await",Date.now()); //everything between here and in dologin is fast
-    console.log("results are",response);
-    console.log(typeof response);
-    setResults(response.data.value);
-    console.log("after setresults",Date.now());
-    if (response.data.value==1){
-      console.log("valid, before dologin",Date.now());
-      await doLogin(response.data.name);
-      console.log("valid, after dologin. all done",Date.now());
+    if (response.data.length == 1){//login succeeded
+      setResults(response.data[0]);
+      await doLogin(response.data[0]);
+      return;
+    }else{
+      setResults(0);
+      return;
     }
-    return;
   };
 
   return (

@@ -193,12 +193,9 @@ export default function App(){
    * @returns
    */
   const APIonLogin = async (username,password) => {
-    console.log("trying to log in");
-    console.log("in apilogin",Date.now());
     const response = await axios.get("http://localhost:5000/api/login",{params : { //takes like 300 ms
       username: username, password: password
     }});
-    console.log("apionlogin after await, returning now",Date.now());
     return response;
   };
 
@@ -223,18 +220,10 @@ export default function App(){
    * @param {string} username 
    * @returns 
    */
-  const doLogin = async (username) => {
-    console.log("dologin before await",Date.now());
-    let userData = await APIFetchUser(username); //takes like 270 ms
+  const doLogin = async (userData) => {
     if (userData != null){
-      console.log("dologin after not null",Date.now());
-      console.log("good user data is", userData);
-      console.log("specific is",userData.data[0]);
-      console.log("after other console logs",Date.now());
-      setUser(userData.data[0]);
-      console.log("dologin after setuser",Date.now());
+      setUser(userData);
       goHome();
-      console.log("dologin after gohome",Date.now());
     }
     return;
   }
@@ -246,7 +235,6 @@ export default function App(){
   const onLogoutButton = () => {
     setUser(null);
     goHome();
-    console.log(Date.now());
     return;
   };
 
