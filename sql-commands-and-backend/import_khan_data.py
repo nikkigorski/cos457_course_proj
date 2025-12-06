@@ -5,6 +5,21 @@ Load Khan Academy scraped data into the Lobster Notes database.
 import json
 import MySQLdb
 import sys
+import os
+
+# Get script directory and try common socket paths
+script_dir = os.path.dirname(os.path.abspath(__file__))
+socket_paths = [
+    '/tmp/mysql.sock',
+    '/var/run/mysqld/mysql.sock',
+    os.path.expanduser('~/mysql.sock'),
+]
+
+socket_path = None
+for path in socket_paths:
+    if os.path.exists(path):
+        socket_path = path
+        break
 
 # Database connection
 conn = MySQLdb.connect(
@@ -12,13 +27,13 @@ conn = MySQLdb.connect(
     user='admin',
     passwd='admin',
     db='lobsternotes',
-    unix_socket='/home/nikki.gorski/mysql.sock'
+    unix_socket=socket_path if socket_path else '/tmp/mysql.sock'
 )
 
 cursor = conn.cursor()
 
-# Load JSON file
-json_file = '/home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/backend/data-scraping-and-validation/oldVersions/Scraping scripts/khan_output_cleaned.json'
+# Load JSON file - relative to script directory
+json_file = os.path.join(script_dir, 'backend', 'data-scraping-and-validation', 'oldVersions', 'Scraping scripts', 'data.json')
 
 print(f"Loading data from {json_file}...")
 
