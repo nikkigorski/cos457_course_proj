@@ -20,7 +20,6 @@ create table User(
 	UserID int unsigned auto_increment,
     Name varchar(50) not null unique,
     Courses varchar(50) null,
-    Password varchar(50) not null,
     IsProfessor boolean null,
     primary key(UserID)
 );
