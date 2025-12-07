@@ -27,7 +27,6 @@ These changes will ensure the data in our database remains more Consistent allow
 
 ### Example of implementation
 '''
-delimiter //
 create procedure SP_User_Create
 (
     in user_name varchar(50),
@@ -40,24 +39,8 @@ begin
         rollback;
         signal sqlstate '45000'
         set message_text = 'User creation failed';
-    end;
-
-    delimiter //
-create procedure SP_User_Create
-(
-    in user_name varchar(50),
-    in enrolled_courses varchar(50),
-    in professor_check boolean
-)
-begin
-    declare exit handler for sqlexception
-    begin
-        rollback;
-        signal sqlstate '45000'
-        set message_text = 'User creation failed';
-    end;
-
-    start transaction;
+	end;
+	start transaction;
     insert into user
     (
         Name,
@@ -71,7 +54,6 @@ begin
         professor_check
     );
     commit;
-end//
 '''
 
 ---
