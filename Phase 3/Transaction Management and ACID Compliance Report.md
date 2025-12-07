@@ -26,7 +26,7 @@ These changes will ensure the data in our database remains more Consistent allow
 4. declare exit handler for sqlexception
 
 ### Example of implementation
-'''sql
+```
 create procedure SP_User_Create
 (
     in user_name varchar(50),
@@ -54,7 +54,7 @@ begin
         professor_check
     );
     commit;
-'''
+```
 
 ---
 
