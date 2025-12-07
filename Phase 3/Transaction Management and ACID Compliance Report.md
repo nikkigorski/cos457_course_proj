@@ -18,3 +18,68 @@ Each procedure had a transaction added that returns an error message if somethin
 This will call the rollback to return to the previous version preventing errors from being introduced into the database or crashing it. This adds Durability from the ACID principles since it only commits functional information and saves committed data.
 Each transaction is also independent of each other and can only succeed or fail, meaning it is both Atomic and has Isolation.
 These changes will ensure the data in our database remains more Consistent allowing it to pass all of the ACID principles.
+
+### Each procedure now includes each of the following:
+1. start transaction
+2. commit
+3. rollback
+4. declare exit handler for sqlexception
+
+### Example of implementation
+'''
+delimiter //
+create procedure SP_User_Create
+(
+    in user_name varchar(50),
+    in enrolled_courses varchar(50),
+    in professor_check boolean
+)
+begin
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'User creation failed';
+    end;
+
+    delimiter //
+create procedure SP_User_Create
+(
+    in user_name varchar(50),
+    in enrolled_courses varchar(50),
+    in professor_check boolean
+)
+begin
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'User creation failed';
+    end;
+
+    start transaction;
+    insert into user
+    (
+        Name,
+		Courses,
+		IsProfessor
+    )
+    values
+    (
+        user_name,
+        enrolled_courses,
+        professor_check
+    );
+    commit;
+end//
+'''
+
+---
+
+## Improvements
+- Full rollback support on failure
+- Guaranteed atomic operations
+- No partial inserts
+- Improved data consistency
+- More reliability
+- Full error handling
