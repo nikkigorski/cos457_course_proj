@@ -90,24 +90,37 @@ fi
 # Check if virtual environment exists
 if [ ! -d "$VENV_PATH" ]; then
     echo "[Python] Creating virtual environment..."
-    python3 -m venv "$VENV_PATH" 2>/dev/null
+    python3 -m venv "$VENV_PATH"
     if [ $? -eq 0 ]; then
         echo "[Python]  Virtual environment created at $VENV_PATH"
     else
         echo "[Python]  Failed to create virtual environment"
-        ERRORS=$((ERRORS + 1))
+        echo "[Python]  Attempting to install pip and retry..."
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y python3-pip
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y python3-pip
+        elif command -v brew &> /dev/null; then
+            brew install python3
+        fi
+        # Retry venv creation
+        python3 -m venv "$VENV_PATH"
+        if [ $? -ne 0 ]; then
+            echo "[Python]  Still failed to create virtual environment"
+            ERRORS=$((ERRORS + 1))
+        fi
     fi
 else
     echo "[Python]  Virtual environment already exists"
 fi
 
 # Activate virtual environment and install Python packages
-if [ -d "$VENV_PATH" ]; then
+if [ -d "$VENV_PATH" ] && [ -f "$VENV_PATH/bin/activate" ]; then
     echo "[Python] Activating virtual environment..."
     source "$VENV_PATH/bin/activate"
     
     echo "[Python] Upgrading pip..."
-    python3 -m pip install --upgrade pip -q 2>/dev/null
+    "$VENV_PATH/bin/python3" -m pip install --upgrade pip -q 2>/dev/null
     
     if [ -f "$REQUIREMENTS" ]; then
         echo "[Python] Checking Python dependencies..."
@@ -121,11 +134,11 @@ if [ -d "$VENV_PATH" ]; then
             PACKAGE=$(echo "$line" | sed 's/[=<>].*//')
             
             # Check if package is already installed
-            if python3 -m pip show "$PACKAGE" &> /dev/null; then
+            if "$VENV_PATH/bin/python3" -m pip show "$PACKAGE" &> /dev/null; then
                 echo "[Python]    $PACKAGE already installed"
             else
                 echo "[Python]   Installing $line..."
-                python3 -m pip install "$line" -q
+                "$VENV_PATH/bin/python3" -m pip install "$line" -q
                 if [ $? -eq 0 ]; then
                     echo "[Python]    $PACKAGE installed successfully"
                 else
