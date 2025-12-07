@@ -107,7 +107,7 @@ if [ -d "$VENV_PATH" ]; then
     source "$VENV_PATH/bin/activate"
     
     echo "[Python] Upgrading pip..."
-    pip install --upgrade pip -q 2>/dev/null
+    python3 -m pip install --upgrade pip -q 2>/dev/null
     
     if [ -f "$REQUIREMENTS" ]; then
         echo "[Python] Checking Python dependencies..."
@@ -121,11 +121,11 @@ if [ -d "$VENV_PATH" ]; then
             PACKAGE=$(echo "$line" | sed 's/[=<>].*//')
             
             # Check if package is already installed
-            if pip show "$PACKAGE" &> /dev/null; then
+            if python3 -m pip show "$PACKAGE" &> /dev/null; then
                 echo "[Python]    $PACKAGE already installed"
             else
                 echo "[Python]   Installing $line..."
-                pip install "$line" -q
+                python3 -m pip install "$line" -q
                 if [ $? -eq 0 ]; then
                     echo "[Python]    $PACKAGE installed successfully"
                 else
