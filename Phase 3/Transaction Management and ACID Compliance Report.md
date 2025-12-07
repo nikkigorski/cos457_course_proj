@@ -1,6 +1,7 @@
 # Lobster Notes - Transaction Management & ACID Compliance
 
 **Date**: December 7, 2025
+
 **Goal**: Adding ACID compliant transactions to existing sql files
 
 ---
