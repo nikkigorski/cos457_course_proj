@@ -70,7 +70,12 @@ if ! python3 -m venv --help &> /dev/null; then
     echo "[System]  Python venv module not found"
     echo "[System] Attempting to install python3-venv..."
     if [ -n "$INSTALL_CMD" ]; then
-        eval "$INSTALL_CMD $VENV_PKG" 2>/dev/null
+        # Try python3.12-venv first, then fall back to python3-venv
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y python3.12-venv 2>/dev/null || eval "$INSTALL_CMD $VENV_PKG" 2>/dev/null
+        else
+            eval "$INSTALL_CMD $VENV_PKG" 2>/dev/null
+        fi
         if python3 -m venv --help &> /dev/null; then
             echo "[Python]  Python venv installed"
         else
