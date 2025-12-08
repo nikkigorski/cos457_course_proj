@@ -15,8 +15,7 @@ create procedure SP_User_Create
 (
     IN user_name varchar(50),
     IN enrolled_courses varchar(50),
-    IN professor_check boolean,
-    IN user_password varchar(50)
+    IN professor_check boolean
 )
 
 begin
@@ -24,15 +23,13 @@ Insert into user
 (
     Name,
     Courses,
-    IsProfessor,
-    Password
+    IsProfessor
 )
 values
 (
     user_name,
     enrolled_courses,
-    professor_check,
-    COALESCE(user_password, 'defaultpass')
+    professor_check
 );
 
 -- Replicate trigger functionality since triggers can't be piped

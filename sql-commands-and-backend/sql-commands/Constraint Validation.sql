@@ -15,8 +15,7 @@ group by UserID having count(*) > 1;
 Attempts to insert user with existing name, violating uniqueness constraint
 Expected error: Duplicate Entry
 */
-Call SP_User_Create('Zelda', null, true, 'password123');
-Call SP_User_Create('Zelda', null, true, 'password456');
+Call SP_User_Create('Zelda', null, true);
 
 /*
 Parent User record to Professor

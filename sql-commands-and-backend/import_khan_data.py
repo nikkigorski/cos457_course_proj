@@ -10,10 +10,9 @@ import os
 # Get script directory and try common socket paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
 socket_paths = [
-    os.path.expanduser('~/mysql.sock'),
     '/tmp/mysql.sock',
-    '/var/run/mysqld/mysqld.sock',  # MariaDB default
     '/var/run/mysqld/mysql.sock',
+    os.path.expanduser('~/mysql.sock'),
 ]
 
 socket_path = None
@@ -61,15 +60,15 @@ try:
     for author in authors:
         try:
             cursor.execute(
-                "INSERT IGNORE INTO user (Name, Courses, IsProfessor, Password) VALUES (%s, NULL, FALSE, %s)",
-                (author, 'defaultpass')
+                "INSERT IGNORE INTO User (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
+                (author,)
             )
             if cursor.rowcount > 0:
                 # Get the UserID that was just created
-                cursor.execute("SELECT UserID FROM user WHERE Name = %s", (author,))
+                cursor.execute("SELECT UserID FROM User WHERE Name = %s", (author,))
                 user_id = cursor.fetchone()[0]
                 # Create student entry for this user
-                cursor.execute("INSERT INTO student (UserID) VALUES (%s)", (user_id,))
+                cursor.execute("INSERT INTO Student (UserID) VALUES (%s)", (user_id,))
                 print(f"  Created user: {author}")
         except Exception as e:
             print(f"  Warning: Could not create user '{author}': {e}")

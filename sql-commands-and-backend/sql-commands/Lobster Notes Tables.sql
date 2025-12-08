@@ -128,13 +128,6 @@ create table teaches(
     foreign key(CourseID) references course(CourseID) on update cascade on delete cascade
 );
 
--- Staging table for Khan Academy JSON data import
-create table StageWebData(
-	DataID int unsigned auto_increment primary key,
-    WebData JSON not null,
-    Imported int default 0
-);
-
 -- Average Rating attribute of Resource with Scores
 -- STORED PROCEDURES AND TRIGGERS CANNOT BE LOADED VIA PIPE
 -- Use /home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/load_procedures.py after init

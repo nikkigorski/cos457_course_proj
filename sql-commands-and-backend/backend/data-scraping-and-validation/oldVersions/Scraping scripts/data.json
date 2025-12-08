@@ -1451,138 +1451,6 @@
       "Rating": 9.9,
       "Format": "Website",
       "isVerified": false
-    },
-    {
-      "ResourceID": 2084068282,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Activity: Why are male bi",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Website",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1616991694,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Student guide  Why are ma",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Pdf",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 577181881,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Teacher guide  Why are ma",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Pdf",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1969743323,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Student guide  Why are ma",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Pdf",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1746220551,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Teacher guide  Why are ma",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Pdf",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1512003858,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "A side-by-side image comp",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1417337736,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Amgen Foundation logo",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1869437072,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Male northern cardinal in",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1937797861,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Northern cardinal female ",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 2032546984,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Male northern cardinal in",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 2105822500,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "Northern cardinal female ",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
-    },
-    {
-      "ResourceID": 1458331412,
-      "Date": "2025-11-12",
-      "DateFor": "2025-11-12",
-      "Author": "khan accademy, lobster notes web scraper",
-      "Topic": "play.png",
-      "Keywords": null,
-      "Rating": 9.9,
-      "Format": "Image",
-      "isVerified": false
     }
   ],
   "Note": [
@@ -1861,34 +1729,6 @@
     {
       "ResourceID": 1318174466,
       "Body": "A beginner's guide to South America before European colonization"
-    },
-    {
-      "ResourceID": 2084068282,
-      "Body": "Make science come alive in your classroom with this free hands-on activity aligned to high school standards."
-    },
-    {
-      "ResourceID": 1512003858,
-      "Body": "A side-by-side image comparison of a male and female northern cardinal. The left image shows a male northern cardinal with bright red plumage, perched on a branch. The right image shows a female northern cardinal with brownish plumage and some hints of red, also perched on a branch. The male bird is more vibrant in color, while the female has a more subdued, earthy tone. Symbols indicating male and female are placed above each respective bird. The background is slightly blurred, emphasizing the birds."
-    },
-    {
-      "ResourceID": 1417337736,
-      "Body": "Amgen Foundation logo"
-    },
-    {
-      "ResourceID": 1869437072,
-      "Body": "Male northern cardinal in Central Park"
-    },
-    {
-      "ResourceID": 1937797861,
-      "Body": "Northern cardinal female in CP"
-    },
-    {
-      "ResourceID": 2032546984,
-      "Body": "Male northern cardinal in Central Park"
-    },
-    {
-      "ResourceID": 2105822500,
-      "Body": "Northern cardinal female in CP"
     }
   ],
   "pdf": [
@@ -1987,22 +1827,6 @@
     {
       "ResourceID": 86728662,
       "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Biology/Unit%20Guide_NGSS%20HS%20Biology_Unit%203_%20The%20cell%20cycle%20and%20differentiation.pdf"
-    },
-    {
-      "ResourceID": 1616991694,
-      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Student%20guide_%20Why%20are%20male%20birds%20often%20more%20brightly%20colored%20than%20females.pdf"
-    },
-    {
-      "ResourceID": 577181881,
-      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Teacher%20guide_%20Why%20are%20male%20birds%20often%20more%20brightly%20colored%20than%20females.pdf"
-    },
-    {
-      "ResourceID": 1969743323,
-      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Student%20guide_%20Why%20are%20male%20birds%20often%20more%20brightly%20colored%20than%20females.pdf"
-    },
-    {
-      "ResourceID": 1746220551,
-      "Body": "https://storage.googleapis.com/content-resources/Science%20activities/HS%20Biology/Teacher%20guide_%20Why%20are%20male%20birds%20often%20more%20brightly%20colored%20than%20females.pdf"
     }
   ],
   "Image": [
@@ -2243,55 +2067,6 @@
       "Width": 212,
       "Height": 30,
       "Size": 6360
-    },
-    {
-      "ResourceID": 1512003858,
-      "Link": "https://cdn.kastatic.org/ka-content-images/bea1628bc233d1905a2dd714391363011780a113.jpg",
-      "Width": 450,
-      "Height": 375,
-      "Size": 168750
-    },
-    {
-      "ResourceID": 1417337736,
-      "Link": "https://cdn.kastatic.org/ka-content-images/43c9f9ad349b079cc646a7258910365a34ad76c9.png",
-      "Width": 275,
-      "Height": 28,
-      "Size": 7700
-    },
-    {
-      "ResourceID": 1869437072,
-      "Link": "https://commons.wikimedia.org/wiki/File:Male_northern_cardinal_in_Central_Park_(52598).jpg",
-      "Width": 1,
-      "Height": 1,
-      "Size": 1
-    },
-    {
-      "ResourceID": 1937797861,
-      "Link": "https://commons.wikimedia.org/wiki/File:Northern_cardinal_female_in_CP_(02035).jpg",
-      "Width": 1,
-      "Height": 1,
-      "Size": 1
-    },
-    {
-      "ResourceID": 2032546984,
-      "Link": "https://commons.wikimedia.org/wiki/File:Male_northern_cardinal_in_Central_Park_(52598).jpg",
-      "Width": 1,
-      "Height": 1,
-      "Size": 1
-    },
-    {
-      "ResourceID": 2105822500,
-      "Link": "https://commons.wikimedia.org/wiki/File:Northern_cardinal_female_in_CP_(02035).jpg",
-      "Width": 1,
-      "Height": 1,
-      "Size": 1
-    },
-    {
-      "ResourceID": 1458331412,
-      "Link": "https://cdn.kastatic.org/images/play.png",
-      "Width": 48,
-      "Height": 48,
-      "Size": 2304
     }
   ],
   "Video": [
@@ -2644,10 +2419,6 @@
     {
       "ResourceID": 1962388806,
       "Link": "https://www.khanacademy.org/humanities/art-americas/xf20f462f:canada-in-the-19th-century"
-    },
-    {
-      "ResourceID": 2084068282,
-      "Link": "https://www.khanacademy.org/science/hs-bio/x230b3ff252126bb6:mechanisms-of-evolution-hs/x230b3ff252126bb6:activity-why-are-male-birds-often-more-brightly-colored-than-females/a/activity-why-are-male-birds-often-more-brightly-colored-than-females"
     }
   ]
 }

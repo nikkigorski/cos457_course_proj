@@ -2,7 +2,7 @@ import React from 'react';
 
 function NoteList({ notes, onOpenNote, user, filterByUser = true }){
   const list = notes || window.__SAMPLE_NOTES__ || [];
-  // Default to user-filtered list on main page; callers can opt out for searches
+  // Filter notes to show only those by the current user (unless filterByUser is false)
   const displayNotes = filterByUser && user?.username ? list.filter(n => n.Author === user.username) : list;
 
   return (
@@ -23,8 +23,7 @@ function NoteList({ notes, onOpenNote, user, filterByUser = true }){
                 }
               }}
             >
-              {n.Title || 'Untitled'}
-              {n.Format ? ` — ${String(n.Format).toLowerCase()}` : ''}
+              {n.Title}
             </button>
           </div>
         ))}

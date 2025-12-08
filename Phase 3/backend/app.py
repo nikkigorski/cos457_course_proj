@@ -40,7 +40,7 @@ def get_professor_courses(prof_id):
         
         query = """
         SELECT CourseID, Subject, CatalogNumber, Name, Section, Year, ProfessorID
-        FROM course
+        FROM Course
         WHERE ProfessorID = %s
         """
         params = [prof_id]
@@ -70,7 +70,7 @@ def get_course_details(course_id):
         # Fetch course info and the prof name
         query = """
         SELECT c.*, u.Name as ProfessorName 
-        FROM course c
+        FROM Course c
         LEFT JOIN User u ON c.ProfessorID = u.UserID
         WHERE c.CourseID = %s
         """
@@ -102,7 +102,7 @@ def get_course_roster(course_id):
             u.UserID,
             u.Name,     
             u.Courses 
-        FROM student s
+        FROM Student s
         JOIN User u ON s.UserID = u.UserID
         JOIN Enrolled e ON s.UserID = e.StudentID
         WHERE e.CourseID = %s;
@@ -145,7 +145,7 @@ def add_course():
         
         #Insert query
         query = """
-        INSERT INTO course (Subject, CatalogNumber, Name, Section, Year, Session, ProfessorID)
+        INSERT INTO Course (Subject, CatalogNumber, Name, Section, Year, Session, ProfessorID)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         
@@ -180,7 +180,7 @@ def update_course(course_id):
         
         #Update query
         query = """
-        UPDATE course
+        UPDATE Course
         SET Name = %s, Section = %s, Session = %s, Year = %s
         WHERE CourseID = %s
         """
@@ -211,7 +211,7 @@ def delete_course(course_id):
         
         # Delete query
         query = """
-        DELETE FROM course
+        DELETE FROM Course
         WHERE CourseID = %s
         """
         
@@ -241,7 +241,7 @@ def list_users():
     try:
         conn = mysql.connection
         cursor = conn.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("SELECT UserID, Name, Courses, IsProfessor FROM user ORDER BY UserID")
+        cursor.execute("SELECT UserID, Name, Courses, IsProfessor FROM User ORDER BY UserID")
         users = cursor.fetchall()
         return jsonify(users)
     except Exception as e:
@@ -259,7 +259,6 @@ def create_user():
         data = request.get_json()
 
         name = data.get('Name')
-        password = data.get('Password')
         courses = data.get('Courses')
         is_professor = data.get('IsProfessor', False)
 
@@ -269,23 +268,20 @@ def create_user():
 
         if not name:
             return jsonify({"error": "Missing required field: Name"}), 400
-        
-        if not password:
-            return jsonify({"error": "Missing required field: Password"}), 400
 
         conn = mysql.connection
         cursor = conn.cursor(MySQLdb.cursors.DictCursor)
 
         # If user already exists, return their id
-        cursor.execute("SELECT UserID FROM user WHERE Name = %s", (name,))
+        cursor.execute("SELECT UserID FROM User WHERE Name = %s", (name,))
         existing = cursor.fetchone()
         if existing:
             return jsonify({"message": "User already exists", "user_id": existing['UserID']}), 200
 
         # Insert user
         cursor.execute(
-            "INSERT INTO user (Name, Password, Courses, IsProfessor) VALUES (%s, %s, %s, %s)",
-            (name, password, courses, is_professor)
+            "INSERT INTO User (Name, Courses, IsProfessor) VALUES (%s, %s, %s)",
+            (name, courses, is_professor)
         )
         conn.commit()
 
@@ -293,9 +289,9 @@ def create_user():
 
         # Insert into role table
         if is_professor:
-            cursor.execute("INSERT INTO professor (UserID, Badge) VALUES (%s, NULL)", (user_id,))
+            cursor.execute("INSERT INTO Professor (UserID, Badge) VALUES (%s, NULL)", (user_id,))
         else:
-            cursor.execute("INSERT INTO student (UserID) VALUES (%s)", (user_id,))
+            cursor.execute("INSERT INTO Student (UserID) VALUES (%s)", (user_id,))
 
         conn.commit()
 
@@ -348,30 +344,30 @@ def get_resources():
             p.Link as PdfUrl,
             i.Link as ImageUrl,
             i.Size as ImageSize
-        FROM resource r
-        LEFT JOIN note n ON r.ResourceID = n.ResourceID
-        LEFT JOIN website w ON r.ResourceID = w.ResourceID
-        LEFT JOIN video v ON r.ResourceID = v.ResourceID
+        FROM Resource r
+        LEFT JOIN Note n ON r.ResourceID = n.ResourceID
+        LEFT JOIN Website w ON r.ResourceID = w.ResourceID
+        LEFT JOIN Video v ON r.ResourceID = v.ResourceID
         LEFT JOIN pdf p ON r.ResourceID = p.ResourceID
-        LEFT JOIN image i ON r.ResourceID = i.ResourceID
+        LEFT JOIN Image i ON r.ResourceID = i.ResourceID
         WHERE 1=1
         """
         params = []
         
-        # Add broader search filter across title, keywords, author, bodies, and URLs
+        # Add search filter
         if search_term:
-            query += " AND (r.Topic LIKE %s OR r.Keywords LIKE %s OR r.Author LIKE %s OR n.Body LIKE %s OR w.Link LIKE %s OR v.Link LIKE %s OR p.Link LIKE %s OR i.Link LIKE %s)"
+            query += " AND (r.Topic LIKE %s OR r.Keywords LIKE %s OR r.Author LIKE %s)"
             search_param = '%' + search_term + '%'
-            params.extend([search_param, search_param, search_param, search_param, search_param, search_param, search_param, search_param])
+            params.extend([search_param, search_param, search_param])
         
         # Add topic filter
         if topic:
             query += " AND r.Topic LIKE %s"
             params.append('%' + topic + '%')
         
-        # Add format filter (case-insensitive)
+        # Add format filter
         if format_type:
-            query += " AND LOWER(r.Format) = LOWER(%s)"
+            query += " AND r.Format = %s"
             params.append(format_type)
         
         # Add subject filter (search in topic/keywords)
@@ -384,18 +380,16 @@ def get_resources():
         
         cursor.execute(query, tuple(params))
         resources = cursor.fetchall()
-        # Consolidate URLs (handle lowercase formats from import)
+        # Consolidate URLs
         for resource in resources:
-            fmt = (resource.get('Format') or '').lower()
-            resource['Format'] = fmt  # normalize returned value
-            if fmt == 'website' and resource.get('Url'):
+            if resource['Format'] == 'Website' and resource['Url']:
                 pass
-            elif fmt == 'video':
-                resource['Url'] = resource.get('VideoUrl')
-            elif fmt == 'pdf':
-                resource['Url'] = resource.get('PdfUrl')
-            elif fmt == 'image':
-                resource['Url'] = resource.get('ImageUrl')
+            elif resource['Format'] == 'Video':
+                resource['Url'] = resource['VideoUrl']
+            elif resource['Format'] == 'Pdf':
+                resource['Url'] = resource['PdfUrl']
+            elif resource['Format'] == 'Image':
+                resource['Url'] = resource['ImageUrl']
             
             if 'VideoUrl' in resource:
                 del resource['VideoUrl']
@@ -440,13 +434,13 @@ def get_resource_details(resource_id):
             p.Body as PdfBody,
             i.Link as ImageUrl,
             i.Size as ImageSize,
-            (SELECT AVG(Score) FROM rating WHERE ResourceID = r.ResourceID) as Average_Rating
-        FROM resource r
-        LEFT JOIN note n ON r.ResourceID = n.ResourceID
-        LEFT JOIN website w ON r.ResourceID = w.ResourceID
-        LEFT JOIN video v ON r.ResourceID = v.ResourceID
+            (SELECT AVG(Score) FROM Rating WHERE ResourceID = r.ResourceID) as Average_Rating
+        FROM Resource r
+        LEFT JOIN Note n ON r.ResourceID = n.ResourceID
+        LEFT JOIN Website w ON r.ResourceID = w.ResourceID
+        LEFT JOIN Video v ON r.ResourceID = v.ResourceID
         LEFT JOIN pdf p ON r.ResourceID = p.ResourceID
-        LEFT JOIN image i ON r.ResourceID = i.ResourceID
+        LEFT JOIN Image i ON r.ResourceID = i.ResourceID
         WHERE r.ResourceID = %s
         """
         cursor.execute(query, (resource_id,))
@@ -505,27 +499,27 @@ def create_resource():
         cursor = conn.cursor(MySQLdb.cursors.DictCursor)
         
         # Check if author exists, if not create them
-        cursor.execute("SELECT UserID FROM user WHERE Name = %s", (author,))
+        cursor.execute("SELECT UserID FROM User WHERE Name = %s", (author,))
         author_exists = cursor.fetchone()
         
         if not author_exists:
             # Create new user for the author
             cursor.execute(
-                "INSERT INTO user (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
+                "INSERT INTO User (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
                 (author,)
             )
             conn.commit()
             
             # Get the new user ID and create Student entry
-            cursor.execute("SELECT UserID FROM user WHERE Name = %s", (author,))
+            cursor.execute("SELECT UserID FROM User WHERE Name = %s", (author,))
             new_user = cursor.fetchone()
             if new_user:
                 user_id = new_user['UserID']
-                cursor.execute("INSERT INTO student (UserID) VALUES (%s)", (user_id,))
+                cursor.execute("INSERT INTO Student (UserID) VALUES (%s)", (user_id,))
                 conn.commit()
         
         insert_query = """
-        INSERT INTO resource (Date, DateFor, Author, Topic, Keywords, Format)
+        INSERT INTO Resource (Date, DateFor, Author, Topic, Keywords, Format)
         VALUES (%s, %s, %s, %s, %s, %s)
         """
         
@@ -537,15 +531,15 @@ def create_resource():
         
         # Now insert format-specific data
         if format_type == 'Note' and body:
-            cursor.execute("INSERT INTO note (ResourceID, Body) VALUES (%s, %s)", (resource_id, body))
+            cursor.execute("INSERT INTO Note (ResourceID, Body) VALUES (%s, %s)", (resource_id, body))
         elif format_type == 'Website' and link:
-            cursor.execute("INSERT INTO website (ResourceID, Link) VALUES (%s, %s)", (resource_id, link))
+            cursor.execute("INSERT INTO Website (ResourceID, Link) VALUES (%s, %s)", (resource_id, link))
         elif format_type == 'Pdf' and (link or body):
             cursor.execute("INSERT INTO pdf (ResourceID, Body, Link) VALUES (%s, %s, %s)", (resource_id, body, link))
         elif format_type == 'Image' and link:
-            cursor.execute("INSERT INTO image (ResourceID, Size, Link) VALUES (%s, %s, %s)", (resource_id, size, link))
+            cursor.execute("INSERT INTO Image (ResourceID, Size, Link) VALUES (%s, %s, %s)", (resource_id, size, link))
         elif format_type == 'Video' and link:
-            cursor.execute("INSERT INTO video (ResourceID, Duration, Link) VALUES (%s, %s, %s)", (resource_id, duration, link))
+            cursor.execute("INSERT INTO Video (ResourceID, Duration, Link) VALUES (%s, %s, %s)", (resource_id, duration, link))
         
         conn.commit()
         
@@ -587,23 +581,23 @@ def submit_rating(resource_id):
         cursor = conn.cursor(MySQLdb.cursors.DictCursor)
         
         # Check if poster exists as a user, if not create them
-        cursor.execute("SELECT UserID FROM user WHERE Name = %s", (poster,))
+        cursor.execute("SELECT UserID FROM User WHERE Name = %s", (poster,))
         poster_exists = cursor.fetchone()
         
         if not poster_exists:
             # Create new user for the poster
             cursor.execute(
-                "INSERT INTO user (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
+                "INSERT INTO User (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
                 (poster,)
             )
             conn.commit()
             
             # Get the new user ID and create Student entry
-            cursor.execute("SELECT UserID FROM user WHERE Name = %s", (poster,))
+            cursor.execute("SELECT UserID FROM User WHERE Name = %s", (poster,))
             new_user = cursor.fetchone()
             if new_user:
                 user_id = new_user['UserID']
-                cursor.execute("INSERT INTO student (UserID) VALUES (%s)", (user_id,))
+                cursor.execute("INSERT INTO Student (UserID) VALUES (%s)", (user_id,))
                 conn.commit()
         
         # Use stored procedure SP_Rating_Rate
@@ -618,10 +612,10 @@ def submit_rating(resource_id):
         
         # Update the average rating in Resource table
         cursor.execute("""
-            UPDATE resource 
+            UPDATE Resource 
             SET Rating = (
                 SELECT ROUND(AVG(Score), 1) 
-                FROM rating 
+                FROM Rating 
                 WHERE ResourceID = %s
             )
             WHERE ResourceID = %s
@@ -648,7 +642,7 @@ def get_resource_ratings(resource_id):
         
         query = """
         SELECT RatingID, Poster, Score, Date
-        FROM rating
+        FROM Rating
         WHERE ResourceID = %s
         ORDER BY Date DESC
         """
@@ -699,12 +693,12 @@ def get_resources_by_subject(subject_code):
             v.Link as VideoUrl,
             p.Link as PdfUrl,
             i.Link as ImageUrl
-        FROM resource r
-        LEFT JOIN note n ON r.ResourceID = n.ResourceID
-        LEFT JOIN website w ON r.ResourceID = w.ResourceID
-        LEFT JOIN video v ON r.ResourceID = v.ResourceID
+        FROM Resource r
+        LEFT JOIN Note n ON r.ResourceID = n.ResourceID
+        LEFT JOIN Website w ON r.ResourceID = w.ResourceID
+        LEFT JOIN Video v ON r.ResourceID = v.ResourceID
         LEFT JOIN pdf p ON r.ResourceID = p.ResourceID
-        LEFT JOIN image i ON r.ResourceID = i.ResourceID
+        LEFT JOIN Image i ON r.ResourceID = i.ResourceID
         WHERE r.Topic LIKE %s OR r.Keywords LIKE %s
         ORDER BY r.Date DESC
         """

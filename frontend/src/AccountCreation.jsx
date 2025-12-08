@@ -3,7 +3,6 @@ import { API_BASE_URL } from './config.js';
 
 export default function AccountCreation({ onSuccess }) {
   const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
   const [courses, setCourses] = useState('');
   const [isProfessor, setIsProfessor] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,7 +18,6 @@ export default function AccountCreation({ onSuccess }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           Name: name.trim(),
-          Password: password,
           Courses: courses || null,
           IsProfessor: isProfessor,
         }),
@@ -32,7 +30,6 @@ export default function AccountCreation({ onSuccess }) {
           onSuccess({ userId: data.user_id, name: data.Name || name.trim(), isProfessor: data.IsProfessor ?? isProfessor });
         }
         setName('');
-        setPassword('');
         setCourses('');
         setIsProfessor(false);
       } else {
@@ -59,25 +56,12 @@ export default function AccountCreation({ onSuccess }) {
 
             <form onSubmit={handleSubmit} className="account-form">
               <label style={{ display: 'block', marginBottom: '12px' }}>
-                Username:
+                Name:
                 <input
                   type="text"
                   name="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
-                  maxLength="20"
-                  className="note-title"
-                />
-              </label>
-
-              <label style={{ display: 'block', marginBottom: '12px' }}>
-                Password:
-                <input
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   required
                   maxLength="50"
                   className="note-title"
@@ -98,13 +82,28 @@ export default function AccountCreation({ onSuccess }) {
               
               <div className="role-select" style={{ marginTop: '12px' }}>
                 <p>Select your role:</p>
-                <button type="button" onClick={() => setIsProfessor(false)}>
+
+                <label style={{ marginRight: '12px' }}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Student"
+                    checked={!isProfessor}
+                    onChange={() => setIsProfessor(false)}
+                  />{' '}
                   Student
-                </button>
-                <button type="button" onClick={() => setIsProfessor(true)}>
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="Professor"
+                    checked={isProfessor}
+                    onChange={() => setIsProfessor(true)}
+                  />{' '}
                   Professor
-                </button>
-                <p>Current selection: {isProfessor ? "Professor" : "Student"}</p>
+                </label>
               </div>
 
               <button className="btn btn-primary" type="submit" style={{ marginTop: '12px' }} disabled={submitting}>
