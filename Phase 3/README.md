@@ -7,7 +7,7 @@ Group members: Nikki Gorski(Nikki.Gorski@maine.edu), Gabrielle Akers(Gabrielle.A
 
 Team leader: Nikki Gorski
 
-Project topic: Creating a database when users can login, submit notes, see what resources their professors have verified, and rate other's notes for their classes
+Goal: Creating a database when users can login, submit notes, see what resources their professors have verified, and rate other's notes for their classes
 
 ---
 
