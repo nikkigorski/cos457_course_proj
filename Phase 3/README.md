@@ -11,18 +11,29 @@ Project topic: Creating a database when users can login, submit notes, see what 
 
 ---
 
+## Github IDs
+
+- Gabrielle (144271532)
+
+- Gage (64271462)
+
+- Nikki (126693450)
+
+- Jove (144271740)
+
+---
+
 ## Task breakdown
 
 ### Part 1 Roles
-Team Member (GitHub ID):	Primary Focus Area	Deliverables with Primary Ownership
 
-Gabrielle (144271532): ER diagram
+Gabrielle: ER diagram
 
-Gage (64271462): Data dictionary
+Gage: Data dictionary
 
-Nikki (126693450): Normal form discussion
+Nikki: Normal form discussion
 
-Jove (144271740): Cardinality and participaion constraints
+Jove: Cardinality and participaion constraints
 
 ### Part 2 Roles
 
@@ -43,8 +54,3 @@ Gage: Professor dashboard, Video demo, API doc
 Nikki: Resource creation, Video demo, Setup guide
 
 Jove: Topbar and Main page creation, Video demo, User manual
-
----
-
-		
-
