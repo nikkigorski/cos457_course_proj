@@ -9,13 +9,13 @@ Edited on December 4, 2025
 CREATE DATABASE IF NOT EXISTS lobsternotes;
 USE lobsternotes;
 
-create table Subject(
+create table subject(
 	Code char(3),
     Name varchar(50) not null,
     primary key(Code)
 );
 
-create table User(
+create table user(
 	UserID int unsigned auto_increment,
     Name varchar(50) not null unique,
     Courses varchar(50) null,
@@ -24,20 +24,20 @@ create table User(
     primary key(UserID)
 );
 
-create table Student(
+create table student(
 	UserID int unsigned,
 	primary key(UserID),
-    foreign key(UserID) references User(UserID) on update cascade on delete cascade
+    foreign key(UserID) references user(UserID) on update cascade on delete cascade
 );
 
-create table Professor(
+create table professor(
 	UserID int unsigned,
     Badge boolean null,
     primary key(UserID),
-    foreign key(UserID) references User(UserID) on update cascade on delete cascade
+    foreign key(UserID) references user(UserID) on update cascade on delete cascade
 );
 
-create table Course(
+create table course(
 	CourseID int unsigned auto_increment,
     Section varchar(24) null check(REGEXP_LIKE(Section, '^[A-Za-z0-9]+$')),
     Name varchar(50) not null,
@@ -47,10 +47,10 @@ create table Course(
     CatalogNumber numeric(3,0),
     ProfessorID int,
     primary key(CourseID),
-    foreign key(Subject) references Subject(Code) on update cascade on delete cascade
+    foreign key(Subject) references subject(Code) on update cascade on delete cascade
 );
 
-create table Resource(
+create table resource(
 	ResourceID int unsigned auto_increment,
     Date date not null,
     DateFor date not null,
@@ -61,25 +61,25 @@ create table Resource(
     Format varchar(7) not null check(Format in('Note', 'Video', 'Website', 'Pdf', 'Image')),
     isVerified boolean null,
     primary key(ResourceID),
-    foreign key(Author) references User(Name) on update cascade on delete cascade
+    foreign key(Author) references user(Name) on update cascade on delete cascade
 );
 
-create table Rating(
+create table rating(
 	RatingID int unsigned auto_increment,
     Poster varchar(50) not null,
     ResourceID int unsigned not null,
     Score numeric(2,1) not null check(Score >= 0.0 and Score <= 5.0),
     Date date not null,
     primary key(RatingID),
-    foreign key(Poster) references User(Name) on update cascade on delete cascade,
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
+    foreign key(Poster) references user(Name) on update cascade on delete cascade,
+    foreign key(ResourceID) references resource(ResourceID) on update cascade on delete cascade
 );
 
-create table Note(
+create table note(
 	ResourceID int unsigned,
     Body varchar(2048) not null,
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
+    foreign key(ResourceID) references resource(ResourceID) on update cascade on delete cascade
 );
 
 create table pdf(
@@ -87,58 +87,45 @@ create table pdf(
     Body varchar(2048) null,
 	Link varchar(2048) null check(Link regexp '\\.pdf$' and Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
+    foreign key(ResourceID) references resource(ResourceID) on update cascade on delete cascade
 );
 
-create table Image(
+create table image(
 	ResourceID int unsigned,
     Size int unsigned not null check(Size > 0),
 	Link varchar(2048) null check(Link regexp '\\.(jpg|jpeg|png|gif)$' and Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
+    foreign key(ResourceID) references resource(ResourceID) on update cascade on delete cascade
 );
 
-create table Video(
+create table video(
 	ResourceID int unsigned,
     Duration int unsigned not null check(Duration > 0),
     Link varchar(2048) null check(Link is null or Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
+    foreign key(ResourceID) references resource(ResourceID) on update cascade on delete cascade
 );
 
-create table Website(
+create table website(
 	ResourceID int unsigned,
     Link varchar(2048) not null check(Link regexp '^https?://'),
     primary key(ResourceID),
-    foreign key(ResourceID) references Resource(ResourceID) on update cascade on delete cascade
+    foreign key(ResourceID) references resource(ResourceID) on update cascade on delete cascade
 );
 
-create table Enrolled(
+create table enrolled(
     StudentID int unsigned,
     CourseID int unsigned,
     primary key(StudentID, CourseID),
-    foreign key(StudentID) references Student(UserID) on update cascade on delete cascade,
-    foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
+    foreign key(StudentID) references student(UserID) on update cascade on delete cascade,
+    foreign key(CourseID) references course(CourseID) on update cascade on delete cascade
 );
-<<<<<<< HEAD
-=======
-
-create table Teaches(
+create table teaches(
 	ProfessorID int unsigned,
 	CourseID int unsigned,
 	primary key(ProfessorID, CourseID),
-	foreign key(ProfessorID) references Professor(UserID) on update cascade on delete cascade,
-    foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
-);
-
->>>>>>> resources_branch
-
-create table Teaches(
-	ProfessorID int unsigned,
-	CourseID int unsigned,
-	primary key(ProfessorID, CourseID),
-	foreign key(ProfessorID) references Professor(UserID) on update cascade on delete cascade,
-    foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
+	foreign key(ProfessorID) references professor(UserID) on update cascade on delete cascade,
+    foreign key(CourseID) references course(CourseID) on update cascade on delete cascade
 );
 
 -- Average Rating attribute of Resource with Scores

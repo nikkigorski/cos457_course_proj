@@ -40,7 +40,7 @@ Resource index creation scripts
 */
 -- DateFor to query by class date the note is for
 CREATE INDEX IX_Resource_DateFor
-ON Resource (DateFor DESC);
+ON resource (DateFor DESC);
 
 -- Topic to query by lecture topics 
 CREATE INDEX IX_Resource_Topic
@@ -48,7 +48,7 @@ ON resource (Topic);
 
 -- Keywords to query by matching document keywords
 CREATE FULLTEXT INDEX IX_Resource_Keywords
-ON Resource (Keywords);
+ON resource (Keywords);
 
 /*
 Resource index creation scripts - Query Optimization (December 2025)
@@ -56,11 +56,11 @@ Composite indexes created for optimizing note search queries
 */
 -- Composite index for efficient topic + recency searches
 -- Used by SearchPage to find resources by topic and ordered by date
--- MEASURED IMPROVEMENT: 0.0548 ms (full scan) → 0.0426 ms (index scan) = 1.29x faster
+-- MEASURED IMPROVEMENT: 0.0548 ms (full scan) 												 																																
 -- Rows examined reduced from 111 to 8 (93% reduction)
 -- Cost reduced from 10.6 to 3.86
 CREATE INDEX IX_Resource_Topic_DateFor
-ON Resource (Topic ASC, DateFor DESC);
+ON resource (Topic ASC, DateFor DESC);
 
 -- Composite index for efficient author + recency searches
 -- Used to find resources by specific authors and order by date
@@ -68,7 +68,7 @@ ON Resource (Topic ASC, DateFor DESC);
 -- Query execution: 0.188 ms, Cost reduced from ~10.6 to 11.3
 -- Note: Index is part of foreign key constraint, prevents before/after testing
 CREATE INDEX IX_Resource_Author_DateFor
-ON Resource (Author ASC, DateFor DESC);
+ON resource (Author ASC, DateFor DESC);
 
 /*
 Rating index creation scripts
