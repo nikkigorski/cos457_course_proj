@@ -6,9 +6,10 @@ import os
 # Get script directory and try common socket paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
 socket_paths = [
-    '/tmp/mysql.sock',
-    '/var/run/mysqld/mysql.sock',
     os.path.expanduser('~/mysql.sock'),
+    '/tmp/mysql.sock',
+    '/var/run/mysqld/mysqld.sock',  # MariaDB default
+    '/var/run/mysqld/mysql.sock',
 ]
 
 socket_path = None
@@ -36,12 +37,10 @@ with open(os.path.join(sql_dir, 'Lobster Notes Tables.sql'), 'r') as f:
 with open(os.path.join(sql_dir, 'Stored Procedures and Functions.sql'), 'r') as f:
     procs_sql = f.read()
 
-# Split into individual statements (procedures/functions end with 'end;')
-combined = tables_sql + '\n' + procs_sql
-
+# Only use the procedures file, not the tables file (which has commented procedures)
 # Find all procedures and functions
 pattern = r'(create\s+(procedure|function)\s+\w+.*?end;)'
-matches = re.findall(pattern, combined, re.IGNORECASE | re.DOTALL)
+matches = re.findall(pattern, procs_sql, re.IGNORECASE | re.DOTALL)
 
 for match in matches:
     statement = match[0]

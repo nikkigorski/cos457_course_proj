@@ -21,8 +21,8 @@ fi
 # MySQL configuration - use environment variables with defaults
 MYSQL_HOME="${MYSQL_HOME:-$HOME/mysql}"
 
-# Auto-detect MySQL binary location
-MYSQL_BIN="${MYSQL_BIN:-$(command -v mysqld_safe 2>/dev/null || command -v mysqld 2>/dev/null || echo $MYSQL_HOME/bin/mysqld_safe)}"
+# Auto-detect MySQL/MariaDB binary location - prefer system installation
+MYSQL_BIN="${MYSQL_BIN:-$(command -v mysqld_safe 2>/dev/null || command -v mariadb-safe 2>/dev/null || echo $MYSQL_HOME/bin/mysqld_safe)}"
 
 MYSQL_CONFIG="$PROJECT_ROOT/sql-commands-and-backend/my.cnf"
 MYSQL_DATADIR="$PROJECT_ROOT/sql-commands-and-backend/database"
@@ -50,6 +50,12 @@ FRONTEND_DIR="$PROJECT_ROOT/frontend"
 echo "================================================================"
 echo "Starting Lobster Notes Application"
 echo "================================================================"
+
+# Set up library path for MySQL (needed for libaio)
+export LD_LIBRARY_PATH="$HOME/libaio-0.3.113/src:$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
+
+# Set up library path for MySQL (needed for libaio)
+export LD_LIBRARY_PATH="$HOME/libaio-0.3.113/src:$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
 
 # Check if MySQL is already running
 if pgrep -x "mysqld" > /dev/null; then
