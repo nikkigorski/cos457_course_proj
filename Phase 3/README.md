@@ -32,6 +32,8 @@ sudo mysql_secure_installation
 
 sudo mysql -u root -p
 
+CREATE DATABASE IF NOT EXISTS lobsternotes;
+
 SET GLOBAL validate_password.policy = LOW;
 
 SET GLOBAL validate_password.length = 4;
