@@ -11,6 +11,50 @@ Project topic: Creating a database when users can login, submit notes, see what 
 
 ---
 
+## How to run
+
+### Setting up virtul environment
+sudo apt install python3.12-venv
+
+python3 -m venv lobstervenv
+
+source lobstervenv/bin/activate
+
+pip install -r requirements.txt
+
+### Setting up MySQL
+
+sudo apt install mysql-server
+
+sudo service mysql start
+
+sudo mysql_secure_installation
+
+sudo mysql -u root -p
+
+SET GLOBAL validate_password.policy = LOW;
+
+SET GLOBAL validate_password.length = 4;
+
+CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
+
+GRANT ALL PRIVILEGES ON lobsternotes.* TO 'admin'@'localhost';
+
+FLUSH PRIVILEGES;
+
+exit
+
+
+### Running script
+
+cd cos457_course_proj
+
+./install
+
+./run
+
+---
+
 ## Github IDs
 
 - Gabrielle (144271532)
