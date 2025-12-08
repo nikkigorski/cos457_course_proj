@@ -19,29 +19,54 @@ PORTABLE_DIR="$PROJECT_ROOT/.portable"
 NODE_PORTABLE="$PORTABLE_DIR/node"
 
 ERRORS=0
+SKIP_SUDO=false
 
 echo "================================================================"
 echo "Installing Lobster Notes Dependencies"
 echo "================================================================"
 echo ""
 
+# Check if we need sudo and ask user
+if command -v apt-get &> /dev/null || command -v yum &> /dev/null; then
+    echo "This installer may need sudo access to install system packages."
+    echo "You can skip sudo operations if you don't have sudo access or prefer to install manually."
+    read -p "Allow sudo operations? (y/n) [y]: " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
+        SKIP_SUDO=true
+        echo "[System] Skipping sudo operations. You may need to install system packages manually."
+        echo ""
+    fi
+fi
+
+# Update package lists on apt-based systems
+if command -v apt-get &> /dev/null && [ "$SKIP_SUDO" = false ]; then
+    echo "[System] Updating package lists..."
+    sudo apt-get update -qq 2>&1 | grep -v "^Get:" || true
+    echo "[System]  Package lists updated"
+    echo ""
+fi
+
 # Detect OS and package manager
 if command -v apt-get &> /dev/null; then
     PKG_MANAGER="apt-get"
     PYTHON_PKG="python3"
     VENV_PKG="python3-venv"
+    MYSQL_DEV_PKG="libmysqlclient-dev pkg-config"
     NODE_PKG="nodejs npm"
     INSTALL_CMD="sudo apt-get install -y"
 elif command -v yum &> /dev/null; then
     PKG_MANAGER="yum"
     PYTHON_PKG="python3"
     VENV_PKG="python3-devel"
+    MYSQL_DEV_PKG="mysql-devel pkgconfig"
     NODE_PKG="nodejs npm"
     INSTALL_CMD="sudo yum install -y"
 elif command -v brew &> /dev/null; then
     PKG_MANAGER="brew"
     PYTHON_PKG="python@3.11"
-    VENV_PKG="python@3.11" 
+    VENV_PKG="python@3.11"
+    MYSQL_DEV_PKG="mysql pkg-config"
     NODE_PKG="node"
     INSTALL_CMD="brew install"
 else
@@ -53,8 +78,8 @@ fi
 # Check for Python 3
 if ! command -v python3 &> /dev/null; then
     echo "[System]  Python 3 not found"
-    echo "[System] Attempting to install Python 3..."
-    if [ -n "$INSTALL_CMD" ]; then
+    if [ "$SKIP_SUDO" = false ] && [ -n "$INSTALL_CMD" ]; then
+        echo "[System] Attempting to install Python 3..."
         eval "$INSTALL_CMD $PYTHON_PKG" 2>/dev/null
         if command -v python3 &> /dev/null; then
             echo "[Python]  Python 3 installed: $(python3 --version)"
@@ -62,6 +87,10 @@ if ! command -v python3 &> /dev/null; then
             echo "[Python]  Failed to install Python 3."
             ERRORS=$((ERRORS + 1))
         fi
+    else
+        echo "[System] Skipping Python 3 installation (sudo disabled or no package manager)"
+        echo "[System] Please install Python 3.8+ manually"
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo "[Python]  Python 3 found: $(python3 --version)"
@@ -70,8 +99,8 @@ fi
 # Check for python3-venv
 if ! python3 -m venv --help &> /dev/null; then
     echo "[System]  Python venv module not found"
-    echo "[System] Attempting to install python3-venv..."
-    if [ -n "$INSTALL_CMD" ]; then
+    if [ "$SKIP_SUDO" = false ] && [ -n "$INSTALL_CMD" ]; then
+        echo "[System] Attempting to install python3-venv..."
         # Try python3.12-venv first, then fall back to python3-venv
         if command -v apt-get &> /dev/null; then
             sudo apt-get install -y python3.12-venv 2>/dev/null || eval "$INSTALL_CMD $VENV_PKG" 2>/dev/null
@@ -84,9 +113,37 @@ if ! python3 -m venv --help &> /dev/null; then
             echo "[Python]  Failed to install python3-venv. "
             ERRORS=$((ERRORS + 1))
         fi
+    else
+        echo "[System] Skipping python3-venv installation (sudo disabled)"
+        echo "[System] Please install python3-venv manually"
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo "[Python]  Python venv module available"
+fi
+
+# Check for MySQL development libraries
+echo ""
+if ! pkg-config --exists mysqlclient 2>/dev/null; then
+    echo "[System]  MySQL development libraries not found"
+    if [ "$SKIP_SUDO" = false ] && [ -n "$INSTALL_CMD" ] && [ -n "$MYSQL_DEV_PKG" ]; then
+        echo "[System] Attempting to install MySQL dev packages..."
+        eval "$INSTALL_CMD $MYSQL_DEV_PKG" 2>/dev/null
+        if pkg-config --exists mysqlclient 2>/dev/null; then
+            echo "[System]  MySQL dev libraries installed"
+        else
+            echo "[System]  Failed to install MySQL dev libraries"
+            echo "[System]  Python mysqlclient package may fail to install"
+            echo "[System]  Manual install: sudo apt-get install libmysqlclient-dev pkg-config"
+            ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo "[System] Skipping MySQL dev libraries installation (sudo disabled)"
+        echo "[System]  Python mysqlclient package may fail to install"
+        echo "[System]  Manual install: sudo apt-get install libmysqlclient-dev pkg-config"
+    fi
+else
+    echo "[System]  MySQL development libraries found"
 fi
 
 # Check if virtual environment exists
