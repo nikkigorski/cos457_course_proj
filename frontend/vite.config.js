@@ -9,18 +9,4 @@ export default defineConfig({
     port: 5173,
     host: "localhost"
   },
-
-  // load account creation
-  build: {
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, "index.html"),
-        professor: resolve(__dirname, "professor.html"),
-        student: resolve(__dirname, "student.html"),
-      },
-    },
-  },
-  resolve: {
-    extensions: [".js", ".jsx", ".ts", ".tsx"],
-  }
 });
