@@ -1,0 +1,67 @@
+# Lobster Notes - Transaction Management & ACID Compliance
+
+**Date**: December 7, 2025
+
+**Goal**: Adding ACID compliant transactions to existing sql files
+
+---
+
+## Objective
+1. Add transactions to each procedure to ensure each remains independent
+2. Outputs error messages when transaction fails
+3. Adds ability to commit and rollback tranactions
+
+---
+
+## Implementation
+Each procedure had a transaction added that returns an error message if something goes wrong and now declares an exit handler for the exception. 
+This will call the rollback to return to the previous version preventing errors from being introduced into the database or crashing it. This adds Durability from the ACID principles since it only commits functional information and saves committed data.
+Each transaction is also independent of each other and can only succeed or fail, meaning it is both Atomic and has Isolation.
+These changes will ensure the data in our database remains more Consistent allowing it to pass all of the ACID principles.
+
+### Each procedure now includes each of the following:
+1. start transaction
+2. commit
+3. rollback
+4. declare exit handler for sqlexception
+
+### Example of implementation
+```
+create procedure SP_User_Create
+(
+    in user_name varchar(50),
+    in enrolled_courses varchar(50),
+    in professor_check boolean
+)
+begin
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'User creation failed';
+	end;
+	start transaction;
+    insert into user
+    (
+        Name,
+		Courses,
+		IsProfessor
+    )
+    values
+    (
+        user_name,
+        enrolled_courses,
+        professor_check
+    );
+    commit;
+```
+
+---
+
+## Improvements
+- Full rollback support on failure
+- Guaranteed atomic operations
+- No partial inserts
+- Improved data consistency
+- More reliability
+- Full error handling
