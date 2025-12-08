@@ -20,9 +20,27 @@ fi
 
 # MySQL configuration - use environment variables with defaults
 MYSQL_HOME="${MYSQL_HOME:-$HOME/mysql}"
-MYSQL_BIN="$MYSQL_HOME/bin/mysqld_safe"
+
+# Auto-detect MySQL binary location
+MYSQL_BIN="${MYSQL_BIN:-$(command -v mysqld_safe 2>/dev/null || command -v mysqld 2>/dev/null || echo $MYSQL_HOME/bin/mysqld_safe)}"
+
 MYSQL_CONFIG="$PROJECT_ROOT/sql-commands-and-backend/my.cnf"
 MYSQL_DATADIR="$PROJECT_ROOT/sql-commands-and-backend/database"
+
+# Auto-detect MySQL socket location
+socket_paths=(
+    "$HOME/mysql.sock"
+    "/tmp/mysql.sock"
+    "/var/run/mysqld/mysql.sock"
+)
+MYSQL_SOCKET=""
+for path in "${socket_paths[@]}"; do
+    if [ -S "$path" ] 2>/dev/null; then
+        MYSQL_SOCKET="$path"
+        break
+    fi
+done
+# Default to first choice if none found
 MYSQL_SOCKET="${MYSQL_SOCKET:-$HOME/mysql.sock}"
 INIT_SCRIPT="$PROJECT_ROOT/sql-commands-and-backend/init_db.sh"
 VENV_PATH="$PROJECT_ROOT/lobsterenv/bin/activate"
@@ -37,12 +55,13 @@ echo "================================================================"
 if pgrep -x "mysqld" > /dev/null; then
     echo "[MySQL] Already running"
 else
-    if [ -f "$MYSQL_BIN" ]; then
+    if [ -f "$MYSQL_BIN" ] && command -v "$MYSQL_BIN" &>/dev/null; then
         echo "[MySQL] Starting database server..."
         $MYSQL_BIN --defaults-file=$MYSQL_CONFIG --datadir=$MYSQL_DATADIR --socket=$MYSQL_SOCKET &
         sleep 3
     else
-        echo "[MySQL] WARNING: MySQL not found at $MYSQL_BIN - skipping"
+        echo "[MySQL] WARNING: MySQL binary not found at $MYSQL_BIN"
+        echo "[MySQL] Trying to connect to existing MySQL server at socket: $MYSQL_SOCKET"
     fi
 fi
 
