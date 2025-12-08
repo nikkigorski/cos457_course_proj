@@ -1,0 +1,428 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 568276258,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Motion and forces | High ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 877133792,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Introduction to high scho",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 850142915,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Position, velocity, and s",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1644210793,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Acceleration | Physics | ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 206527790,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Interpreting motion data ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1163023310,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Intro to forces (part 1) ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 918610538,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Intro to forces (part 2) ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 680100805,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Newton's first law | Phys",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 114783194,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Newton's second law | Phy",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1119219860,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Newton's second law calcu",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1042986729,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1636223912,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 226068817,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "play.png",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 2129375597,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Force pairs and momentum ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1784246369,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Newton's third law | Phys",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 635498896,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Momentum | Physics | Khan",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 2104688450,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Conservation of momentum ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1040916881,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Momentum conservation - S",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1869081026,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Impulse | Physics | Khan ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 195054980,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1366966999,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1473071109,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "play.png",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    }
+  ],
+  "Note": [
+    {
+      "ResourceID": 568276258,
+      "Body": "What makes objects move the way they do? Explore different forces in our everyday lives, and discover how these forces are related to motion through Newton's first and second laws.\n\n**Unit guides are here!**  Power up your classroom with engaging strategies, tools, and activities from Khan Academy’s learning experts. [**Doc**](https://bit.ly/3FKloHc) | [**PDF**](https://bit.ly/4c9AhyF)"
+    },
+    {
+      "ResourceID": 877133792,
+      "Body": "filepath:./downloaded_videos/Introduction to high school physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 850142915,
+      "Body": "filepath:./downloaded_videos/Position, velocity, and speed ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 1644210793,
+      "Body": "filepath:./downloaded_videos/Acceleration ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 206527790,
+      "Body": "filepath:./downloaded_videos/Interpreting motion data ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 1163023310,
+      "Body": "filepath:./downloaded_videos/Intro to forces (part 1) ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 918610538,
+      "Body": "filepath:./downloaded_videos/Intro to forces (part 2) ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 680100805,
+      "Body": "filepath:./downloaded_videos/Newton's first law ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 114783194,
+      "Body": "filepath:./downloaded_videos/Newton's second law ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 1119219860,
+      "Body": "filepath:./downloaded_videos/Newton's second law calculations ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 2129375597,
+      "Body": "What is momentum, and why is it such an important quantity in physics? Discover how momentum is related to force, why momentum is conserved, and how the same change in momentum (impulse) can occur in different ways.\n\n**Unit guides are here!**  Power up your classroom with engaging strategies, tools, and activities from Khan Academy’s learning experts. [**Doc**](https://bit.ly/4ldF0Uu) | [**PDF**](https://bit.ly/4c6vvC8)"
+    },
+    {
+      "ResourceID": 1784246369,
+      "Body": "filepath:./downloaded_videos/Newton's third law ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 635498896,
+      "Body": "filepath:./downloaded_videos/Momentum ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 2104688450,
+      "Body": "filepath:./downloaded_videos/Conservation of momentum ｜ Physics ｜ Khan Academy.mp4"
+    },
+    {
+      "ResourceID": 1040916881,
+      "Body": "filepath:./downloaded_videos/Momentum conservation - Solved example.mp4"
+    },
+    {
+      "ResourceID": 1869081026,
+      "Body": "filepath:./downloaded_videos/Impulse ｜ Physics ｜ Khan Academy.mp4"
+    }
+  ],
+  "pdf": [
+    {
+      "ResourceID": 1042986729,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%201_Forces%20and%20motion.pdf"
+    },
+    {
+      "ResourceID": 1636223912,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%201_Forces%20and%20motion.pdf"
+    },
+    {
+      "ResourceID": 195054980,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%202_Force%20pairs%20and%20momentum.pdf"
+    },
+    {
+      "ResourceID": 1366966999,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%202_Force%20pairs%20and%20momentum.pdf"
+    }
+  ],
+  "Image": [
+    {
+      "ResourceID": 226068817,
+      "Link": "https://cdn.kastatic.org/images/play.png",
+      "Width": 48,
+      "Height": 48,
+      "Size": 2304
+    },
+    {
+      "ResourceID": 1473071109,
+      "Link": "https://cdn.kastatic.org/images/play.png",
+      "Width": 48,
+      "Height": 48,
+      "Size": 2304
+    }
+  ],
+  "Video": [
+    {
+      "ResourceID": 877133792,
+      "Duration": 140,
+      "Link": "https://www.youtube.com/watch?v=wHC245cVdHw"
+    },
+    {
+      "ResourceID": 850142915,
+      "Duration": 624,
+      "Link": "https://www.youtube.com/watch?v=vOipqtdR23s"
+    },
+    {
+      "ResourceID": 1644210793,
+      "Duration": 620,
+      "Link": "https://www.youtube.com/watch?v=JSPwCtIPfQw"
+    },
+    {
+      "ResourceID": 206527790,
+      "Duration": 606,
+      "Link": "https://www.youtube.com/watch?v=-1xbgz26ZNs"
+    },
+    {
+      "ResourceID": 1163023310,
+      "Duration": 597,
+      "Link": "https://www.youtube.com/watch?v=92Adbb6geHE"
+    },
+    {
+      "ResourceID": 918610538,
+      "Duration": 586,
+      "Link": "https://www.youtube.com/watch?v=P48_vJcY9qw"
+    },
+    {
+      "ResourceID": 680100805,
+      "Duration": 537,
+      "Link": "https://www.youtube.com/watch?v=rjkQcfw5fkM"
+    },
+    {
+      "ResourceID": 114783194,
+      "Duration": 683,
+      "Link": "https://www.youtube.com/watch?v=EwGGh1dC3kQ"
+    },
+    {
+      "ResourceID": 1119219860,
+      "Duration": 594,
+      "Link": "https://www.youtube.com/watch?v=O5G4uHe-qc4"
+    },
+    {
+      "ResourceID": 1784246369,
+      "Duration": 626,
+      "Link": "https://www.youtube.com/watch?v=J8mLQQZeIH8"
+    },
+    {
+      "ResourceID": 635498896,
+      "Duration": 600,
+      "Link": "https://www.youtube.com/watch?v=UoIIwzHug9M"
+    },
+    {
+      "ResourceID": 2104688450,
+      "Duration": 748,
+      "Link": "https://www.youtube.com/watch?v=PJMFxBIqkSs"
+    },
+    {
+      "ResourceID": 1040916881,
+      "Duration": 662,
+      "Link": "https://www.youtube.com/watch?v=VwnSR8X8LrA"
+    },
+    {
+      "ResourceID": 1869081026,
+      "Duration": 763,
+      "Link": "https://www.youtube.com/watch?v=JlxJYSFPpQo"
+    }
+  ],
+  "Website": [
+    {
+      "ResourceID": 568276258,
+      "Link": "https://www.khanacademy.org/science/highschool-physics/x6679aa2c65c01e53:motion-and-forces"
+    },
+    {
+      "ResourceID": 2129375597,
+      "Link": "https://www.khanacademy.org/science/highschool-physics/x6679aa2c65c01e53:force-pairs-and-momentum"
+    }
+  ]
+}

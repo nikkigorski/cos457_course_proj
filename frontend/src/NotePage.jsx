@@ -57,9 +57,12 @@ function NotePage({ noteId, note, resource, onBack, user, apiBaseUrl }) {
   const author = data.Author || 'Unknown';
   const rating = data.Rating || '—';
   const date = data.Date || 'Unknown';
-  const format = data.Format || 'Unknown';
-  const link = data.Url || '';
+  const format = data.Format || data.format || 'Unknown';
+  // Fallback to any URL fields in case the backend response is missing Url for images/pdfs/videos
+  const link = data.Url || data.ImageUrl || data.VideoUrl || data.PdfUrl || data.WebsiteUrl || '';
   const body = data.Body || '';
+  const formatLower = String(format).toLowerCase();
+  const isSvg = link && /\.svg(\?|$)/i.test(link);
 
   const handleRatingSubmit = async (e) => {
     e.preventDefault();
@@ -124,7 +127,7 @@ function NotePage({ noteId, note, resource, onBack, user, apiBaseUrl }) {
         <div><strong>Format:</strong> {format}</div>
       </div>
 
-      {String(format).toLowerCase() === 'pdf' && link ? (
+      {formatLower === 'pdf' && link ? (
         <div className="note-pdf" style={{ marginBottom: '12px' }}>
           <iframe
             src={link}
@@ -137,26 +140,37 @@ function NotePage({ noteId, note, resource, onBack, user, apiBaseUrl }) {
         </div>
       ) : null}
 
-      {String(format).toLowerCase() === 'image' && link ? (
+      {formatLower === 'image' && link ? (
         <div className="note-image" style={{ marginBottom: '12px' }}>
-          <img src={link} alt={title} style={{ width: '100%', borderRadius: 8 }} />
+          {isSvg ? (
+            <object
+              data={link}
+              type="image/svg+xml"
+              aria-label={title}
+              style={{ width: '100%', height: 'auto', borderRadius: 8 }}
+            >
+              <img src={link} alt={title} style={{ width: '100%', borderRadius: 8 }} />
+            </object>
+          ) : (
+            <img src={link} alt={title} style={{ width: '100%', borderRadius: 8 }} />
+          )}
           <div style={{ color: 'var(--muted)', marginTop: '8px' }}>{title}</div>
         </div>
       ) : null}
 
-      {String(format).toLowerCase() === 'note' && body ? (
+      {formatLower === 'note' && body ? (
         <div className="note-body" style={{ marginBottom: '12px', whiteSpace: 'pre-wrap' }}>
           {body}
         </div>
       ) : null}
 
-      {String(format).toLowerCase() === 'website' && link ? (
+      {formatLower === 'website' && link ? (
         <div className="note-website" style={{ marginBottom: '12px' }}>
           <a href={link} target="_blank" rel="noopener noreferrer">{link}</a>
         </div>
       ) : null}
 
-      {String(format).toLowerCase() === 'video' && link ? (
+      {formatLower === 'video' && link ? (
         <div className="note-video" style={{ marginBottom: '12px' }}>
           {(/youtube\.com|youtu\.be/).test(link) ? (
             (() => {
