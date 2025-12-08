@@ -96,15 +96,36 @@ export default function AccountCreation({ onSuccess }) {
                 />
               </label>
               
-              <div className="role-select" style={{ marginTop: '12px' }}>
+              <div className="role-select" style={{ marginTop: "12px" }}>
                 <p>Select your role:</p>
-                <button type="button" onClick={() => setIsProfessor(false)}>
-                  Student
-                </button>
-                <button type="button" onClick={() => setIsProfessor(true)}>
-                  Professor
-                </button>
-                <p>Current selection: {isProfessor ? "Professor" : "Student"}</p>
+
+                <input
+                  type="radio"
+                  name="role"
+                  id="role1"
+                  value="Student"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isProfessor: false,
+                    }))
+                  }
+                />
+                <label htmlFor="role1">Student</label>
+
+                <input
+                  type="radio"
+                  name="role"
+                  id="role2"
+                  value="Professor"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isProfessor: true,
+                    }))
+                  }
+                />
+                <label htmlFor="role2">Professor</label>
               </div>
 
               <button className="btn btn-primary" type="submit" style={{ marginTop: '12px' }} disabled={submitting}>
