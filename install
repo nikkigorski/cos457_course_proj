@@ -52,6 +52,7 @@ if command -v apt-get &> /dev/null; then
     PKG_MANAGER="apt-get"
     PYTHON_PKG="python3"
     VENV_PKG="python3-venv"
+    MYSQL_PKG="mysql-server"
     MYSQL_DEV_PKG="libmysqlclient-dev pkg-config"
     NODE_PKG="nodejs npm"
     INSTALL_CMD="sudo apt-get install -y"
@@ -59,6 +60,7 @@ elif command -v yum &> /dev/null; then
     PKG_MANAGER="yum"
     PYTHON_PKG="python3"
     VENV_PKG="python3-devel"
+    MYSQL_PKG="mysql-server"
     MYSQL_DEV_PKG="mysql-devel pkgconfig"
     NODE_PKG="nodejs npm"
     INSTALL_CMD="sudo yum install -y"
@@ -66,6 +68,7 @@ elif command -v brew &> /dev/null; then
     PKG_MANAGER="brew"
     PYTHON_PKG="python@3.11"
     VENV_PKG="python@3.11"
+    MYSQL_PKG="mysql"
     MYSQL_DEV_PKG="mysql pkg-config"
     NODE_PKG="node"
     INSTALL_CMD="brew install"
@@ -73,6 +76,29 @@ else
     echo "[System]  No supported package manager found (apt, yum, or brew)"
     echo "[System] Please install Python 3.8+, Python venv, and Node.js 18+ manually"
     ERRORS=$((ERRORS + 1))
+fi
+
+# Check for MySQL Server
+echo ""
+if ! command -v mysql &> /dev/null; then
+    echo "[System]  MySQL Server not found"
+    if [ "$SKIP_SUDO" = false ] && [ -n "$INSTALL_CMD" ] && [ -n "$MYSQL_PKG" ]; then
+        echo "[System] Attempting to install MySQL Server..."
+        eval "$INSTALL_CMD $MYSQL_PKG" 2>/dev/null
+        if command -v mysql &> /dev/null || command -v mysqld &> /dev/null; then
+            echo "[System]  MySQL Server installed"
+        else
+            echo "[System]  Failed to install MySQL Server"
+            echo "[System]  Please install MySQL Server manually"
+            ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo "[System] Skipping MySQL Server installation (sudo disabled or no package manager)"
+        echo "[System]  Please install MySQL Server manually: https://dev.mysql.com/downloads/"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo "[System]  MySQL Server found: $(mysql --version)"
 fi
 
 # Check for Python 3
