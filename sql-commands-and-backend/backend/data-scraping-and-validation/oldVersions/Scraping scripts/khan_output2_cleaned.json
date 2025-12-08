@@ -1,0 +1,215 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 1771751370,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Celebrating American ente",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1610595542,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Dreaming big, Thomas Cole",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 441917378,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Inventing America, Colt's",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1727291049,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Heroes of modern surgery:",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1123870259,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Exploding tradition, Whis",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1049071830,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "William Sidney Mount, Bar",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 796363749,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "William Sidney Mount, Chr",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 212969751,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Sir David Wilkie, Reading",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1483089617,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "William Sidney Mount, The",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1095315992,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "play.png",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1084712044,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "play.png",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Image",
+      "isVerified": false
+    }
+  ],
+  "Note": [
+    {
+      "ResourceID": 1610595542,
+      "Body": "filepath:./downloaded_videos/Dreaming big, Thomas Cole paints 4,500 years of architectural history in The Architect's Dream.webm"
+    },
+    {
+      "ResourceID": 441917378,
+      "Body": "filepath:./downloaded_videos/Inventing America, Colt's Experimental Pocket Pistol.webm"
+    },
+    {
+      "ResourceID": 1727291049,
+      "Body": "filepath:./downloaded_videos/Heroes of modern surgery： Eakins' Dr. Gross and Dr. Agnew.webm"
+    },
+    {
+      "ResourceID": 1123870259,
+      "Body": "filepath:./downloaded_videos/Exploding tradition, Whistler's Nocturne in Black and Gold, the Falling Rocket.webm"
+    },
+    {
+      "ResourceID": 1049071830,
+      "Body": "William Sidney Mount, Bargaining for a Horse, 1835, oil on canvas, 24 x 30 inches (New York Historical Society)"
+    },
+    {
+      "ResourceID": 796363749,
+      "Body": "William Sidney Mount, Christ Raising the Daughter of Jairus, 1828, oil on canvas, 46.04 cm x 62.87 cm, (Museums of Stony Brook)"
+    },
+    {
+      "ResourceID": 212969751,
+      "Body": "Sir David Wilkie, Reading the Will, 1819, etching, 6.9 x 10.5 cm (Tate)"
+    },
+    {
+      "ResourceID": 1483089617,
+      "Body": "William Sidney Mount, The Raffle (Raffling for the Goose), 1837, oil on mahogany, 43.2 x 58.7 cm (The Metropolitan Museum of Art)"
+    }
+  ],
+  "pdf": [],
+  "Image": [
+    {
+      "ResourceID": 1049071830,
+      "Link": "https://cdn.kastatic.org/ka-perseus-images/6723f7f6a0228383a6b375dbad65e4b056563b84.jpg",
+      "Size": 334750
+    },
+    {
+      "ResourceID": 796363749,
+      "Link": "https://cdn.kastatic.org/ka-perseus-images/2b7ce907c0c61aec6db92046e162df563c5845bd.jpg",
+      "Size": 322400
+    },
+    {
+      "ResourceID": 212969751,
+      "Link": "https://cdn.kastatic.org/ka-perseus-images/8ddf81e825816eccafae836e53c5706017c612ec.jpg",
+      "Size": 297050
+    },
+    {
+      "ResourceID": 1483089617,
+      "Link": "https://cdn.kastatic.org/ka-perseus-images/c7423fde9fc6954c39d6af946b9ba61f3b436ee8.jpg",
+      "Size": 311350
+    },
+    {
+      "ResourceID": 1084712044,
+      "Link": "https://cdn.kastatic.org/images/play.png",
+      "Size": 2304
+    }
+  ],
+  "Video": [
+    {
+      "ResourceID": 1610595542,
+      "Duration": 269,
+      "Link": "https://www.youtube.com/watch?v=3BJ38oi515M"
+    },
+    {
+      "ResourceID": 441917378,
+      "Duration": 274,
+      "Link": "https://www.youtube.com/watch?v=PfHBVVPhVvM"
+    },
+    {
+      "ResourceID": 1727291049,
+      "Duration": 544,
+      "Link": "https://www.youtube.com/watch?v=xerjJiBUKxw"
+    },
+    {
+      "ResourceID": 1123870259,
+      "Duration": 242,
+      "Link": "https://www.youtube.com/watch?v=DUL-uANWKkQ"
+    }
+  ],
+  "Website": [
+    {
+      "ResourceID": 1771751370,
+      "Link": "https://www.khanacademy.org/humanities/seeing-america-sh/x35b7de5e9cd6796d:theme-work-exchange-and-technology/x35b7de5e9cd6796d:1700-1870/a/celebrating-american-enterprise-willam-sidney-mount-bargaining-for-a-horse"
+    }
+  ]
+}

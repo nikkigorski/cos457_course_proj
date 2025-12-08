@@ -1,0 +1,251 @@
+#!/bin/bash
+
+################################################################
+# install - Lobster Notes dependency installation script
+# Installs Python packages and Node.js dependencies
+#
+# Author: Nikki Gorski (Lobster Notes Team, 2025)
+################################################################
+
+set +e  # Don't exit on errors
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$SCRIPT_DIR"
+VENV_PATH="$PROJECT_ROOT/lobsterenv"
+FRONTEND_DIR="$PROJECT_ROOT/frontend"
+REQUIREMENTS="$PROJECT_ROOT/requirements.txt"
+
+ERRORS=0
+
+echo "================================================================"
+echo "Installing Lobster Notes Dependencies"
+echo "================================================================"
+echo ""
+
+# Detect OS and package manager
+if command -v apt-get &> /dev/null; then
+    PKG_MANAGER="apt-get"
+    PYTHON_PKG="python3"
+    VENV_PKG="python3-venv"
+    NODE_PKG="nodejs npm"
+    INSTALL_CMD="sudo apt-get install -y"
+elif command -v yum &> /dev/null; then
+    PKG_MANAGER="yum"
+    PYTHON_PKG="python3"
+    VENV_PKG="python3-devel"
+    NODE_PKG="nodejs npm"
+    INSTALL_CMD="sudo yum install -y"
+elif command -v brew &> /dev/null; then
+    PKG_MANAGER="brew"
+    PYTHON_PKG="python@3.11"
+    VENV_PKG="python@3.11" 
+    NODE_PKG="node"
+    INSTALL_CMD="brew install"
+else
+    echo "[System]  No supported package manager found (apt, yum, or brew)"
+    echo "[System] Please install Python 3.8+, Python venv, and Node.js 18+ manually"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Check for Python 3
+if ! command -v python3 &> /dev/null; then
+    echo "[System]  Python 3 not found"
+    echo "[System] Attempting to install Python 3..."
+    if [ -n "$INSTALL_CMD" ]; then
+        eval "$INSTALL_CMD $PYTHON_PKG" 2>/dev/null
+        if command -v python3 &> /dev/null; then
+            echo "[Python]  Python 3 installed: $(python3 --version)"
+        else
+            echo "[Python]  Failed to install Python 3."
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+else
+    echo "[Python]  Python 3 found: $(python3 --version)"
+fi
+
+# Check for python3-venv
+if ! python3 -m venv --help &> /dev/null; then
+    echo "[System]  Python venv module not found"
+    echo "[System] Attempting to install python3-venv..."
+    if [ -n "$INSTALL_CMD" ]; then
+        # Try python3.12-venv first, then fall back to python3-venv
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y python3.12-venv 2>/dev/null || eval "$INSTALL_CMD $VENV_PKG" 2>/dev/null
+        else
+            eval "$INSTALL_CMD $VENV_PKG" 2>/dev/null
+        fi
+        if python3 -m venv --help &> /dev/null; then
+            echo "[Python]  Python venv installed"
+        else
+            echo "[Python]  Failed to install python3-venv. "
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+else
+    echo "[Python]  Python venv module available"
+fi
+
+# Check if virtual environment exists
+if [ ! -d "$VENV_PATH" ]; then
+    echo "[Python] Creating virtual environment..."
+    python3 -m venv "$VENV_PATH"
+    if [ $? -eq 0 ]; then
+        echo "[Python]  Virtual environment created at $VENV_PATH"
+    else
+        echo "[Python]  Failed to create virtual environment"
+        echo "[Python]  Attempting to install pip and retry..."
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y python3-pip
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y python3-pip
+        elif command -v brew &> /dev/null; then
+            brew install python3
+        fi
+        # Retry venv creation
+        python3 -m venv "$VENV_PATH"
+        if [ $? -ne 0 ]; then
+            echo "[Python]  Still failed to create virtual environment"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+else
+    echo "[Python]  Virtual environment already exists"
+fi
+
+# Activate virtual environment and install Python packages
+if [ -d "$VENV_PATH" ] && [ -f "$VENV_PATH/bin/activate" ]; then
+    echo "[Python] Activating virtual environment..."
+    source "$VENV_PATH/bin/activate"
+    
+    echo "[Python] Upgrading pip..."
+    "$VENV_PATH/bin/python3" -m pip install --upgrade pip -q 2>/dev/null
+    
+    if [ -f "$REQUIREMENTS" ]; then
+        echo "[Python] Checking Python dependencies..."
+        
+        # Read requirements and check/install each package
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            [[ -z "$line" || "$line" =~ ^#.*$ ]] && continue
+            
+            # Extract package name (before ==, >=, etc.)
+            PACKAGE=$(echo "$line" | sed 's/[=<>].*//')
+            
+            # Check if package is already installed
+            if "$VENV_PATH/bin/python3" -m pip show "$PACKAGE" &> /dev/null; then
+                echo "[Python]    $PACKAGE already installed"
+            else
+                echo "[Python]   Installing $line..."
+                "$VENV_PATH/bin/python3" -m pip install "$line" -q
+                if [ $? -eq 0 ]; then
+                    echo "[Python]    $PACKAGE installed successfully"
+                else
+                    echo "[Python]    Failed to install $PACKAGE"
+                    ERRORS=$((ERRORS + 1))
+                fi
+            fi
+        done < "$REQUIREMENTS"
+        
+        echo "[Python]  Python dependency check complete"
+    else
+        echo "[Python]  requirements.txt not found at $REQUIREMENTS"
+        ERRORS=$((ERRORS + 1))
+    fi
+fi
+
+# Check for Node.js and npm
+echo ""
+if ! command -v node &> /dev/null; then
+    echo "[System]  Node.js not found"
+    echo "[System] Attempting to install Node.js..."
+    if [ -n "$INSTALL_CMD" ]; then
+        eval "$INSTALL_CMD $NODE_PKG" 2>/dev/null
+        if command -v node &> /dev/null; then
+            echo "[Frontend]  Node.js installed: $(node --version)"
+        else
+            echo "[Frontend]  Failed to install Node.js. "
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+else
+    echo "[Frontend]  Node.js found: $(node --version)"
+fi
+
+if ! command -v npm &> /dev/null; then
+    echo "[System]  npm not found"
+    echo "[System] Attempting to install npm..."
+    if [ -n "$INSTALL_CMD" ]; then
+        eval "$INSTALL_CMD npm" 2>/dev/null
+        if command -v npm &> /dev/null; then
+            echo "[Frontend]  npm installed: $(npm --version)"
+        else
+            echo "[Frontend]  Failed to install npm. "
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+else
+    echo "[Frontend]  npm found: $(npm --version)"
+fi
+
+# Install Node.js dependencies for frontend
+if [ -d "$FRONTEND_DIR" ]; then
+    cd "$FRONTEND_DIR"
+    
+    if [ -f "package.json" ]; then
+        if [ -d "node_modules" ]; then
+            echo "[Frontend]  node_modules directory already exists"
+            echo "[Frontend] Checking for updates..."
+        else
+            echo "[Frontend] Installing Node.js dependencies..."
+        fi
+        
+        npm install 2>&1 | grep -v "^npm WARN"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            echo "[Frontend]  Node.js dependencies installed successfully"
+            
+            # Check if Vite is installed and build the frontend
+            if npm list vite &>/dev/null; then
+                echo "[Frontend] Building frontend with Vite..."
+                npm run build 2>&1 | tail -5
+                if [ ${PIPESTATUS[0]} -eq 0 ]; then
+                    echo "[Frontend]  Frontend build successful"
+                else
+                    echo "[Frontend]  Warning: Frontend build failed "
+                fi
+            fi
+        else
+            echo "[Frontend]  Error installing Node.js dependencies"
+            ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo "[Frontend]  package.json not found in $FRONTEND_DIR"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo "[Frontend]  Frontend directory not found: $FRONTEND_DIR"
+    ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "================================================================"
+if [ $ERRORS -eq 0 ]; then
+    echo " Installation Complete - No Errors!"
+    echo "================================================================"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Make sure MySQL is installed and running"
+    echo "  2. Run './run' to start everything, or start separately:"
+    echo "     - Backend: cd Phase\ 3/backend && source ../../lobsterenv/bin/activate && python3 app.py"
+    echo "     - Frontend: cd frontend && npm run dev  (Vite development server)"
+    echo "  3. Access the app at http://localhost:5173 (or check console for port)"
+else
+    echo " Installation Complete with $ERRORS error(s)"
+    echo "================================================================"
+   
+fi
+echo ""
+
+exit 0  # Always exit 0 so we can see the summary

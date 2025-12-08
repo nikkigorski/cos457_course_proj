@@ -1,0 +1,71 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 1997790764,
+      "Date": "2025-11-10",
+      "DateFor": "2025-11-10",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Comparing decimals in dif",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": null
+    },
+    {
+      "ResourceID": 365362379,
+      "Date": "2025-11-10",
+      "DateFor": "2025-11-10",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Comparing decimals in dif",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 826543518,
+      "Date": "2025-11-10",
+      "DateFor": "2025-11-10",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Compare decimals word pro",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    }
+  ],
+  "Note": [
+    {
+      "ResourceID": 1997790764,
+      "Body": "This video is all about comparing decimals. Learn how to determine which of two decimals is larger by converting them into a common format. Practice understanding place value and the importance of each digit's position."
+    },
+    {
+      "ResourceID": 365362379,
+      "Body": "filepath:./downloaded_videos/Comparing decimals in different representations.mkv"
+    },
+    {
+      "ResourceID": 826543518,
+      "Body": "filepath:./downloaded_videos/Compare decimals word problems.mkv"
+    }
+  ],
+  "pdf": [],
+  "Image": [],
+  "Video": [
+    {
+      "ResourceID": 365362379,
+      "Duration": 267,
+      "Link": "https://www.youtube-nocookie.com/embed/_tk3nWC5OAA/?controls=1&enablejsapi=1&modestbranding=1&showinfo=0&origin=https%3A%2F%2Fwww.khanacademy.org&iv_load_policy=3&html5=1&fs=1&rel=0&hl=en&cc_lang_pref=en&cc_load_policy=1&start=0"
+    },
+    {
+      "ResourceID": 826543518,
+      "Duration": 241,
+      "Link": "https://www.youtube-nocookie.com/embed/ELNooV0ymYk/?controls=1&enablejsapi=1&modestbranding=1&showinfo=0&origin=https%3A%2F%2Fwww.khanacademy.org&iv_load_policy=3&html5=1&fs=1&rel=0&hl=en&cc_lang_pref=en&cc_load_policy=1&start=0"
+    }
+  ],
+  "Website": [
+    {
+      "ResourceID": 1997790764,
+      "Link": "https://www.khanacademy.org/math/cc-fifth-grade-math/imp-place-value-and-decimals/imp-comparing-decimals-2/v/comparing-decimals-in-different-representations"
+    }
+  ]
+}

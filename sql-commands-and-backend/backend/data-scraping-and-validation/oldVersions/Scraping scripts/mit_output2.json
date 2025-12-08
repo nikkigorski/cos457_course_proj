@@ -1,0 +1,248 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 1541387355,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": "Resources | Computational",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 797007424,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1289504740,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 898732491,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1366952765,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 331921087,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1451816766,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 981518964,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1594767913,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 708376023,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 609076112,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 2065973986,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 169679528,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Video",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 2036618334,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Note",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1727475439,
+      "Date": "2025-11-15",
+      "DateFor": "2025-11-15",
+      "Author": "mit ocw, lobster notes web scraper",
+      "Topic": null,
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Note",
+      "isVerified": false
+    }
+  ],
+  "Note": [
+    {
+      "ResourceID": 2036618334,
+      "Body": null
+    },
+    {
+      "ResourceID": 1727475439,
+      "Body": null
+    }
+  ],
+  "pdf": [
+    {
+      "ResourceID": 797007424,
+      "Body": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/mit21m383s23_quiz_1.pdf"
+    },
+    {
+      "ResourceID": 1289504740,
+      "Body": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/mit21m383s23_quiz_2.pdf"
+    }
+  ],
+  "Image": [],
+  "Video": [
+    {
+      "ResourceID": 898732491,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video_0_intro_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 1366952765,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-lecture-1-feb-8-version3_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 331921087,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-video1a_tutorial_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 1451816766,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-lecture-2-feb-10_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 981518964,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m283_video_3a_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 1594767913,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m283_video_3b_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 708376023,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m283_video_3c_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 609076112,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m383-s23-lecture-4-feb-15_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 2065973986,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m283_video_4a_360p_16_9.mp4"
+    },
+    {
+      "ResourceID": 169679528,
+      "Duration": 1,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/21m283_video_4b_360p_16_9.mp4"
+    }
+  ],
+  "Website": [
+    {
+      "ResourceID": 1541387355,
+      "Link": "https://ocw.mit.edu/courses/21m-383-computational-music-theory-and-analysis-spring-2023/download/"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+beautifulsoup4
+lxml
+selenium
+yt-dlp
+requests
+webdriver-manager

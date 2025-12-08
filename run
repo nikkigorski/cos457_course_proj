@@ -1,0 +1,72 @@
+#!/bin/bash
+
+################################################################
+# run - Lobster Notes startup script
+# Starts MySQL database, Flask backend, and Vite frontend
+#
+# Author: Nikki Gorski (Lobster Notes Team, 2025)
+################################################################
+
+PROJECT_ROOT="/home/nikki.gorski/databases/cos457_course_proj"
+MYSQL_BIN="/home/nikki.gorski/mysql/bin/mysqld_safe"
+MYSQL_CONFIG="$PROJECT_ROOT/sql-commands-and-backend/my.cnf"
+MYSQL_DATADIR="$PROJECT_ROOT/sql-commands-and-backend/database"
+MYSQL_SOCKET="/home/nikki.gorski/mysql.sock"
+INIT_SCRIPT="$PROJECT_ROOT/sql-commands-and-backend/init_db.sh"
+VENV_PATH="$PROJECT_ROOT/lobsterenv/bin/activate"
+BACKEND_DIR="$PROJECT_ROOT/Phase 3/backend"
+FRONTEND_DIR="$PROJECT_ROOT/frontend"
+
+echo "================================================================"
+echo "Starting Lobster Notes Application"
+echo "================================================================"
+
+# Check if MySQL is already running
+if pgrep -x "mysqld" > /dev/null; then
+    echo "[MySQL] Already running"
+else
+    echo "[MySQL] Starting database server..."
+    $MYSQL_BIN --defaults-file=$MYSQL_CONFIG --datadir=$MYSQL_DATADIR --socket=$MYSQL_SOCKET &
+    sleep 3
+fi
+
+# Initialize database
+echo "[Database] Running initialization script..."
+bash $INIT_SCRIPT
+
+# Import Khan Academy data
+echo "[Database] Importing Khan Academy notes data..."
+source $VENV_PATH
+export LD_LIBRARY_PATH=/home/nikki.gorski/mysql/lib
+python3 "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py"
+
+# Start Flask backend
+echo "[Backend] Starting Flask API server..."
+cd "$BACKEND_DIR"
+source $VENV_PATH
+export LD_LIBRARY_PATH=/home/nikki.gorski/mysql/lib
+python3 app.py &
+BACKEND_PID=$!
+echo "[Backend] Flask running on http://127.0.0.1:8080 (PID: $BACKEND_PID)"
+
+# Start Vite frontend
+echo "[Frontend] Starting Vite development server..."
+cd "$FRONTEND_DIR"
+npm run dev &
+FRONTEND_PID=$!
+echo "[Frontend] Vite running on http://localhost:5173 (PID: $FRONTEND_PID)"
+
+echo "================================================================"
+echo "Lobster Notes started successfully!"
+echo "================================================================"
+echo "MySQL:    Running"
+echo "Backend:  http://127.0.0.1:8080"
+echo "Frontend: http://localhost:5173"
+echo ""
+echo "Press Ctrl+C to stop all services"
+echo "================================================================"
+
+# Wait for user interrupt
+trap "echo ''; echo 'Stopping services...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit 0" SIGINT SIGTERM
+
+wait

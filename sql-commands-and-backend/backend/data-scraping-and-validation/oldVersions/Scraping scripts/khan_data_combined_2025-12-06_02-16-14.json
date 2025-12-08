@@ -1,0 +1,159 @@
+{
+  "Resource": [
+    {
+      "ResourceID": 1364072227,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Motion and forces | High ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 96102204,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1563934949,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1494104949,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Force pairs and momentum ",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1601613672,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1844766813,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1566955163,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Nuclear physics | High sc",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Website",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 1766251189,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    },
+    {
+      "ResourceID": 756132085,
+      "Date": "2025-12-06",
+      "DateFor": "2025-12-06",
+      "Author": "khan accademy, lobster notes web scraper",
+      "Topic": "Unit guide NGSS HS Physic",
+      "Keywords": null,
+      "Rating": 9.9,
+      "Format": "Pdf",
+      "isVerified": false
+    }
+  ],
+  "Note": [
+    {
+      "ResourceID": 1364072227,
+      "Body": "What makes objects move the way they do? Explore different forces in our everyday lives, and discover how these forces are related to motion through Newton's first and second laws.\n\n**Unit guides are here!**  Power up your classroom with engaging strategies, tools, and activities from Khan Academy’s learning experts. [**Doc**](https://bit.ly/3FKloHc) | [**PDF**](https://bit.ly/4c9AhyF)"
+    },
+    {
+      "ResourceID": 1494104949,
+      "Body": "What is momentum, and why is it such an important quantity in physics? Discover how momentum is related to force, why momentum is conserved, and how the same change in momentum (impulse) can occur in different ways.\n\n**Unit guides are here!**  Power up your classroom with engaging strategies, tools, and activities from Khan Academy’s learning experts. [**Doc**](https://bit.ly/4ldF0Uu) | [**PDF**](https://bit.ly/4c6vvC8)"
+    },
+    {
+      "ResourceID": 1566955163,
+      "Body": "When nuclei change, elements turn into different elements. Large amounts of energy are involved. Learn about radioactive decay, nuclear fusion, and nuclear fission. Discover important applications of these fascinating nuclear processes.\n\n**Unit guides are here!**  Power up your classroom with engaging strategies, tools, and activities from Khan Academy’s learning experts. [**Doc**](https://bit.ly/3FJ5RqV) | [**PDF**](https://bit.ly/3XFa6dm)"
+    }
+  ],
+  "pdf": [
+    {
+      "ResourceID": 96102204,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%201_Forces%20and%20motion.pdf"
+    },
+    {
+      "ResourceID": 1563934949,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%201_Forces%20and%20motion.pdf"
+    },
+    {
+      "ResourceID": 1601613672,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%202_Force%20pairs%20and%20momentum.pdf"
+    },
+    {
+      "ResourceID": 1844766813,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%202_Force%20pairs%20and%20momentum.pdf"
+    },
+    {
+      "ResourceID": 1766251189,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%208_Nuclear%20physics.pdf"
+    },
+    {
+      "ResourceID": 756132085,
+      "Body": "https://storage.googleapis.com/content-resources/Science%20unit%20guides/Physics/Unit%20Guides/Unit%20guide_NGSS%20HS%20Physics_Unit%208_Nuclear%20physics.pdf"
+    }
+  ],
+  "Image": [],
+  "Video": [],
+  "Website": [
+    {
+      "ResourceID": 1364072227,
+      "Link": "https://www.khanacademy.org/science/highschool-physics/x6679aa2c65c01e53:motion-and-forces"
+    },
+    {
+      "ResourceID": 1494104949,
+      "Link": "https://www.khanacademy.org/science/highschool-physics/x6679aa2c65c01e53:force-pairs-and-momentum"
+    },
+    {
+      "ResourceID": 1566955163,
+      "Link": "https://www.khanacademy.org/science/highschool-physics/x6679aa2c65c01e53:nuclear-physics"
+    }
+  ]
+}

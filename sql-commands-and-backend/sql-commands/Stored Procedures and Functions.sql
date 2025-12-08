@@ -5,12 +5,12 @@ Date: 10 November 2025
 Description: Stored Procedures and Functions for Lobster Notes Project
 */
 
+USE lobsternotes;
 
 
 /*
 Procedure for creating a new user, specifying enrolled courses and if user is a professor
 */
-delimiter //
 create procedure SP_User_Create
 (
     IN user_name varchar(50),
@@ -19,7 +19,7 @@ create procedure SP_User_Create
 )
 
 begin
-Insert into user
+Insert into User
 (
     Name,
     Courses,
@@ -31,47 +31,49 @@ values
     enrolled_courses,
     professor_check
 );
-end//
-delimiter ;
 
-delimiter //
-create trigger TR_User_AfterInsert
-after insert on User
-for each row
-begin
-	if new.IsProfessor = True then
-		insert into Professor (UserID, Badge)
-        values (new.UserID, Null);
-	else
-		insert into Student (UserID)
-        values (new.UserID);
-	end if;
-end//
+-- Replicate trigger functionality since triggers can't be piped
+IF professor_check = TRUE THEN
+    INSERT INTO Professor (UserID, Badge)
+    VALUES (LAST_INSERT_ID(), NULL);
+ELSE
+    INSERT INTO Student (UserID)
+    VALUES (LAST_INSERT_ID());
+END IF;
+end;
 
-delimiter ;
+-- create trigger TR_User_AfterInsert
+-- after insert on User
+-- for each row
+-- begin
+-- 	if new.IsProfessor = True then
+-- 		insert into Professor (UserID, Badge)
+--         values (new.UserID, Null);
+-- 	else
+-- 		insert into Student (UserID)
+--         values (new.UserID);
+-- 	end if;
+-- end;
 
 /*
 Procedure for updating username by taking UserID for user to be altered
 */
-delimiter //
 create procedure SP_Update_User
 (
 	IN user_id int UNSIGNED,
 	IN new_name varchar(50)
 )
 begin
-	update user
+	update User
 	set name = new_name
 	where UserID = user_id;
 
-end//
-delimiter ;
+end;
 
 /*
 Creates a new resource
 */
 
-delimiter //
 create procedure SP_Resource_Create
 (
 	IN lecture_date date,
@@ -88,7 +90,7 @@ begin
 	declare resource_id int;
 	start transaction;
 		
-	insert into resource
+	insert into Resource
 	(
 			DateFor,
 			Author,
@@ -109,7 +111,7 @@ begin
 
 	case format_of
 		when 'Note' then
-			insert into note
+			insert into Note
 				(
 					ResourceID,
 					Body
@@ -120,7 +122,7 @@ begin
 					note_body
 				);
 		when 'Website' then
-			insert into website
+			insert into Website
 			(
 				ResourceID,
 				Link
@@ -173,13 +175,11 @@ begin
 	end case;
     
 	commit;
-end//
-delimiter ; 
+end; 
 
 /*
 Links professor to course
 */
-delimiter //
 create procedure SP_Course_IsProfessor
 (
 	IN course_id int unsigned,
@@ -194,15 +194,13 @@ begin
             set ProfessorID = prof_id
             where CourseID = course_id;
 	end if;
-end//
-delimiter ;
+end;
 
 
 
 /*
 Allows submission of rating
 */
-delimiter //
 create procedure SP_Rating_Rate
 (
 	IN resource_ID int unsigned,
@@ -211,7 +209,7 @@ create procedure SP_Rating_Rate
     IN date_of date
 )
 begin
-	insert into rating
+	insert into Rating
 		(
 			ResourceID,
 			Poster,
@@ -235,13 +233,11 @@ begin
 -- 	where ResourceID = resource_ID;
     
     
-end//
-delimiter ;
+end;
 
 /*
 Gets details for a resource based on ResourceID
 */
-delimiter //
 create procedure SP_Resource_Details
 (
 	IN resource_ID int unsigned
@@ -263,20 +259,18 @@ select
     where ResourceID = R.ResourceID
     ) as Average_Rating
     
-from Resource as R join user as U on R.Author = U.Name
+from Resource as R join User as U on R.Author = U.Name
 left join Note as N on R.ResourceID = N.ResourceID
 left join Website as W on R.ResourceID = W.ResourceID
 left join Video as V on R.ResourceID = V.ResourceID
 
 where R.ResourceID = resource_ID;
 
-end//
-delimiter ; 
+end; 
 
 /*
 Returns average score of given ResourceID
 */
-delimiter //
 create function FN_Rating_Avg(resource_id int)
 	returns decimal(2,1)
 	begin
@@ -285,13 +279,11 @@ create function FN_Rating_Avg(resource_id int)
 		from Rating
 		where Resource.ResourceID = resource_id;
 	return r_avg;
-end//
-delimiter ;
+end;
 
 /*
 Takes UserID and checks if user is professor
 */
-delimiter //Name
 create function FN_User_Isprofessor(user_id int)
 	returns boolean
 begin
@@ -300,6 +292,5 @@ begin
         from User
         where User.UserID = user_id;
 	return is_prof;
-end//
-delimiter ;
+end;
     

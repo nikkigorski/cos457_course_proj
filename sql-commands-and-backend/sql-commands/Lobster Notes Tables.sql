@@ -5,6 +5,10 @@ November 2, 2025
 Edited on December 4, 2025
 */
 
+-- Create database if it doesn't exist and use it
+CREATE DATABASE IF NOT EXISTS lobsternotes;
+USE lobsternotes;
+
 create table Subject(
 	Code char(3),
     Name varchar(50) not null,
@@ -116,6 +120,18 @@ create table Enrolled(
     foreign key(StudentID) references Student(UserID) on update cascade on delete cascade,
     foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
 );
+<<<<<<< HEAD
+=======
+
+create table Teaches(
+	ProfessorID int unsigned,
+	CourseID int unsigned,
+	primary key(ProfessorID, CourseID),
+	foreign key(ProfessorID) references Professor(UserID) on update cascade on delete cascade,
+    foreign key(CourseID) references Course(CourseID) on update cascade on delete cascade
+);
+
+>>>>>>> resources_branch
 
 create table Teaches(
 	ProfessorID int unsigned,
@@ -126,38 +142,35 @@ create table Teaches(
 );
 
 -- Average Rating attribute of Resource with Scores
-delimiter $$
-create procedure AverageRating(in resID int)
-begin
-	update Resource
-	set Rating = (
-		select round(avg(Score), 1)
-        from Rating
-        where ResourceID = resID
-	)
-    where ResourceID = resID;
-end $$
-delimiter ; 
+-- STORED PROCEDURES AND TRIGGERS CANNOT BE LOADED VIA PIPE
+-- Use /home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/load_procedures.py after init
+-- create procedure AverageRating(in resID int)
+-- begin
+-- 	update Resource
+-- 	set Rating = (
+-- 		select round(avg(Score), 1)
+--         from Rating
+--         where ResourceID = resID
+-- 	)
+--     where ResourceID = resID;
+-- end;
 
 -- Update Rating attribute of Resource on insert
-delimiter $$
-create trigger InsertRating
-after insert on Rating
-for each row
-begin
-	call AverageRating(new.ResourceID);
-end $$
-delimiter ;
+-- TRIGGERS DISABLED - Cannot pipe triggers to mysql
+-- create trigger InsertRating
+-- after insert on Rating
+-- for each row
+-- begin
+-- 	call AverageRating(new.ResourceID);
+-- end;
 
 -- Update Rating using trigger
-delimiter $$
-create trigger UpdateRating
-after update on Rating
-for each row
-begin
-	call AverageRating(new.ResourceID);
-end $$
-delimiter ;
+-- create trigger UpdateRating
+-- after update on Rating
+-- for each row
+-- begin
+-- 	call AverageRating(new.ResourceID);
+-- end;
 
 
 
