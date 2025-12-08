@@ -5,9 +5,8 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-# MySQL configuration - use environment variables with defaults
-MYSQL_HOME="${MYSQL_HOME:-$HOME/mysql}"
-MYSQL_BIN="$MYSQL_HOME/bin/mysql"
+# MySQL configuration - use environment variables or command detection with defaults
+MYSQL_BIN="${MYSQL_BIN:-$(command -v mysql || echo $HOME/mysql/bin/mysql)}"
 SOCKET="${MYSQL_SOCKET:-$HOME/mysql.sock}"
 USER="admin"
 PASS="admin"
