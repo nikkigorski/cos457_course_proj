@@ -7,7 +7,6 @@ Description: Stored Procedures and Functions for Lobster Notes Project
 
 USE lobsternotes;
 
-
 /*
 Procedure for creating a new user, specifying enrolled courses and if user is a professor
 */
@@ -20,6 +19,14 @@ create procedure SP_User_Create
 )
 
 begin
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'User creation failed';
+    end;
+
+    start transaction;
 Insert into user
 (
     Name,
@@ -43,6 +50,7 @@ ELSE
     INSERT INTO student (UserID)
     VALUES (LAST_INSERT_ID());
 END IF;
+commit;
 end;
 
 -- create trigger TR_User_AfterInsert
@@ -63,20 +71,27 @@ Procedure for updating username by taking UserID for user to be altered
 */
 create procedure SP_Update_User
 (
-	IN user_id int UNSIGNED,
-	IN new_name varchar(50)
+    in user_id int unsigned,
+    in new_name varchar(50)
 )
 begin
-	update user
-	set name = new_name
-	where UserID = user_id;
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'User update failed. Rolled back.';
+    end;
 
+    start transaction;
+    update user
+    set Name = new_name
+    where UserID = user_id;
+    commit;
 end;
 
 /*
 Creates a new resource
 */
-
 create procedure SP_Resource_Create
 (
 	IN lecture_date date,
@@ -90,9 +105,16 @@ create procedure SP_Resource_Create
     IN image_size int unsigned
 )
 begin
-	declare resource_id int;
-	start transaction;
-		
+    declare resource_id int;
+
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'Resource creation failed. Transaction rolled back.';
+    end;
+
+    start transaction;
 	insert into resource
 	(
 			DateFor,
@@ -174,9 +196,7 @@ begin
                         null,
                         web_address
 					);
-
-	end case;
-    
+	end case;  
 	commit;
 end; 
 
@@ -189,6 +209,14 @@ create procedure SP_Course_IsProfessor
     IN prof_id int unsigned
 )
 begin
+    declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'Course update failed';
+    end;
+
+    start transaction;
 	if exists(
 		select 1
         from professor
@@ -197,6 +225,7 @@ begin
             set ProfessorID = prof_id
             where CourseID = course_id;
 	end if;
+	commit;
 end;
 
 
@@ -212,6 +241,14 @@ create procedure SP_Rating_Rate
     IN date_of date
 )
 begin
+	declare exit handler for sqlexception
+    begin
+        rollback;
+        signal sqlstate '45000'
+        set message_text = 'Rating submission failed';
+    end;
+
+    start transaction;
 	insert into rating
 		(
 			ResourceID,
@@ -234,8 +271,7 @@ begin
 --         where r.ResourceID = resource_ID
 --         )
 -- 	where ResourceID = resource_ID;
-    
-    
+   commit;   
 end;
 
 /*
@@ -296,4 +332,3 @@ begin
         where user.UserID = user_id;
 	return is_prof;
 end;
-    
