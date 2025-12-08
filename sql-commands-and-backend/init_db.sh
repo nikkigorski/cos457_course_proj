@@ -1,11 +1,18 @@
 #!/bin/bash
 # Initialize LobsterNotes database
 
-MYSQL_BIN="/home/nikki.gorski/mysql/bin/mysql"
-SOCKET="/home/nikki.gorski/mysql.sock"
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# MySQL configuration - use environment variables with defaults
+MYSQL_HOME="${MYSQL_HOME:-$HOME/mysql}"
+MYSQL_BIN="$MYSQL_HOME/bin/mysql"
+SOCKET="${MYSQL_SOCKET:-$HOME/mysql.sock}"
 USER="admin"
 PASS="admin"
-SQL_DIR="/home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/sql-commands"
+SQL_DIR="$SCRIPT_DIR/sql-commands"
+VENV_PATH="$PROJECT_ROOT/lobsterenv/bin/activate"
 
 # Wait for MySQL to be ready
 echo "Waiting for MySQL to start..."
@@ -28,9 +35,13 @@ echo "Creating indexes..."
 $MYSQL_BIN -u $USER -p$PASS -S $SOCKET lobsternotes < "$SQL_DIR/Lobster Notes Index Creation.sql" 2>&1
 
 echo "Loading stored procedures and functions..."
-export LD_LIBRARY_PATH=/home/nikki.gorski/mysql/lib
-source /home/nikki.gorski/databases/cos457_course_proj/lobsterenv/bin/activate
-python3 /home/nikki.gorski/databases/cos457_course_proj/sql-commands-and-backend/load_procedures.py
+export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
+if [ -f "$VENV_PATH" ]; then
+    source "$VENV_PATH" 2>/dev/null
+    python3 "$SCRIPT_DIR/load_procedures.py"
+else
+    echo "Warning: Virtual environment not found, skipping Python procedures"
+fi
 
 echo "Importing data..."
 $MYSQL_BIN -u $USER -p$PASS -S $SOCKET lobsternotes < "$SQL_DIR/Lobster Notes Import Data.sql" 2>&1

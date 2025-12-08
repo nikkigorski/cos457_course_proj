@@ -42,15 +42,14 @@ else
         $MYSQL_BIN --defaults-file=$MYSQL_CONFIG --datadir=$MYSQL_DATADIR --socket=$MYSQL_SOCKET &
         sleep 3
     else
-        echo "[MySQL] WARNING: MySQL not found at $MYSQL_BIN"
-        echo "[MySQL] Skipping MySQL startup - please start it manually or set MYSQL_HOME"
+        echo "[MySQL] WARNING: MySQL not found at $MYSQL_BIN - skipping"
     fi
 fi
 
 # Initialize database
 if [ -f "$INIT_SCRIPT" ]; then
     echo "[Database] Running initialization script..."
-    bash $INIT_SCRIPT
+    bash $INIT_SCRIPT 2>/dev/null || echo "[Database] Initialization skipped"
 else
     echo "[Database] Skipping initialization - script not found"
 fi
@@ -58,28 +57,43 @@ fi
 # Import Khan Academy data
 if [ -f "$VENV_PATH" ] && [ -f "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py" ]; then
     echo "[Database] Importing Khan Academy notes data..."
-    source $VENV_PATH
+    source $VENV_PATH 2>/dev/null
     export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
-    python3 "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py"
+    python3 "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py" 2>/dev/null || echo "[Database] Khan Academy import skipped"
 else
     echo "[Database] Skipping Khan Academy import - files not found"
 fi
 
 # Start Flask backend
-echo "[Backend] Starting Flask API server..."
-cd "$BACKEND_DIR"
-source $VENV_PATH
-export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
-python3 app.py &
-BACKEND_PID=$!
-echo "[Backend] Flask running on http://127.0.0.1:8080 (PID: $BACKEND_PID)"
+if [ -d "$BACKEND_DIR" ] && [ -f "$BACKEND_DIR/app.py" ]; then
+    echo "[Backend] Starting Flask API server..."
+    cd "$BACKEND_DIR"
+    if [ -f "$VENV_PATH" ]; then
+        source "$VENV_PATH" 2>/dev/null
+        export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
+        python3 app.py &
+        BACKEND_PID=$!
+        echo "[Backend] Flask running on http://127.0.0.1:8080 (PID: $BACKEND_PID)"
+    else
+        echo "[Backend] WARNING: Virtual environment not found at $VENV_PATH"
+        BACKEND_PID=""
+    fi
+else
+    echo "[Backend] Skipping Flask - backend directory or app.py not found"
+    BACKEND_PID=""
+fi
 
 # Start Vite frontend
-echo "[Frontend] Starting Vite development server..."
-cd "$FRONTEND_DIR"
-npm run dev &
-FRONTEND_PID=$!
-echo "[Frontend] Vite running on http://localhost:5173 (PID: $FRONTEND_PID)"
+if [ -d "$FRONTEND_DIR" ] && [ -f "$FRONTEND_DIR/package.json" ]; then
+    echo "[Frontend] Starting Vite development server..."
+    cd "$FRONTEND_DIR"
+    npm run dev &
+    FRONTEND_PID=$!
+    echo "[Frontend] Vite running on http://localhost:5173 (PID: $FRONTEND_PID)"
+else
+    echo "[Frontend] Skipping Vite - frontend directory or package.json not found"
+    FRONTEND_PID=""
+fi
 
 echo "================================================================"
 echo "Lobster Notes started successfully!"
@@ -92,6 +106,10 @@ echo "Press Ctrl+C to stop all services"
 echo "================================================================"
 
 # Wait for user interrupt
-trap "echo ''; echo 'Stopping services...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit 0" SIGINT SIGTERM
-
-wait
+if [ -n "$BACKEND_PID" ] || [ -n "$FRONTEND_PID" ]; then
+    trap "echo ''; echo 'Stopping services...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit 0" SIGINT SIGTERM
+    wait
+else
+    echo "No services started. Exiting."
+    exit 1
+fi
