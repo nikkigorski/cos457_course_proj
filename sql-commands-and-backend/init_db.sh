@@ -46,15 +46,22 @@ for i in {1..30}; do
     sleep 1
 done
 
+# Build MySQL connection args
+if [ -n "$SOCKET" ]; then
+    MYSQL_CONN="-S $SOCKET"
+else
+    MYSQL_CONN="-h localhost"
+fi
+
 # Always reinitialize database
 echo "Dropping and recreating database..."
-$MYSQL_BIN -u $USER -p$PASS -S $SOCKET -e "DROP DATABASE IF EXISTS lobsternotes; CREATE DATABASE lobsternotes;" 2>&1
+$MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN -e "DROP DATABASE IF EXISTS lobsternotes; CREATE DATABASE lobsternotes;" 2>&1
 
 echo "Creating tables..."
-$MYSQL_BIN -u $USER -p$PASS -S $SOCKET lobsternotes < "$SQL_DIR/Lobster Notes Tables.sql" 2>&1
+$MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Lobster Notes Tables.sql" 2>&1
 
 echo "Creating indexes..."
-$MYSQL_BIN -u $USER -p$PASS -S $SOCKET lobsternotes < "$SQL_DIR/Lobster Notes Index Creation.sql" 2>&1
+$MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Lobster Notes Index Creation.sql" 2>&1
 
 echo "Loading stored procedures and functions..."
 export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
@@ -66,9 +73,9 @@ else
 fi
 
 echo "Importing data..."
-$MYSQL_BIN -u $USER -p$PASS -S $SOCKET lobsternotes < "$SQL_DIR/Lobster Notes Import Data.sql" 2>&1
+$MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Lobster Notes Import Data.sql" 2>&1
 
 echo "Loading constraint validation..."
-$MYSQL_BIN -u $USER -p$PASS -S $SOCKET lobsternotes < "$SQL_DIR/Constraint Validation.sql" 2>&1
+$MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Constraint Validation.sql" 2>&1
 
 echo "Database initialized successfully!"
