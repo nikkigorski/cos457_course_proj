@@ -1,7 +1,13 @@
+/*
+Professor Dashboard: a frontend interface for professors to view/edit courses and students enrolled in those courses
+@author Gage White
+@Version 8 December 2025
+*/
+
 import React, { useState, useEffect } from 'react';
 import CourseList from '../components/CourseList';
 import StudentRoster from '../components/StudentRoster';
-
+import CourseDetail from './CourseDetail';
 
 
 function ProfessorDashboard( {onCourseSelect, professorId = 1}) {
@@ -9,6 +15,8 @@ function ProfessorDashboard( {onCourseSelect, professorId = 1}) {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [activeView, setActiveView] = useState('dashboard');
 
   const [searchTerm, setSearchTerm] = useState(''); 
   const [inputSearchTerm, setInputSearchTerm] = useState('');
@@ -18,11 +26,18 @@ function ProfessorDashboard( {onCourseSelect, professorId = 1}) {
   const handleCourseSelection = function(courseID){
     setSelectedCourseId(courseID);
 
+    setActiveView('detail');
+
     if (onCourseSelect) {
       onCourseSelect(courseID);
     }
   };
 
+  const handleBackToDashboard = function() {
+    setSelectedCourseId(null);
+    setActiveView('dashboard');
+  }
+  
   const handleSearchSubmit = function(e) {
       e.preventDefault();
       setSearchTerm(inputSearchTerm);
@@ -88,6 +103,14 @@ function ProfessorDashboard( {onCourseSelect, professorId = 1}) {
     );
   }
 
+if (activeView === 'detail' && selectedCourseId !== null) {
+      return (
+          <CourseDetail 
+              id={selectedCourseId} 
+              onBack={handleBackToDashboard}
+          />
+      );
+  }
   return (
     <div className="container mt-5">
       <div className="row mb-4">
