@@ -7,11 +7,23 @@
 # Author: Nikki Gorski (Lobster Notes Team, 2025)
 ################################################################
 
-PROJECT_ROOT="/home/nikki.gorski/databases/cos457_course_proj"
-MYSQL_BIN="/home/nikki.gorski/mysql/bin/mysqld_safe"
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$SCRIPT_DIR"
+PORTABLE_DIR="$PROJECT_ROOT/.portable"
+NODE_PORTABLE="$PORTABLE_DIR/node"
+
+# Add portable Node.js to PATH if it exists
+if [ -d "$NODE_PORTABLE/bin" ]; then
+    export PATH="$NODE_PORTABLE/bin:$PATH"
+fi
+
+# MySQL configuration - use environment variables with defaults
+MYSQL_HOME="${MYSQL_HOME:-$HOME/mysql}"
+MYSQL_BIN="$MYSQL_HOME/bin/mysqld_safe"
 MYSQL_CONFIG="$PROJECT_ROOT/sql-commands-and-backend/my.cnf"
 MYSQL_DATADIR="$PROJECT_ROOT/sql-commands-and-backend/database"
-MYSQL_SOCKET="/home/nikki.gorski/mysql.sock"
+MYSQL_SOCKET="${MYSQL_SOCKET:-$HOME/mysql.sock}"
 INIT_SCRIPT="$PROJECT_ROOT/sql-commands-and-backend/init_db.sh"
 VENV_PATH="$PROJECT_ROOT/lobsterenv/bin/activate"
 BACKEND_DIR="$PROJECT_ROOT/Phase 3/backend"
@@ -25,26 +37,39 @@ echo "================================================================"
 if pgrep -x "mysqld" > /dev/null; then
     echo "[MySQL] Already running"
 else
-    echo "[MySQL] Starting database server..."
-    $MYSQL_BIN --defaults-file=$MYSQL_CONFIG --datadir=$MYSQL_DATADIR --socket=$MYSQL_SOCKET &
-    sleep 3
+    if [ -f "$MYSQL_BIN" ]; then
+        echo "[MySQL] Starting database server..."
+        $MYSQL_BIN --defaults-file=$MYSQL_CONFIG --datadir=$MYSQL_DATADIR --socket=$MYSQL_SOCKET &
+        sleep 3
+    else
+        echo "[MySQL] WARNING: MySQL not found at $MYSQL_BIN"
+        echo "[MySQL] Skipping MySQL startup - please start it manually or set MYSQL_HOME"
+    fi
 fi
 
 # Initialize database
-echo "[Database] Running initialization script..."
-bash $INIT_SCRIPT
+if [ -f "$INIT_SCRIPT" ]; then
+    echo "[Database] Running initialization script..."
+    bash $INIT_SCRIPT
+else
+    echo "[Database] Skipping initialization - script not found"
+fi
 
 # Import Khan Academy data
-echo "[Database] Importing Khan Academy notes data..."
-source $VENV_PATH
-export LD_LIBRARY_PATH=/home/nikki.gorski/mysql/lib
-python3 "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py"
+if [ -f "$VENV_PATH" ] && [ -f "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py" ]; then
+    echo "[Database] Importing Khan Academy notes data..."
+    source $VENV_PATH
+    export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
+    python3 "$PROJECT_ROOT/sql-commands-and-backend/import_khan_data.py"
+else
+    echo "[Database] Skipping Khan Academy import - files not found"
+fi
 
 # Start Flask backend
 echo "[Backend] Starting Flask API server..."
 cd "$BACKEND_DIR"
 source $VENV_PATH
-export LD_LIBRARY_PATH=/home/nikki.gorski/mysql/lib
+export LD_LIBRARY_PATH="$MYSQL_HOME/lib:$LD_LIBRARY_PATH"
 python3 app.py &
 BACKEND_PID=$!
 echo "[Backend] Flask running on http://127.0.0.1:8080 (PID: $BACKEND_PID)"

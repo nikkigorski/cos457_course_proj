@@ -15,6 +15,8 @@ PROJECT_ROOT="$SCRIPT_DIR"
 VENV_PATH="$PROJECT_ROOT/lobsterenv"
 FRONTEND_DIR="$PROJECT_ROOT/frontend"
 REQUIREMENTS="$PROJECT_ROOT/requirements.txt"
+PORTABLE_DIR="$PROJECT_ROOT/.portable"
+NODE_PORTABLE="$PORTABLE_DIR/node"
 
 ERRORS=0
 
@@ -159,30 +161,70 @@ fi
 echo ""
 if ! command -v node &> /dev/null; then
     echo "[System]  Node.js not found"
-    echo "[System] Attempting to install Node.js..."
-    if [ -n "$INSTALL_CMD" ]; then
-        eval "$INSTALL_CMD $NODE_PKG" 2>/dev/null
-        if command -v node &> /dev/null; then
-            echo "[Frontend]  Node.js installed: $(node --version)"
+    echo "[System]  Installing portable Node.js (no sudo required)..."
+    
+    # Download and install Node.js locally
+    mkdir -p "$PORTABLE_DIR"
+    cd "$PORTABLE_DIR"
+    
+    NODE_VERSION="v20.11.0"
+    NODE_ARCH="linux-x64"
+    NODE_TARBALL="node-${NODE_VERSION}-${NODE_ARCH}.tar.xz"
+    NODE_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TARBALL}"
+    
+    if [ ! -d "$NODE_PORTABLE" ]; then
+        echo "[Portable] Downloading Node.js ${NODE_VERSION}..."
+        if command -v wget &> /dev/null; then
+            wget -q "$NODE_URL" -O "$NODE_TARBALL"
+        elif command -v curl &> /dev/null; then
+            curl -sL "$NODE_URL" -o "$NODE_TARBALL"
         else
             echo "[Frontend]  Failed to install Node.js. "
             ERRORS=$((ERRORS + 1))
+            cd "$PROJECT_ROOT"
         fi
+        
+        if [ -f "$NODE_TARBALL" ]; then
+            echo "[Portable] Extracting Node.js..."
+            tar -xJf "$NODE_TARBALL"
+            mv "node-${NODE_VERSION}-${NODE_ARCH}" node
+            rm "$NODE_TARBALL"
+            echo "[Portable]  Node.js installed to $NODE_PORTABLE"
+        fi
+    fi
+    
+    # Add to PATH for this session
+    if [ -d "$NODE_PORTABLE/bin" ]; then
+        export PATH="$NODE_PORTABLE/bin:$PATH"
+    fi
+    cd "$PROJECT_ROOT"
+    
+    if command -v node &> /dev/null; then
+        echo "[Frontend]  Node.js (portable) found: $(node --version)"
+    else
+        echo "[Frontend]  Failed to install portable Node.js"
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo "[Frontend]  Node.js found: $(node --version)"
 fi
 
 if ! command -v npm &> /dev/null; then
-    echo "[System]  npm not found"
-    echo "[System] Attempting to install npm..."
-    if [ -n "$INSTALL_CMD" ]; then
-        eval "$INSTALL_CMD npm" 2>/dev/null
-        if command -v npm &> /dev/null; then
-            echo "[Frontend]  npm installed: $(npm --version)"
-        else
-            echo "[Frontend]  Failed to install npm. "
-            ERRORS=$((ERRORS + 1))
+    # Check if we have portable node with npm
+    if [ -f "$NODE_PORTABLE/bin/npm" ]; then
+        export PATH="$NODE_PORTABLE/bin:$PATH"
+        echo "[Frontend]  npm (portable) found: $(npm --version)"
+    else
+        echo "[System]  npm not found"
+        echo "[System] Attempting to install npm..."
+        if [ -n "$INSTALL_CMD" ]; then
+            eval "$INSTALL_CMD npm" 2>/dev/null
+            if command -v npm &> /dev/null; then
+                echo "[Frontend]  npm installed: $(npm --version)"
+            else
+                echo "[Frontend]  Failed to install npm. "
+                ERRORS=$((ERRORS + 1))
+            fi
         fi
     fi
 else
