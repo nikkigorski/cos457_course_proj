@@ -7,7 +7,23 @@ PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # MySQL configuration - use environment variables or command detection with defaults
 MYSQL_BIN="${MYSQL_BIN:-$(command -v mysql || echo $HOME/mysql/bin/mysql)}"
-SOCKET="${MYSQL_SOCKET:-$HOME/mysql.sock}"
+
+# Auto-detect socket location
+SOCKET="${MYSQL_SOCKET:-}"
+if [ -z "$SOCKET" ]; then
+    socket_paths=(
+        "$HOME/mysql.sock"
+        "/tmp/mysql.sock"
+        "/var/run/mysqld/mysql.sock"
+    )
+    for path in "${socket_paths[@]}"; do
+        if [ -S "$path" ] 2>/dev/null; then
+            SOCKET="$path"
+            break
+        fi
+    done
+fi
+
 USER="admin"
 PASS="admin"
 SQL_DIR="$SCRIPT_DIR/sql-commands"
@@ -16,9 +32,16 @@ VENV_PATH="$PROJECT_ROOT/lobsterenv/bin/activate"
 # Wait for MySQL to be ready
 echo "Waiting for MySQL to start..."
 for i in {1..30}; do
-    if $MYSQL_BIN -u $USER -p$PASS -S $SOCKET -e "SELECT 1" &>/dev/null; then
-        echo "MySQL is ready!"
-        break
+    if [ -n "$SOCKET" ]; then
+        if $MYSQL_BIN -u $USER -p$PASS -S $SOCKET -e "SELECT 1" &>/dev/null; then
+            echo "MySQL is ready!"
+            break
+        fi
+    else
+        if $MYSQL_BIN -u $USER -p$PASS -h localhost -e "SELECT 1" &>/dev/null; then
+            echo "MySQL is ready!"
+            break
+        fi
     fi
     sleep 1
 done
