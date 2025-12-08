@@ -71,7 +71,7 @@ def get_course_details(course_id):
         query = """
         SELECT c.*, u.Name as ProfessorName 
         FROM course c
-        LEFT JOIN User u ON c.ProfessorID = u.UserID
+        LEFT JOIN user u ON c.ProfessorID = u.UserID
         WHERE c.CourseID = %s
         """
         cursor.execute(query, (course_id,))
@@ -103,8 +103,8 @@ def get_course_roster(course_id):
             u.Name,     
             u.Courses 
         FROM student s
-        JOIN User u ON s.UserID = u.UserID
-        JOIN Enrolled e ON s.UserID = e.StudentID
+        JOIN user u ON s.UserID = u.UserID
+        JOIN enrolled e ON s.UserID = e.StudentID
         WHERE e.CourseID = %s;
         """
         
@@ -157,6 +157,9 @@ def add_course():
 
         return jsonify({"message": "Course created successfully", "course_id": cursor.lastrowid}), 201
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID - GW
+        if conn:
+            conn.rollback()
         print(f"Error adding course: {e}")
         return jsonify({"error": "Failed to add course"}), 500
     finally:
@@ -195,6 +198,9 @@ def update_course(course_id):
              
         return jsonify({"message": "Course updated successfully"}), 200
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID - GW
+        if conn:
+            conn.rollback()
         print(f"Error updating course: {e}")
         return jsonify({"error": "Failed to update course"}), 500
     finally:
@@ -226,6 +232,9 @@ def delete_course(course_id):
              
         return jsonify({"message": f"Course {course_id} deleted successfully"}), 200
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID - GW
+        if conn:
+            conn.rollback()
         print(f"Error deleting course: {e}")
         return jsonify({"error": "Failed to delete course"}), 500
     finally:
@@ -307,6 +316,9 @@ def create_user():
         }), 201
 
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID - GW
+        if conn:
+            conn.rollback()
         print(f"Error creating user: {e}")
         return jsonify({"error": "Failed to create user"}), 500
     finally:
@@ -514,7 +526,7 @@ def create_resource():
                 "INSERT INTO user (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
                 (author,)
             )
-            conn.commit()
+            # conn.commit() #Commented out for Atomicity -GW
             
             # Get the new user ID and create Student entry
             cursor.execute("SELECT UserID FROM user WHERE Name = %s", (author,))
@@ -522,7 +534,7 @@ def create_resource():
             if new_user:
                 user_id = new_user['UserID']
                 cursor.execute("INSERT INTO student (UserID) VALUES (%s)", (user_id,))
-                conn.commit()
+                # conn.commit() #Commented out for Atomicity -GW
         
         insert_query = """
         INSERT INTO resource (Date, DateFor, Author, Topic, Keywords, Format)
@@ -531,7 +543,7 @@ def create_resource():
         
         today = datetime.now().strftime('%Y-%m-%d')
         cursor.execute(insert_query, (today, date_for, author, topic, keywords, format_type))
-        conn.commit()
+        # conn.commit() #Commented out for Atomicity -GW
         
         resource_id = cursor.lastrowid
         
@@ -547,7 +559,7 @@ def create_resource():
         elif format_type == 'Video' and link:
             cursor.execute("INSERT INTO video (ResourceID, Duration, Link) VALUES (%s, %s, %s)", (resource_id, duration, link))
         
-        conn.commit()
+        conn.commit() #need only the commit at end, keeps user from being created if note creation fails -GW
         
         return jsonify({
             "message": "Resource created successfully",
@@ -555,6 +567,9 @@ def create_resource():
         }), 201
         
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID - GW
+        if conn:
+            conn.rollback()
         print(f"Error creating resource: {e}")
         return jsonify({"error": f"Failed to create resource: {str(e)}"}), 500
     finally:
@@ -596,7 +611,7 @@ def submit_rating(resource_id):
                 "INSERT INTO user (Name, Courses, IsProfessor) VALUES (%s, NULL, FALSE)",
                 (poster,)
             )
-            conn.commit()
+            # conn.commit() #Commented out for Atomicity -GW
             
             # Get the new user ID and create Student entry
             cursor.execute("SELECT UserID FROM user WHERE Name = %s", (poster,))
@@ -604,7 +619,7 @@ def submit_rating(resource_id):
             if new_user:
                 user_id = new_user['UserID']
                 cursor.execute("INSERT INTO student (UserID) VALUES (%s)", (user_id,))
-                conn.commit()
+                # conn.commit() #Commented out for Atomicity -GW
         
         # Use stored procedure SP_Rating_Rate
         cursor.callproc('SP_Rating_Rate', [
@@ -614,7 +629,7 @@ def submit_rating(resource_id):
             date
         ])
         
-        conn.commit()
+        # conn.commit() #Commented out for Atomicity -GW
         
         # Update the average rating in Resource table
         cursor.execute("""
@@ -627,11 +642,14 @@ def submit_rating(resource_id):
             WHERE ResourceID = %s
         """, (resource_id, resource_id))
         
-        conn.commit()
+        conn.commit() #need only the commit at end, keeps user from being created if rating fails -GW
         
         return jsonify({"message": "Rating submitted successfully"}), 201
         
     except Exception as e:
+        #Rollback implemented for Atomicity and Consistency in ACID - GW
+        if conn:
+            conn.rollback()
         print(f"Error submitting rating: {e}")
         return jsonify({"error": "Failed to submit rating"}), 500
     finally:
