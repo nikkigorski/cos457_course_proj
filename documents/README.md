@@ -13,6 +13,9 @@ Goal: Creating a database when users can login, submit notes, see what resources
 
 ## How to run
 
+### Downloading onto a Linux device
+git clone https://github.com/nikkigorski/cos457_course_proj.git
+
 ### Setting up virtul environment
 sudo apt install python3.12-venv
 
