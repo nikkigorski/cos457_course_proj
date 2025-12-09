@@ -330,7 +330,7 @@ def create_user():
         if cursor: cursor.close()
 
 # Login procedure
-@app.route('/api/login/',methods=['GET'])
+@app.route('/api/login/',methods=['POST','GET'])
 def login():
     conn = mysql.connection
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)

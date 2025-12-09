@@ -162,11 +162,11 @@ export default function App(){
 
   // Enforce account page until user exists; once user exists, prevent navigating back to account
   useEffect(() => {
-    if (!hasUser && route.name !== 'account') {
+    if (!hasUser && (route.name !== 'account' && route.name !== 'login') ) {
       setRoute({ name: 'account', id: null });
       window.history.replaceState({ route: 'account' }, '', '/account');
     }
-    if (hasUser && route.name === 'account') {
+    if (hasUser && (route.name === 'account' || route.name === 'login' )) {
       // Move to homepage and replace history to avoid back navigation to account page
       setRoute({ name: 'home', id: null });
       window.history.replaceState({ route: 'home' }, '', '/');
@@ -224,7 +224,7 @@ export default function App(){
 
   const APIonLogin = async (username,password) => {
     const response = await fetch(`${API_BASE_URL}/login`,{
-      method: "GET",
+      method: "POST",
       body: JSON.stringify({username:username,password:password}),
       headers: {
         'Content-Type': 'application/json',
