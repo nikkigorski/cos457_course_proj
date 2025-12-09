@@ -29,6 +29,9 @@ for socket_path in socket_paths:
         app.config['MYSQL_UNIX_SOCKET'] = socket_path
         break
 
+
+
+
 # Initialize MySQL connection. Using PyMySQL as the driver.
 mysql = MySQL(app)
 
@@ -785,55 +788,60 @@ def get_resources_by_subject(subject_code):
 
 # Dump the full contents of the database with mysqldump
 def fullBackup():
-    sleep(0.1)
-    try:
-        today = date.today()
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        command = ["mysqldump","--allow-keywords","--quick","--databases","LobsterNotes",
-            "--single-transaction","--force" "--dump-date","--insert-ignore",
-            "--user=admin","--password=admin","--port=3306","--routines",
-            "--triggers",f"--result-file=sql-commands-and-backend/database/mysql/backups/backup_{today}_{current_time}",
-            "--source-date=2","--flush-logs","--log-error=sql-commands-and-backend/database/mysql/backups/backup.err"]
-        subprocess.run(command,check=True)
-    except subprocess.CalledProcessError as err:
-        print(f"Error during mysql full backup: {err}")
-        print(f"Command: {' '.join(err.cmd)}")
-        print(f"Stderror: {err.stderr.decode()}")
-    except FileNotFoundError:
-        print("Error: mysqldump command not found.")
-    except Exception as err:
-        print(f"Unexpected error occured in mysql full backup: {err}")
-    return
+    with app.app_context():
+        sleep(0.1)
+        try:
+            today = date.today()
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            command = ["mysqldump","--allow-keywords","--quick","--databases","LobsterNotes",
+                "--single-transaction","--force" "--dump-date","--insert-ignore",
+                "--user=admin","--password=admin","--port=3306","--routines",
+                "--triggers",f"--result-file=sql-commands-and-backend/database/mysql/backups/backup_{today}_{current_time}",
+                "--source-date=2","--flush-logs","--log-error=sql-commands-and-backend/database/mysql/backups/backup.err"]
+            subprocess.run(command,check=True)
+        except subprocess.CalledProcessError as err:
+            print(f"Error during mysql full backup: {err}")
+            print(f"Command: {' '.join(err.cmd)}")
+            print(f"Stderror: {err.stderr.decode()}")
+        except FileNotFoundError:
+            print("Error: mysqldump command not found.")
+        except Exception as err:
+            print(f"Unexpected error occured in mysql full backup: {err}")
+        return
 
 # Partial backup just consists of flushing all logs
 def partialBackup(cursor):
-    sleep(0.01)
-    cursor.execute("FLUSH LOGS")
-    return
+    with app.app_context():
+        sleep(0.01)
+        cursor.execute("FLUSH LOGS")
+        return
 
 def backup():
-    backupConnection = mysql.connection
-    backupCursor = backupConnection.cursor(cursor=cursors.DictCursor)
-    sleep(0.001)
-    fullBackup()
-    partialCounter = 0
-    while main_thread().is_alive():
-        sleep(1800) # sleeps for 30 minutes
-        partialBackup(backupCursor) # do partial backup every 30 mins
-        partialCounter += 1
-        if partialCounter >= 48:
-            # does a full backup every 24 hours
-            fullBackup()
-            partialCounter = 0
-    # In the case that the main thread exits:
-    # Do a final full backup, which includes flushing the logs
-    fullBackup()
-    return
+    with app.app_context():
+        backupConnection = mysql.connection
+        backupCursor = backupConnection.cursor(cursor=cursors.DictCursor)
+        sleep(0.001)
+        fullBackup()
+        partialCounter = 0
+        while main_thread().is_alive():
+            sleep(1800) # sleeps for 30 minutes
+            partialBackup(backupCursor) # do partial backup every 30 mins
+            partialCounter += 1
+            if partialCounter >= 48:
+                # does a full backup every 24 hours
+                fullBackup()
+                partialCounter = 0
+        # In the case that the main thread exits:
+        # Do a final full backup, which includes flushing the logs
+        fullBackup()
+        return
 
 
 #Runs app
 if __name__ == "__main__":
-    backupManager = Thread(target=backup,kwargs={},daemon=False)
-    backupManager.start()
-    app.run(debug=True, port=8080)
+    with app.app_context():
+        backupManager = Thread(target=backup,kwargs={},daemon=False)
+        backupManager.start()
+        app.run(debug=True, port=8080)
+        print("unix socket is",app.confi['MYSQL_UNIX_SOCKET'])
