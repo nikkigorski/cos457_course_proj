@@ -1,0 +1,42 @@
+/*
+Author: Jove Emmons
+
+*/
+
+import {useState} from 'react';
+
+export default function Login({onLogin,user,doLogin}){
+  //  Keeps track of the text entered into the Username field.
+  const [username,setUsername] = useState('');
+  //  Keeps track of the text entered into the Password field.
+  const [password,setPassword] = useState('');
+  //  Keeps track of the result of login attempts. -1 is no attempts made, 0 failure, 1 success.
+  const [results,setResults] = useState(-1);
+  
+
+  const login = async (e) => {
+    e.preventDefault();
+    let response = await onLogin(username,password);
+    if (response.ok){//login succeeded
+      const data = await response.json();
+      setResults(1);
+      await doLogin(data);
+      return;
+    }else{
+      setResults(0);
+      return;
+    }
+  };
+
+  return (
+    <form className="login" onSubmit={login}>
+      <h2>Login</h2>
+      <input className="login-username" placeholder="Username" value={username} onChange={e=>setUsername(e.target.value)} />
+      <input className="login-password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} />
+      <div className="login-actions">
+        <button className='btn btn-primary' type="submit">Log In</button>
+      </div>
+      <div>{results ? "" : "Incorrect username or password"}</div>
+    </form>
+  );
+}

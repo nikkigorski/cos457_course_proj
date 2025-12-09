@@ -6,6 +6,8 @@ import ProfessorDashboard from './pages/ProfessorDashboard.jsx';
 import SearchPage from './pages/SearchPage.jsx';
 import AccountCreation from './AccountCreation.jsx';
 import UsersList from './UsersList.jsx';
+import Login from './pages/Login.jsx'
+import HomePage from './pages/HomePage.jsx';
 
 const API_BASE_URL = 'http://127.0.0.1:8080/api';
 
@@ -94,7 +96,7 @@ function NoteEditor({ user, onNoteCreated }){
 }
 
 export default function App(){
-  const [route, setRoute] = useState({ name: 'account', id: null });
+  const [route, setRoute] = useState({ name: 'home', id: null });
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [notes, setNotes] = useState(sampleNotes);
@@ -140,8 +142,14 @@ export default function App(){
         setRoute({ name: 'users', id: null });
       } else if (p === '/search') {
         setRoute({ name: 'search', id: null });
-      } else {
+      } else if (p === '/login'){
+        setRoute({name: 'login',id: null});
+      } else if (p === '/account') {
         setRoute({ name: 'account', id: null });
+      } else if (p === '/notes'){
+        setRoute({ name: 'notes', id: null });
+      } else {
+        setRoute({ name: 'home', id: null });
       }
     };
 
@@ -159,9 +167,9 @@ export default function App(){
       window.history.replaceState({ route: 'account' }, '', '/account');
     }
     if (hasUser && route.name === 'account') {
-      // Move to notes homepage and replace history to avoid back navigation to account page
-      setRoute({ name: 'list', id: null });
-      window.history.replaceState({ route: 'list' }, '', '/');
+      // Move to homepage and replace history to avoid back navigation to account page
+      setRoute({ name: 'home', id: null });
+      window.history.replaceState({ route: 'home' }, '', '/');
     }
   }, [hasUser, route.name]);
 
@@ -169,7 +177,6 @@ export default function App(){
     const noteUrl = `/note/${id}`;
     window.history.pushState({ route: 'note', id }, '', noteUrl);
     setRoute({ name: 'note', id });
-
     setSearchActive(false);
   };
 
@@ -200,6 +207,39 @@ export default function App(){
       setRoute({ name: 'list', id: null });
     }
   };
+
+  const goHome = () => {
+    window.history.pushState({ route: 'home' }, '', '/');
+    setRoute({ name: 'home', id: null });
+    setSearchActive(false);
+    setSearchQuery('');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const goLogin = () => {
+    window.history.pushState({route: 'login'},'','/login');
+    setRoute({name:'login',id:null});
+    setSearchActive(false);
+  };
+
+  const APIonLogin = async (username,password) => {
+    const response = await fetch(`${API_BASE_URL}/login`,{
+      method: "GET",
+      body: JSON.stringify({username:username,password:password}),
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    return response;
+  };
+
+  const doLogin = async (userData) => {
+    if (userData != null){
+      setUser(userData);
+      goHome();
+    }
+    return;
+  }
 
   const openSearch = async (query) => {
     const url = '/search';
@@ -232,12 +272,19 @@ export default function App(){
   };
 
   const goBack = () => {
-    window.history.pushState({}, '', '/');
+    window.history.back();
+  };
+
+  const goNotes = () => {
+    window.history.pushState({route: 'list'}, '', '/notes');
     setRoute({ name: 'list', id: null });
     setSearchActive(false);
-    setSearchQuery('');
-    setSearchResults([]);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  const goAcctCreate = () => {
+    window.history.pushState({route: 'account'},'','/account');
+    setRoute({name:'account',id:null});
+    setSearchActive(false);
   };
 
   const handleLogout = () => {
@@ -275,10 +322,13 @@ export default function App(){
         onSearch={(e) => { e.preventDefault(); openSearch(searchQuery); }}
         onClear={() => { setSearchQuery(''); setSearchActive(false); }}
         onDashboard={openDashboard}
-        onNotes={goBack}
+        onNotes={goNotes}
         user={user || {}}
         hasUser={hasUser}
         onLogout={handleLogout}
+        onHome={goHome}
+        onLoginButton={goLogin}
+        onCreateAccount={goAcctCreate}
       />
       <main className="main">
         {searchActive ? (
@@ -307,7 +357,7 @@ export default function App(){
             </div>
             <ProfessorDashboard professorId={user?.userId || 1} />
           </section>
-        ) : (
+        ) : route.name === 'notes' ? (
           <React.Fragment>
             <section className="left">
               <div style={{display: 'flex', gap: '8px', marginBottom: '12px'}}>
@@ -320,6 +370,17 @@ export default function App(){
               {loading ? <p>Loading notes...</p> : <NoteList notes={notes} onOpenNote={openNote} user={user} />}
             </section>
           </React.Fragment>
+        ) : route.name === 'login' ? (
+          <section className='login-full'>
+            <Login
+            onLogin={APIonLogin}
+            user={user}
+            doLogin={doLogin}/>
+          </section>
+        ) : (
+          <section className='note-full'>
+            <HomePage user={user}/>
+          </section>
         )}
       </main>
     </div>
