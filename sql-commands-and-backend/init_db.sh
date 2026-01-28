@@ -90,16 +90,10 @@ echo "Creating indexes..."
 $MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Lobster Notes Index Creation.sql" 2>&1
 
 echo "Loading stored procedures and functions..."
-# Set library path for mysqlclient
-export LD_LIBRARY_PATH="$HOME/mysql/lib:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
-if [ -f "$VENV_PATH" ]; then
-    source "$VENV_PATH" 2>/dev/null
-    python3 "$SCRIPT_DIR/load_procedures.py" 2>&1 || echo "Warning: Failed to load procedures via Python"
-else
-    echo "Warning: Virtual environment not found, stored procedures not loaded"
-fi
+# Use mysql directly - it handles DELIMITER statements properly
+$MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Stored Procedures and Functions.sql" 2>&1
 
-echo "Importing data..."
+echo "Importing sample data..."
 $MYSQL_BIN -u $USER -p$PASS $MYSQL_CONN lobsternotes < "$SQL_DIR/Lobster Notes Import Data.sql" 2>&1
 
 echo "Loading constraint validation..."

@@ -5,7 +5,6 @@ import Topbar from './Topbar.jsx';
 import ProfessorDashboard from './pages/ProfessorDashboard.jsx';
 import SearchPage from './pages/SearchPage.jsx';
 import AccountCreation from './AccountCreation.jsx';
-import UsersList from './UsersList.jsx';
 import Login from './pages/Login.jsx'
 import HomePage from './pages/HomePage.jsx';
 
@@ -138,8 +137,6 @@ export default function App(){
         setRoute({ name: 'dashboard', id: null });
       } else if (p === '/account') {
         setRoute({ name: 'account', id: null });
-      } else if (p === '/users') {
-        setRoute({ name: 'users', id: null });
       } else if (p === '/search') {
         setRoute({ name: 'search', id: null });
       } else if (p === '/login'){
@@ -167,11 +164,16 @@ export default function App(){
       window.history.replaceState({ route: 'account' }, '', '/account');
     }
     if (hasUser && (route.name === 'account' || route.name === 'login' )) {
-      // Move to homepage and replace history to avoid back navigation to account page
-      setRoute({ name: 'home', id: null });
-      window.history.replaceState({ route: 'home' }, '', '/');
+      // Move to notes page for students, dashboard for professors
+      if (user?.isProfessor) {
+        setRoute({ name: 'dashboard', id: null });
+        window.history.replaceState({ route: 'dashboard' }, '', '/dashboard');
+      } else {
+        setRoute({ name: 'notes', id: null });
+        window.history.replaceState({ route: 'notes' }, '', '/notes');
+      }
     }
-  }, [hasUser, route.name]);
+  }, [hasUser, route.name, user?.isProfessor]);
 
   const openNote = (id) => {
     const noteUrl = `/note/${id}`;
@@ -186,12 +188,6 @@ export default function App(){
     setSearchActive(false);
   };
 
-  const openUsers = () => {
-    window.history.pushState({ route: 'users' }, '', '/users');
-    setRoute({ name: 'users', id: null });
-    setSearchActive(false);
-  };
-
   const handleAccountCreated = ({ userId, name, isProfessor }) => {
     const newUser = {
       userId,
@@ -203,8 +199,8 @@ export default function App(){
       window.history.replaceState({ route: 'dashboard' }, '', '/dashboard');
       setRoute({ name: 'dashboard', id: null });
     } else {
-      window.history.replaceState({ route: 'list' }, '', '/');
-      setRoute({ name: 'list', id: null });
+      window.history.replaceState({ route: 'notes' }, '', '/notes');
+      setRoute({ name: 'notes', id: null });
     }
   };
 
@@ -236,7 +232,11 @@ export default function App(){
   const doLogin = async (userData) => {
     if (userData != null){
       setUser(userData);
-      goHome();
+      if (userData.isProfessor) {
+        openDashboard();
+      } else {
+        goNotes();
+      }
     }
     return;
   }
@@ -272,12 +272,14 @@ export default function App(){
   };
 
   const goBack = () => {
+    setSearchActive(false);
+    setSearchQuery('');
     window.history.back();
   };
 
   const goNotes = () => {
-    window.history.pushState({route: 'list'}, '', '/notes');
-    setRoute({ name: 'list', id: null });
+    window.history.pushState({route: 'notes'}, '', '/notes');
+    setRoute({ name: 'notes', id: null });
     setSearchActive(false);
   };
 
@@ -343,10 +345,6 @@ export default function App(){
           <section style={{width: '100%'}}>
             <AccountCreation onSuccess={handleAccountCreated} />
           </section>
-        ) : route.name === 'users' ? (
-          <section style={{width: '100%'}}>
-            <UsersList onBack={goBack} />
-          </section>
         ) : route.name === 'dashboard' ? (
           <section style={{width: '100%'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12}}>
@@ -360,9 +358,6 @@ export default function App(){
         ) : route.name === 'notes' ? (
           <React.Fragment>
             <section className="left">
-              <div style={{display: 'flex', gap: '8px', marginBottom: '12px'}}>
-                <button className="btn" onClick={openUsers}>View Users</button>
-              </div>
               <NoteEditor user={user || { username: 'Anonymous' }} onNoteCreated={handleNoteCreated} />
             </section>
             <section className="right">

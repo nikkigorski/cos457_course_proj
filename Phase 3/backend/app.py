@@ -795,7 +795,7 @@ def fullBackup():
             now = datetime.now()
             current_time = now.strftime("%H:%M:%S")
             command = ["mysqldump","--allow-keywords","--quick","--databases","LobsterNotes",
-                "--single-transaction","--force" "--dump-date","--insert-ignore",
+                "--single-transaction","--force","--dump-date","--insert-ignore",
                 "--user=admin","--password=admin","--port=3306","--routines",
                 "--triggers",f"--result-file=sql-commands-and-backend/database/mysql/backups/backup_{today}_{current_time}",
                 "--source-date=2","--flush-logs","--log-error=sql-commands-and-backend/database/mysql/backups/backup.err"]
@@ -803,7 +803,8 @@ def fullBackup():
         except subprocess.CalledProcessError as err:
             print(f"Error during mysql full backup: {err}")
             print(f"Command: {' '.join(err.cmd)}")
-            print(f"Stderror: {err.stderr.decode()}")
+            if err.stderr:
+                print(f"Stderror: {err.stderr.decode()}")
         except FileNotFoundError:
             print("Error: mysqldump command not found.")
         except Exception as err:
@@ -820,7 +821,7 @@ def partialBackup(cursor):
 def backup():
     with app.app_context():
         backupConnection = mysql.connection
-        backupCursor = backupConnection.cursor(cursor=cursors.DictCursor)
+        backupCursor = backupConnection.cursor(MySQLdb.cursors.DictCursor)
         sleep(0.001)
         fullBackup()
         partialCounter = 0

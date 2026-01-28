@@ -104,12 +104,8 @@ export default function AccountCreation({ onSuccess }) {
                   name="role"
                   id="role1"
                   value="Student"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      isProfessor: false,
-                    }))
-                  }
+                  checked={!isProfessor}
+                  onChange={() => setIsProfessor(false)}
                 />
                 <label htmlFor="role1">Student</label>
 
@@ -118,12 +114,8 @@ export default function AccountCreation({ onSuccess }) {
                   name="role"
                   id="role2"
                   value="Professor"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      isProfessor: true,
-                    }))
-                  }
+                  checked={isProfessor}
+                  onChange={() => setIsProfessor(true)}
                 />
                 <label htmlFor="role2">Professor</label>
               </div>

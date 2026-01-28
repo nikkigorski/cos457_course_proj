@@ -7,6 +7,8 @@ Description: Stored Procedures and Functions for Lobster Notes Project
 
 USE lobsternotes;
 
+DELIMITER $$
+
 /*
 Procedure for creating a new user, specifying enrolled courses and if user is a professor
 */
@@ -19,39 +21,34 @@ create procedure SP_User_Create
 )
 
 begin
-    declare exit handler for sqlexception
-    begin
-        rollback;
-        signal sqlstate '45000'
-        set message_text = 'User creation failed';
-    end;
-
     start transaction;
-Insert into user
-(
-    Name,
-    Courses,
-    IsProfessor,
-    Password
-)
-values
-(
-    user_name,
-    enrolled_courses,
-    professor_check,
-    COALESCE(user_password, 'defaultpass')
-);
+    Insert into user
+    (
+        Name,
+        Courses,
+        IsProfessor,
+        Password
+    )
+    values
+    (
+        user_name,
+        enrolled_courses,
+        professor_check,
+        COALESCE(user_password, 'defaultpass')
+    );
 
--- Replicate trigger functionality since triggers can't be piped
-IF professor_check = TRUE THEN
-    INSERT INTO professor (UserID, Badge)
-    VALUES (LAST_INSERT_ID(), NULL);
-ELSE
-    INSERT INTO student (UserID)
-    VALUES (LAST_INSERT_ID());
-END IF;
-commit;
-end;
+    -- Replicate trigger functionality since triggers can't be piped
+    IF professor_check = TRUE THEN
+        INSERT INTO professor (UserID, Badge)
+        VALUES (LAST_INSERT_ID(), NULL);
+    ELSE
+        INSERT INTO student (UserID)
+        VALUES (LAST_INSERT_ID());
+    END IF;
+    commit;
+end$$
+
+DELIMITER ;
 
 -- create trigger TR_User_AfterInsert
 -- after insert on User
@@ -65,6 +62,8 @@ end;
 --         values (new.UserID);
 -- 	end if;
 -- end;
+
+DELIMITER $$
 
 /*
 Procedure for updating username by taking UserID for user to be altered
@@ -87,7 +86,11 @@ begin
     set Name = new_name
     where UserID = user_id;
     commit;
-end;
+end$$
+
+DELIMITER ;
+
+DELIMITER $$
 
 /*
 Creates a new resource
@@ -198,7 +201,11 @@ begin
 					);
 	end case;  
 	commit;
-end; 
+end$$
+
+DELIMITER ;
+
+DELIMITER $$
 
 /*
 Links professor to course
@@ -226,9 +233,11 @@ begin
             where CourseID = course_id;
 	end if;
 	commit;
-end;
+end$$
 
+DELIMITER ;
 
+DELIMITER $$
 
 /*
 Allows submission of rating
@@ -272,7 +281,11 @@ begin
 --         )
 -- 	where ResourceID = resource_ID;
    commit;   
-end;
+end$$
+
+DELIMITER ;
+
+DELIMITER $$
 
 /*
 Gets details for a resource based on ResourceID
@@ -305,30 +318,44 @@ left join video as V on R.ResourceID = V.ResourceID
 
 where R.ResourceID = resource_ID;
 
-end; 
+end$$
+
+DELIMITER ;
+
+DELIMITER $$
 
 /*
 Returns average score of given ResourceID
 */
 create function FN_Rating_Avg(resource_id int)
 	returns decimal(2,1)
+	DETERMINISTIC
+	READS SQL DATA
 	begin
 	declare r_avg decimal(2,1);
 		select round(avg(Score), 1) into r_avg
 		from rating
 		where resource.ResourceID = resource_id;
 	return r_avg;
-end;
+end$$
+
+DELIMITER ;
+
+DELIMITER $$
 
 /*
 Takes UserID and checks if user is professor
 */
 create function FN_User_Isprofessor(user_id int)
 	returns boolean
+	DETERMINISTIC
+	READS SQL DATA
 begin
     declare is_prof boolean;
 		select IsProfessor into is_prof
         from user
         where user.UserID = user_id;
 	return is_prof;
-end;
+end$$
+
+DELIMITER ;

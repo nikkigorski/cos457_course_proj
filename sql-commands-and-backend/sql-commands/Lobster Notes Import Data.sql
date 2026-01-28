@@ -7,9 +7,9 @@ November 14, 2025
 */
 
 -- Insert sample subjects
-INSERT INTO subject (Code, Name) VALUES ('CS', 'Computer Science');
-INSERT INTO subject (Code, Name) VALUES ('MTH', 'Mathematics');
-INSERT INTO subject (Code, Name) VALUES ('PHY', 'Physics');
+INSERT IGNORE INTO subject (Code, Name) VALUES ('CS', 'Computer Science');
+INSERT IGNORE INTO subject (Code, Name) VALUES ('MTH', 'Mathematics');
+INSERT IGNORE INTO subject (Code, Name) VALUES ('PHY', 'Physics');
 
 -- Create sample professor and students
 CALL SP_User_Create('Dr. Smith', 'CS', TRUE, 'password123');
@@ -28,7 +28,8 @@ INSERT INTO enrolled (StudentID, CourseID) VALUES (3, 1);
 INSERT INTO teaches (ProfessorID, CourseID) VALUES (1, 1);
 
 -- Import data scraped from Khan Academy
-delimiter //
+DELIMITER $$
+
 create procedure ImportData(in did int)
 begin
     -- Load JSON
@@ -280,5 +281,6 @@ begin
 
     -- Mark as imported
     update StageWebData set Imported = 1 where DataID = did;
-end//
-delimiter ;
+end$$
+
+DELIMITER ;

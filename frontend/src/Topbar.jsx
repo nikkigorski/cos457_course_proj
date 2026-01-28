@@ -11,8 +11,7 @@ function Topbar({ searchQuery, setSearchQuery, onSearch, onClear, onDashboard,
           <div className="brand">Lobster Notes</div>
           {hasUser ? (
             <div style={{display:'flex'}}>
-              <button className="btn" type="button" onClick={onHome} title="Homepage">Home</button>
-              <form onSubmit={onSearch} style={{display:'flex', alignItems:'center', gap: '8px'}}>
+              <form onSubmit={onSearch} style={{display:'flex', alignItems:'center', gap: '2px'}}>
                 <input
                   className="note-search"
                   placeholder="Search notes..."
@@ -24,12 +23,15 @@ function Topbar({ searchQuery, setSearchQuery, onSearch, onClear, onDashboard,
                 <button className="btn" type="button" onClick={onClear}>Clear</button>
               </form>
               {isProfessor && <button className="btn" type="button" onClick={onDashboard} title="Open Professor Dashboard">Professor Dashboard</button>}
+              {!isProfessor && <button className="btn" type="button" onClick={onHome} title="Homepage">Home</button>}
               <button className="btn" type="button" onClick={onNotes} title="Back to Notes">Notes</button>
             </div>
           ) : null}
         </div>
-        {(!hasUser) && <button className='btn' type='button' onClick={onCreateAccount} title='Account Creation'>Create Account</button>}
+        <div style={{display: 'flex', alignItems: 'center', gap: '2px'}}>
+        {(!hasUser) && <button className='btn' type='button' onClick={onCreateAccount} title='Account Creation'>Create New Account</button>}
         {loginOrUser(onLoginButton,onLogout,user,hasUser)}
+        </div>
       </div>
     </header>
   );
